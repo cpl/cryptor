@@ -4,21 +4,19 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"errors"
 	"io"
 )
 
-// Encrypt ...
-func Encrypt(key, msg []byte) ([]byte, error) {
+// AESKeySize ...
+const AESKeySize = 32
+
+// AESEncrypt ...
+func AESEncrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	// Generate Cipher block
-	cipherBlock, err := aes.NewCipher(key)
+	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, err
-	}
-
-	// Generate nonce
-	nonce := make([]byte, 12)
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
 	}
 
 	// Generate GCM
@@ -27,28 +25,51 @@ func Encrypt(key, msg []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	out := gcm.Seal(nil, nonce, msg, nil)
-
-	return out, nil
-}
-
-// Decrypt ...
-func Decrypt(key, msg, nonce []byte) ([]byte, error) {
-	// Generate Cipher block
-	cipherBlock, err := aes.NewCipher(key)
+	// Generate nonce
+	nonce := make([]byte, gcm.NonceSize())
+	_, err = io.ReadFull(rand.Reader, nonce)
 	if err != nil {
 		return nil, err
 	}
 
+	return gcm.Seal(nonce, nonce, msg, nil), nil
+}
+
+// AESDecrypt ...
+func AESDecrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
+	// Generate Cipher block
+	cipherBlock, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate GCM
 	gcm, err := cipher.NewGCM(cipherBlock)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	plaintext, err := gcm.Open(nil, nonce, msg, nil)
+	// Check for nonce existence in ciphertext
+	if len(msg) < gcm.NonceSize() {
+		return nil, errors.New("invalid msg")
+	}
+
+	// Obtain plaintext msg
+	plaintext, err := gcm.Open(nil,
+		msg[:gcm.NonceSize()], msg[gcm.NonceSize():], nil)
 	if err != nil {
 		return nil, err
 	}
 
 	return plaintext, nil
+}
+
+// NewAESKey ...
+func NewAESKey() *[AESKeySize]byte {
+	key := [AESKeySize]byte{}
+	_, err := io.ReadFull(rand.Reader, key[:])
+	if err != nil {
+		panic(err)
+	}
+	return &key
 }
