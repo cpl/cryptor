@@ -61,7 +61,8 @@ func ChunkData(data []byte) (count uint64, tmpDirName string, err error) {
 		count++
 	}
 
-	profile := PackageProfile{"hash", "testpkg", uint64(0), chunkSize, count}
+	profile := PackageProfile{"hash", "testpkg",
+		uint64(len(data)), chunkSize, count}
 	profile.Generate(tmpDirName)
 
 	return count, tmpDirName, nil

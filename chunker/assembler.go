@@ -21,6 +21,7 @@ func AssembleData(chunkDirPath string) (data []byte, err error) {
 	for _, chunk := range chunks {
 		chunkPath := fmt.Sprintf("%s/%s", chunkDirPath, chunk.Name())
 
+		// Ignore package profile files
 		if strings.HasSuffix(chunkPath, ppExtension) {
 			continue
 		}
@@ -54,6 +55,17 @@ func AssembleData(chunkDirPath string) (data []byte, err error) {
 }
 
 // AssembleFile ...
-func AssembleFile(chunkDirPath string) (fileName string, err error) {
-	return "", nil
+func AssembleFile(chunkDirPath string, outFile string) (err error) {
+	// Assemble data into byte array
+	data, err := AssembleData(chunkDirPath)
+	if err != nil {
+		return err
+	}
+
+	// Write file with data
+	err = ioutil.WriteFile(outFile, data, 0400)
+	if err != nil {
+		return err
+	}
+	return nil
 }

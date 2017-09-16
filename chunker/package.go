@@ -1,22 +1,15 @@
 package chunker
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 )
 
 const (
-	ppFormatString = `
-Hash: %s
-Name: %s
-Size: %d
-
-ChunkSize: %d
-ChunkCount: %d
-`
-
 	ppPathFormatString = "%s/%s.%s"
-	ppExtension        = ".ctpp"
+	ppExtension        = "json"
+	ppFileName         = "profile"
 )
 
 // PackageProfile ...
@@ -30,12 +23,21 @@ type PackageProfile struct {
 
 // Generate ...
 func (p *PackageProfile) Generate(filePath string) error {
-	// Format the packageProfile string
-	ppString := fmt.Sprintf(ppFormatString,
-		p.Hash, p.Name, p.Size, p.ChunkSize, p.ChunkCount)
+	// Prepare package profile path
+	ppPath := fmt.Sprintf(ppPathFormatString,
+		filePath, ppFileName, ppExtension)
 
-	// Write the formated string to a given path
-	ppPath := fmt.Sprintf(ppPathFormatString, filePath, p.Hash, ppExtension)
-	ioutil.WriteFile(ppPath, []byte(ppString), 0400)
+	// Generate JSON data for package profile
+	jsonData, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+
+	// Write JSON data to package profile file
+	err = ioutil.WriteFile(ppPath, jsonData, 0400)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
