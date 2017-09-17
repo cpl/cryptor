@@ -7,18 +7,6 @@ import (
 )
 
 func main() {
-	// count, path, err := chunker.ChunkFile("testfile.txt")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Printf("%d %s\n", count, path)
-
-	// data, err := chunker.AssembleData(path)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(string(data))
-
 	msg := []byte("Hello, World!")
 	key := crypto.NewAESKey()
 
