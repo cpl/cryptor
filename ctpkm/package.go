@@ -1,4 +1,4 @@
-package chunker
+package ctpkm
 
 import (
 	"encoding/json"
@@ -8,24 +8,34 @@ import (
 
 const (
 	ppPathFormatString = "%s/%s.%s"
-	ppExtension        = "json"
-	ppFileName         = "profile"
+
+	// PPExtension ...
+	PPExtension = "json"
+
+	// PPFileName ...
+	PPFileName = "profile"
 )
 
 // PackageProfile ...
 type PackageProfile struct {
 	Hash       string
 	Name       string
-	Size       uint64
-	ChunkSize  uint64
-	ChunkCount uint64
+	Size       uint
+	ChunkSize  uint
+	ChunkCount uint
+}
+
+// NewPackageProfile ...
+func NewPackageProfile(packagePath, packageName string) *PackageProfile {
+
+	return &PackageProfile{"", "", 0, 0, 0}
 }
 
 // Generate ...
 func (p *PackageProfile) Generate(filePath string) error {
 	// Prepare package profile path
 	ppPath := fmt.Sprintf(ppPathFormatString,
-		filePath, ppFileName, ppExtension)
+		filePath, PPFileName, PPExtension)
 
 	// Generate JSON data for package profile
 	jsonData, err := json.Marshal(p)
