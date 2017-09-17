@@ -7,35 +7,49 @@ import (
 )
 
 const (
-	tmpDirPath    = "/tmp"
-	tmpDirPref    = "cryptor"
-	chunkFilePath = "%s/%d_chunk"
-	chunkSize     = 64
+	tmpDir        = "/tmp"
+	tmpDirPrefix  = "cryptor"
+	chunkFilePath = "%s/%032d_chunk"
+
+	// ChunkSize ...
+	ChunkSize = 1024
 )
 
 // ChunkData ...
-func ChunkData(data []byte) (count uint64, tmpDirName string, err error) {
+func ChunkData(data []byte) (count uint, tmpDirPath string, err error) {
 
-	if len(data) < chunkSize {
-		return 0, "", &chunkerError{"Chunker data size too small", 100}
+	// Check if data fits in  at least two packets
+	if len(data) < ChunkSize {
+		return count, tmpDirPath, ErrorDataSize
 	}
 
 	// Compress entire file
-	cDataBuffer, err := compress(data)
+	cDataBuffer, err := Compress(data)
 	if err != nil {
-		return 0, "", err
+		return count, tmpDirPath, err
+	}
+
+	// Check if cData fits in  at least two packets
+	if cDataBuffer.Len() < ChunkSize {
+		return count, tmpDirPath, ErrorDataSizeCompressoin
+	}
+
+	// Compute expected chunk count
+	expectedChunkCount := uint(cDataBuffer.Len()) / ChunkSize
+	if cDataBuffer.Len()%ChunkSize != 0 {
+		expectedChunkCount++
 	}
 
 	// Create tmp directory for chunks
-	tmpDirName, err = ioutil.TempDir(tmpDirPath, tmpDirPref)
+	tmpDirPath, err = ioutil.TempDir(tmpDir, tmpDirPrefix)
 	if err != nil {
-		return 0, "", err
+		return count, tmpDirPath, err
 	}
 
 	// Split gzip data into chunks and write to files
 	for {
 		// Create chunk byte araray of chunkSize
-		chunk := make([]byte, chunkSize)
+		chunk := make([]byte, ChunkSize)
 
 		// Read into chunk from gzip data
 		read, err := cDataBuffer.Read(chunk)
@@ -51,7 +65,7 @@ func ChunkData(data []byte) (count uint64, tmpDirName string, err error) {
 		}
 
 		// Write chunk data to chunk file
-		chunkFile := fmt.Sprintf(chunkFilePath, tmpDirName, count)
+		chunkFile := fmt.Sprintf(chunkFilePath, tmpDirPath, count)
 		err = ioutil.WriteFile(chunkFile, chunk[:read], 0400)
 		if err != nil {
 			return 0, "", err
@@ -61,15 +75,15 @@ func ChunkData(data []byte) (count uint64, tmpDirName string, err error) {
 		count++
 	}
 
-	profile := PackageProfile{"hash", "testpkg",
-		uint64(len(data)), chunkSize, count}
-	profile.Generate(tmpDirName)
+	if expectedChunkCount != count {
+		panic(ErrorChunkCount)
+	}
 
-	return count, tmpDirName, nil
+	return count, tmpDirPath, nil
 }
 
 // ChunkFile ...
-func ChunkFile(filePath string) (count uint64, tmpDirName string, err error) {
+func ChunkFile(filePath string) (count uint, tmpDirPath string, err error) {
 	// Read file content
 	fileContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -81,7 +95,7 @@ func ChunkFile(filePath string) (count uint64, tmpDirName string, err error) {
 }
 
 // ChunkStdin ...
-func ChunkStdin() (count uint64, tmpDirName string, err error) {
+func ChunkStdin() (count uint, tmpDirPath string, err error) {
 	// Read stdin content
 	stdinContent, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {

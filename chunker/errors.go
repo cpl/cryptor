@@ -1,12 +1,9 @@
 package chunker
 
-import "fmt"
+import "errors"
 
-type chunkerError struct {
-	Message string
-	Code    int
-}
-
-func (e *chunkerError) Error() string {
-	return fmt.Sprintf("%d - %s", e.Code, e.Message)
-}
+var (
+	ErrorDataSize            = errors.New("Chunker data size too small")
+	ErrorDataSizeCompressoin = errors.New("Chunker data size too small, after compression")
+	ErrorChunkCount          = errors.New("Invalid chunk count")
+)

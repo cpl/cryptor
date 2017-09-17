@@ -5,39 +5,33 @@ import (
 	"compress/gzip"
 )
 
-func compress(data []byte) (buffer bytes.Buffer, err error) {
+// Compress ...
+func Compress(data []byte) (out bytes.Buffer, err error) {
 	// Create gzip writer
-	w := gzip.NewWriter(&buffer)
+	w := gzip.NewWriter(&out)
+	defer w.Close()
 
 	// Write data to output buffer
 	_, err = w.Write(data)
 	if err != nil {
-		return buffer, err
+		panic(err)
 	}
 
-	// Close gzip writer
-	err = w.Close()
-	if err != nil {
-		return buffer, err
-	}
-
-	return buffer, nil
+	return out, nil
 }
 
-func decompress(buffer *bytes.Buffer) ([]byte, error) {
+// Decompress ...
+func Decompress(data bytes.Buffer) ([]byte, error) {
+	var buffer bytes.Buffer
+
 	// Create gzip reader
-	r, err := gzip.NewReader(buffer)
+	r, err := gzip.NewReader(&data)
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
+	defer r.Close()
 
-	data := make([]byte, len(buffer.Bytes()))
+	buffer.ReadFrom(r)
 
-	// Read data to output buffer
-	_, err = r.Read(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return buffer.Bytes(), nil
 }

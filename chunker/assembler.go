@@ -21,8 +21,8 @@ func AssembleData(chunkDirPath string) (data []byte, err error) {
 	for _, chunk := range chunks {
 		chunkPath := fmt.Sprintf("%s/%s", chunkDirPath, chunk.Name())
 
-		// Ignore package profile files
-		if strings.HasSuffix(chunkPath, ppExtension) {
+		// Ignore non chunk files
+		if !strings.HasSuffix(chunkPath, "chunk") {
 			continue
 		}
 
@@ -43,7 +43,7 @@ func AssembleData(chunkDirPath string) (data []byte, err error) {
 	if packageBytes[0] == 31 && packageBytes[1] == 139 {
 
 		// Decompress package data
-		packageData, err := decompress(&buffer)
+		packageData, err := Decompress(buffer)
 		if err != nil {
 			return nil, nil
 		}
