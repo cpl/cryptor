@@ -1,17 +1,25 @@
 package tests
 
 import (
+	"bytes"
 	"os"
 	"testing"
 
 	"github.com/thee-engineer/cryptor/archive"
 )
 
-const (
-	testDirectory = "targz_test"
-	testOutTar    = "out.tar.gz"
-)
-
 func TestTarGz(t *testing.T) {
-	archive.TarGz(testDirectory, os.Stdout)
+	buffer := new(bytes.Buffer)
+
+	// Archive test data as .tar.gz
+	if err := archive.TarGz("targz_test", buffer); err != nil {
+		t.Error(err)
+	}
+
+	// Extract test data from .tar.gz
+	if err := archive.UnTarGz("targz_test_out", buffer); err != nil {
+		t.Error(err)
+	}
+
+	os.RemoveAll("targz_test_out")
 }

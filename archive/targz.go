@@ -8,10 +8,10 @@ import (
 // TarGz ...
 func TarGz(source string, out io.Writer) error {
 	gzipWriter := gzip.NewWriter(out)
-	defer gzipWriter.Close()
-	if err := TarArchive(source, gzipWriter); err != nil {
+	if err := tarArchive(source, gzipWriter); err != nil {
 		return err
 	}
+	defer gzipWriter.Close()
 	return nil
 }
 
@@ -19,9 +19,9 @@ func TarGz(source string, out io.Writer) error {
 func UnTarGz(destination string, in io.Reader) error {
 	// Create gzip reader
 	gzipReader, err := gzip.NewReader(in)
-	defer gzipReader.Close()
 	if err != nil {
 		return err
 	}
+	defer gzipReader.Close()
 	return tarExtract(destination, gzipReader)
 }

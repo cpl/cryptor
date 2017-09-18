@@ -2,7 +2,6 @@ package archive
 
 import (
 	"archive/tar"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -10,7 +9,7 @@ import (
 )
 
 // TarArchive ...
-func TarArchive(source string, out io.Writer) error {
+func tarArchive(source string, out io.Writer) error {
 	// Get file/dir status
 	stat, err := os.Stat(source)
 	if err != nil {
@@ -75,7 +74,6 @@ func tarDir(source string, tarWriter *tar.Writer) error {
 			if err != nil {
 				return err
 			}
-			fmt.Println(header)
 
 			// Update header for directories
 			header.Name = strings.TrimPrefix(
@@ -110,6 +108,13 @@ func tarDir(source string, tarWriter *tar.Writer) error {
 
 func tarExtract(destination string, in io.Reader) error {
 	tarReader := tar.NewReader(in)
+
+	// Make sure destination exists
+	if _, err := os.Stat(destination); err != nil {
+		if err := os.MkdirAll(destination, 0755); err != nil {
+			return err
+		}
+	}
 
 	for {
 		// Read each header
