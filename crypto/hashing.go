@@ -26,8 +26,7 @@ func SHA256File(path string) (hash.Hash, error) {
 // SHA256Data ...
 func SHA256Data(data []byte) (hash.Hash, error) {
 	h := sha256.New()
-	_, err := h.Write(data)
-	if err != nil {
+	if _, err := h.Write(data); err != nil {
 		return nil, err
 	}
 

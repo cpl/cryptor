@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/thee-engineer/cryptor/utility"
+	"github.com/thee-engineer/cryptor/archive"
 )
 
 // AssembleData ...
@@ -45,7 +45,7 @@ func AssembleData(chunkDirPath string) (data []byte, err error) {
 	if packageBytes[0] == 31 && packageBytes[1] == 139 {
 
 		// Decompress package data
-		packageData, err := utility.Decompress(buffer)
+		packageData, err := archive.Decompress(buffer)
 		if err != nil {
 			return nil, nil
 		}

@@ -1,22 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"os"
 
-	"github.com/thee-engineer/cryptor/crypto"
+	"github.com/thee-engineer/cryptor/archive"
 )
 
 func main() {
-	msg := []byte("Hello, World!")
-	key := crypto.NewAESKey()
-
-	e, _ := crypto.AESEncrypt(key, msg)
-	fmt.Println(string(crypto.Encode(e)))
-
-	d, err := crypto.AESDecrypt(key, e)
+	err := archive.TarGz("LICENSE", os.Stdout)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
-
-	fmt.Println(string(d))
 }
