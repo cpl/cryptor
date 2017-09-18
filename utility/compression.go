@@ -1,4 +1,4 @@
-package chunker
+package utility
 
 import (
 	"bytes"

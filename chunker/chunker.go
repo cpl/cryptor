@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/thee-engineer/cryptor/utility"
 )
 
 const (
@@ -24,7 +26,7 @@ func ChunkData(data []byte) (count uint, tmpDirPath string, err error) {
 	}
 
 	// Compress entire file
-	cDataBuffer, err := Compress(data)
+	cDataBuffer, err := utility.Compress(data)
 	if err != nil {
 		return count, tmpDirPath, err
 	}
