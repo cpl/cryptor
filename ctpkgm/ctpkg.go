@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/thee-engineer/cryptor/chunker"
+
 	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/crypto"
 )
@@ -28,15 +30,21 @@ func NewCTPKG(source, name string) (ctpkg CTPKG) {
 		panic(err)
 	}
 
-	contentHash, err := crypto.SHA256Data(contentBuffer.Bytes())
-	if err != nil {
-		panic(err)
-	}
+	contentHash := crypto.SHA256Data(contentBuffer.Bytes())
+
+	mainKey := crypto.NewKey()
 
 	ctpkg.Name = name
 	ctpkg.Hash = string(crypto.Encode(contentHash.Sum(nil)))
 	ctpkg.Size = contentBuffer.Len()
-	ctpkg.Key = string(crypto.Encode(crypto.NewKey()[:]))
+	ctpkg.Key = string(crypto.Encode(mainKey[:]))
+
+	chunkCount, chunksPath, err := chunker.ChunkData(contentBuffer.Bytes(), 1024, mainKey)
+	if err != nil {
+		panic(err)
+	}
+
+	ctpkg.ChunkCount = chunkCount
 
 	return ctpkg
 }
