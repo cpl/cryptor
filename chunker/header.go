@@ -1,19 +1,39 @@
 package chunker
 
+import (
+	"bytes"
+	"encoding/binary"
+)
+
+// HeaderSize ...
+const HeaderSize = 68
+
 // ChunkHeader ...
 type ChunkHeader struct {
-	Hash    []byte
-	Size    int
-	PadSize int
-	NKey    []byte
+	Hash []byte
+	Padd uint32
+	NKey []byte
 }
 
 // NewChunkHeader ...
 func NewChunkHeader() (header *ChunkHeader) {
-	return header
+	return &ChunkHeader{
+		Hash: nil,
+		NKey: nil,
+		Padd: 0,
+	}
 }
 
 // Bytes ...
 func (header *ChunkHeader) Bytes() []byte {
-	return append(header.NKey[:], header.Hash[:]...)
+	buffer := new(bytes.Buffer)
+
+	buffer.Write(header.Hash) // 32
+	buffer.Write(header.NKey) // 32
+
+	uintConv := make([]byte, 4)
+	binary.LittleEndian.PutUint32(uintConv, header.Padd)
+	buffer.Write(uintConv) // 4
+
+	return buffer.Bytes()
 }
