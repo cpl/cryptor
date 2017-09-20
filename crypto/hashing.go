@@ -24,11 +24,11 @@ func SHA256File(path string) (hash.Hash, error) {
 }
 
 // SHA256Data ...
-func SHA256Data(data []byte) (hash.Hash, error) {
+func SHA256Data(data []byte) hash.Hash {
 	h := sha256.New()
 	if _, err := h.Write(data); err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return h, nil
+	return h
 }

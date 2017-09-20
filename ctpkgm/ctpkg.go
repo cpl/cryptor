@@ -10,12 +10,14 @@ import (
 
 // CTPKG ...
 type CTPKG struct {
-	Name        string
-	Hash        string
-	Size        int
+	Name string
+	Hash string
+	Size int
+
 	ChunkCount  int
 	ChunkHashes []string
-	Key         string
+
+	Key string
 }
 
 // NewCTPKG ...
