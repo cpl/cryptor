@@ -2,7 +2,6 @@ package chunker
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,9 +11,8 @@ import (
 )
 
 const (
-	tmpPath       = "/tmp"
-	tmpPref       = "cryptor"
-	chunkFileName = "chunk%08d"
+	tmpPath = "/tmp"
+	tmpPref = "cryptor"
 )
 
 // Chunker ...
@@ -24,8 +22,8 @@ type Chunker struct {
 	Reader io.Reader
 }
 
-// Start ...
-func (chunker *Chunker) Start() error {
+// Chunk ...
+func (chunker *Chunker) Chunk() (hashList []string, err error) {
 	// Keep count of chunks
 	count := 0
 
@@ -37,7 +35,7 @@ func (chunker *Chunker) Start() error {
 	// Create temporary directory
 	tmpDir, err := ioutil.TempDir(tmpPath, tmpPref)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Prepare keys
@@ -55,7 +53,7 @@ func (chunker *Chunker) Start() error {
 
 		// Check for errors
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// Switch keys
@@ -85,21 +83,24 @@ func (chunker *Chunker) Start() error {
 		// Encrypt chunk
 		eData, err := crypt.Encrypt(keyThis, chunkData.Bytes())
 		if err != nil {
-			return err
+			return nil, err
 		}
 
+		// Hash encrypted content, for ctpkg
+		eHash := string(crypt.Encode(crypt.SHA256Data(eData).Sum(nil)))
+		hashList = append(hashList, eHash)
+
 		// Create chunk file
-		chunkFile, err := os.Create(
-			path.Join(tmpDir, fmt.Sprintf(chunkFileName, count)))
+		chunkFile, err := os.Create(path.Join(tmpDir, eHash))
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer chunkFile.Close()
 
 		// Write encrypted data to chunk file
 		_, err = chunkFile.Write(eData)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// Reset buffer
@@ -107,5 +108,5 @@ func (chunker *Chunker) Start() error {
 		count++
 	}
 
-	return nil
+	return hashList, nil
 }

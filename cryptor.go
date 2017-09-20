@@ -1,29 +1,12 @@
 package main
 
 import (
-	"bytes"
-	"io/ioutil"
+	"fmt"
 
-	"github.com/thee-engineer/cryptor/chunker"
-	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/ctpkgm"
 )
 
 func main() {
-	f, err := ioutil.ReadFile("LICENSE")
-	if err != nil {
-		panic(err)
-	}
-
-	buf := bytes.NewBuffer(f)
-
-	chunker := &chunker.Chunker{
-		Size:   1024,
-		Reader: buf,
-		Key:    crypt.NewKey(),
-	}
-
-	err = chunker.Start()
-	if err != nil {
-		panic(err)
-	}
+	pkg := ctpkgm.NewCTPKG("LICENSE", "license", 1024)
+	fmt.Println(pkg.PKey)
 }
