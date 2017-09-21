@@ -1,109 +1,107 @@
 package chunker
 
 import (
-	"fmt"
-	"io/ioutil"
+	"bytes"
+	"io"
 	"os"
+	"path"
 
+	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/utility"
 )
 
-const (
-	tmpDir        = "/tmp"
-	tmpDirPrefix  = "cryptor"
-	chunkFilePath = "%s/%032d_chunk"
+// Chunker ...
+type Chunker struct {
+	Size   uint32
+	Key    *[32]byte
+	Reader io.Reader
+}
 
-	// ChunkSize ...
-	ChunkSize = 1024
-)
+// Chunk ...
+func (chunker *Chunker) Chunk() (hashList []string, err error) {
+	// Keep count of chunks
+	count := 0
 
-// ChunkData ...
-func ChunkData(data []byte) (count uint, tmpDirPath string, err error) {
+	// Prepare data
+	chunkHeader := NewChunkHeader()
+	chunkData := new(bytes.Buffer)
+	chunkCont := make([]byte, chunker.Size)
 
-	// Check if data fits in  at least two packets
-	if len(data) < ChunkSize {
-		return count, tmpDirPath, ErrorDataSize
-	}
+	// Create temporary directory
+	// tmpDir, err := ioutil.TempDir(tmpPath, tmpPref)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// Compress entire file
-	cDataBuffer, err := utility.Compress(data)
-	if err != nil {
-		return count, tmpDirPath, err
-	}
+	// Prepare keys
+	var keyNext *[32]byte
+	var keyThis *[32]byte
 
-	// Check if cData fits in  at least two packets
-	if cDataBuffer.Len() < ChunkSize {
-		return count, tmpDirPath, ErrorDataSizeCompressoin
-	}
-
-	// Compute expected chunk count
-	expectedChunkCount := uint(cDataBuffer.Len()) / ChunkSize
-	if cDataBuffer.Len()%ChunkSize != 0 {
-		expectedChunkCount++
-	}
-
-	// Create tmp directory for chunks
-	tmpDirPath, err = ioutil.TempDir(tmpDir, tmpDirPrefix)
-	if err != nil {
-		return count, tmpDirPath, err
-	}
-
-	// Split gzip data into chunks and write to files
 	for {
-		// Create chunk byte araray of chunkSize
-		chunk := make([]byte, ChunkSize)
+		// Read archive content into chunks
+		read, err := chunker.Reader.Read(chunkCont)
 
-		// Read into chunk from gzip data
-		read, err := cDataBuffer.Read(chunk)
-
-		// Check EOF
-		if read == 0 {
+		// Check for EOF
+		if read == 0 || err == io.EOF {
 			break
 		}
 
-		// Check error
+		// Check for errors
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
-		// Write chunk data to chunk file
-		chunkFile := fmt.Sprintf(chunkFilePath, tmpDirPath, count)
-		err = ioutil.WriteFile(chunkFile, chunk[:read], 0400)
-		if err != nil {
-			return 0, "", err
+		// Switch keys
+		if count == 0 {
+			keyThis = chunker.Key
+		} else {
+			keyThis = keyNext
+		}
+		keyNext = crypt.NewKey()
+
+		// Update chunk header
+		chunkHeader.Hash = crypt.SHA256Data(chunkCont).Sum(nil)
+		chunkHeader.NKey = keyNext[:]
+		chunkHeader.Padd = chunker.Size - uint32(read)
+
+		// Add padding if needed
+		if read < int(chunker.Size) {
+			for index := read; index < int(chunker.Size); index++ {
+				chunkCont[index] = 0
+			}
 		}
 
-		// Count chunks created
+		// Create chunk with header and content
+		chunkData.Write(chunkHeader.Bytes())
+		chunkData.Write(chunkCont)
+
+		// Encrypt chunk
+		eData, err := crypt.Encrypt(keyThis, chunkData.Bytes())
+		if err != nil {
+			return nil, err
+		}
+
+		// Hash encrypted content, for ctpkg
+		eHash := string(crypt.Encode(crypt.SHA256Data(eData).Sum(nil)))
+		hashList = append(hashList, eHash)
+
+		// Create chunk file
+		chunkFile, err := os.Create(path.Join(utility.GetCachePath(), eHash))
+		if err != nil {
+			return nil, err
+		}
+		defer chunkFile.Close()
+
+		// Write encrypted data to chunk file
+		_, err = chunkFile.Write(eData)
+		if err != nil {
+			return nil, err
+		}
+
+		// Reset buffer
+		chunkData.Reset()
 		count++
 	}
 
-	if expectedChunkCount != count {
-		panic(ErrorChunkCount)
-	}
-
-	return count, tmpDirPath, nil
-}
-
-// ChunkFile ...
-func ChunkFile(filePath string) (count uint, tmpDirPath string, err error) {
-	// Read file content
-	fileContent, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return 0, "", err
-	}
-
-	// Chunk file contents
-	return ChunkData(fileContent)
-}
-
-// ChunkStdin ...
-func ChunkStdin() (count uint, tmpDirPath string, err error) {
-	// Read stdin content
-	stdinContent, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		return 0, "", err
-	}
-
-	// Chunk stdin contents
-	return ChunkData(stdinContent)
+	return hashList, nil
 }

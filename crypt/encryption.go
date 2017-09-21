@@ -1,4 +1,4 @@
-package crypto
+package crypt
 
 import (
 	"crypto/aes"
@@ -11,8 +11,8 @@ import (
 // AESKeySize ...
 const AESKeySize = 32
 
-// AESEncrypt ...
-func AESEncrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
+// Encrypt ...
+func Encrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -35,8 +35,8 @@ func AESEncrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, msg, nil), nil
 }
 
-// AESDecrypt ...
-func AESDecrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
+// Decrypt ...
+func Decrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -64,8 +64,8 @@ func AESDecrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
-// NewAESKey ...
-func NewAESKey() *[AESKeySize]byte {
+// NewKey ...
+func NewKey() *[AESKeySize]byte {
 	key := [AESKeySize]byte{}
 	_, err := io.ReadFull(rand.Reader, key[:])
 	if err != nil {

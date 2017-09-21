@@ -1,4 +1,4 @@
-package crypto
+package crypt
 
 import (
 	"crypto/sha256"
@@ -24,12 +24,11 @@ func SHA256File(path string) (hash.Hash, error) {
 }
 
 // SHA256Data ...
-func SHA256Data(data []byte) (hash.Hash, error) {
+func SHA256Data(data []byte) hash.Hash {
 	h := sha256.New()
-	_, err := h.Write(data)
-	if err != nil {
-		return nil, err
+	if _, err := h.Write(data); err != nil {
+		panic(err)
 	}
 
-	return h, nil
+	return h
 }

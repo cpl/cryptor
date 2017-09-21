@@ -1,2 +1,2 @@
-# crypto
-Anonymous, p2p, file sharing.
+# cryptor
+Anonymous, p2p, secure file sharing.
