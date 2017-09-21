@@ -1,4 +1,4 @@
-package ctpkgm
+package ctpkg
 
 import (
 	"bytes"
@@ -57,4 +57,9 @@ func NewCTPKG(source, name string, chunkSize uint32) *CTPKG {
 	}
 
 	return ctpkg
+}
+
+// ToJSON ...
+func (ctpkg *CTPKG) ToJSON() error {
+	return nil
 }

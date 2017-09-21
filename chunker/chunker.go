@@ -3,16 +3,11 @@ package chunker
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 
 	"github.com/thee-engineer/cryptor/crypt"
-)
-
-const (
-	tmpPath = "/tmp"
-	tmpPref = "cryptor"
+	"github.com/thee-engineer/cryptor/utility"
 )
 
 // Chunker ...
@@ -33,10 +28,10 @@ func (chunker *Chunker) Chunk() (hashList []string, err error) {
 	chunkCont := make([]byte, chunker.Size)
 
 	// Create temporary directory
-	tmpDir, err := ioutil.TempDir(tmpPath, tmpPref)
-	if err != nil {
-		return nil, err
-	}
+	// tmpDir, err := ioutil.TempDir(tmpPath, tmpPref)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Prepare keys
 	var keyNext *[32]byte
@@ -91,7 +86,7 @@ func (chunker *Chunker) Chunk() (hashList []string, err error) {
 		hashList = append(hashList, eHash)
 
 		// Create chunk file
-		chunkFile, err := os.Create(path.Join(tmpDir, eHash))
+		chunkFile, err := os.Create(path.Join(utility.GetCachePath(), eHash))
 		if err != nil {
 			return nil, err
 		}
