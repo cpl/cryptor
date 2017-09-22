@@ -37,6 +37,9 @@ func (chunker *Chunker) Chunk() (hashList []string, err error) {
 	var keyNext *[32]byte
 	var keyThis *[32]byte
 
+	// Keep a copy of the previous chunks hash
+	prevHash := make([]byte, 32)
+
 	for {
 		// Read archive content into chunks
 		read, err := chunker.Reader.Read(chunkCont)
@@ -63,6 +66,7 @@ func (chunker *Chunker) Chunk() (hashList []string, err error) {
 		chunkHeader.Hash = crypt.SHA256Data(chunkCont).Sum(nil)
 		chunkHeader.NKey = keyNext[:]
 		chunkHeader.Padd = chunker.Size - uint32(read)
+		chunkHeader.Prev = prevHash
 
 		// Add padding if needed
 		if read < int(chunker.Size) {
@@ -97,6 +101,9 @@ func (chunker *Chunker) Chunk() (hashList []string, err error) {
 		if err != nil {
 			return nil, err
 		}
+
+		// Update previous hash
+		prevHash = chunkHeader.Hash
 
 		// Reset buffer
 		chunkData.Reset()
