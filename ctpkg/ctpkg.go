@@ -19,7 +19,7 @@ type CTPKG struct {
 }
 
 // NewCTPKG ...
-func NewCTPKG(source, name string, chunkSize uint32) *CTPKG {
+func NewCTPKG(source, name string, chunkSize uint32, pKey *[32]byte) *CTPKG {
 	contentBuffer := new(bytes.Buffer)
 
 	// Create tar.gz of file/dir
@@ -31,7 +31,9 @@ func NewCTPKG(source, name string, chunkSize uint32) *CTPKG {
 	contentHash := crypt.SHA256Data(contentBuffer.Bytes())
 
 	// Generate a random primary key for the package
-	pKey := crypt.NewKey()
+	if pKey == nil {
+		pKey = crypt.NewKey()
+	}
 
 	// Create a chunker
 	chunker := &chunker.Chunker{
@@ -57,6 +59,16 @@ func NewCTPKG(source, name string, chunkSize uint32) *CTPKG {
 	}
 
 	return ctpkg
+}
+
+// LoadCTPKG ...
+func LoadCTPKG(ctpkgFile string) (ctpkg *CTPKG) {
+	return ctpkg
+}
+
+// Assemble ...
+func Assemble(pKey *[32]byte) error {
+	return nil
 }
 
 // ToJSON ...

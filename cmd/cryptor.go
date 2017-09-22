@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	utility.CheckCache()
-	pkg := ctpkg.NewCTPKG("cryptor.go", "cgo", 1024)
+	utility.CheckPath(utility.CryptorCachePath)
+	utility.CheckPath(utility.CryptorPacksPath)
+	pkg := ctpkg.NewCTPKG("cryptor.go", "cgo", 1024, nil)
 	fmt.Println(pkg.PKey)
 }
