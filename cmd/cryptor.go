@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	pkg := ctpkg.NewCTPKG(path.Join(cwd, os.Args[1]), os.Args[2], 1024, nil)
+	pkg := ctpkg.NewCTPKG(path.Join(cwd, os.Args[1]), os.Args[2], 1024)
 
 	err = pkg.Save()
 	if err != nil {

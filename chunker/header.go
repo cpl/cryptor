@@ -3,26 +3,26 @@ package chunker
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/thee-engineer/cryptor/crypt"
 )
 
 // HeaderSize ...
-const HeaderSize = 128
+const HeaderSize = 96
 
 // ChunkHeader ...
 type ChunkHeader struct {
-	Hash []byte
 	Padd uint32
-	NKey []byte
-	Prev []byte
+	NKey crypt.AESKey
+	Next []byte
 }
 
 // NewChunkHeader ...
 func NewChunkHeader() (header *ChunkHeader) {
 	return &ChunkHeader{
-		Hash: nil,
-		NKey: nil,
+		NKey: crypt.NullKey,
 		Padd: 0,
-		Prev: nil,
+		Next: nil,
 	}
 }
 
@@ -30,9 +30,8 @@ func NewChunkHeader() (header *ChunkHeader) {
 func (header *ChunkHeader) Bytes() []byte {
 	buffer := new(bytes.Buffer)
 
-	buffer.Write(header.Hash) // 32
-	buffer.Write(header.Prev) // 32
-	buffer.Write(header.NKey) // 32
+	buffer.Write(header.Next)         // 32
+	buffer.Write(header.NKey.Bytes()) // 32
 
 	uintConv := make([]byte, 4)
 	binary.LittleEndian.PutUint32(uintConv, header.Padd)

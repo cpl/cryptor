@@ -17,17 +17,15 @@ const jsonExtension = "json"
 
 // CTPKG ...
 type CTPKG struct {
-	Name       string
-	Hash       string
-	Size       int
-	ChunkSize  uint32
-	ChunkCount int
-	Hashes     []string
-	PKey       string
+	Name      string
+	Hash      string
+	Size      int
+	ChunkSize uint32
+	PKey      string
 }
 
 // NewCTPKG ...
-func NewCTPKG(source, name string, chunkSize uint32, pKey *[32]byte) *CTPKG {
+func NewCTPKG(source, name string, chunkSize uint32, pKey crypt.AESKey) *CTPKG {
 	contentBuffer := new(bytes.Buffer)
 
 	// Create tar.gz of file/dir
@@ -41,7 +39,7 @@ func NewCTPKG(source, name string, chunkSize uint32, pKey *[32]byte) *CTPKG {
 	contentLen := contentBuffer.Len()
 
 	// Generate a random primary key for the package
-	if pKey == nil {
+	if pKey.Bytes() == nil {
 		pKey = crypt.NewKey()
 	}
 
@@ -49,24 +47,20 @@ func NewCTPKG(source, name string, chunkSize uint32, pKey *[32]byte) *CTPKG {
 	chunker := &chunker.Chunker{
 		Size:   chunkSize,
 		Reader: contentBuffer,
-		Key:    pKey,
 	}
 
 	// Start chunking the tar.gz
-	hashList, err := chunker.Chunk()
-	if err != nil {
+	if err := chunker.Chunk(); err != nil {
 		panic(err)
 	}
 
 	// Create package info
 	ctpkg := &CTPKG{
-		Name:       name,
-		Hash:       string(crypt.Encode(contentHash.Sum(nil))),
-		PKey:       string(crypt.Encode(pKey[:])),
-		Size:       contentLen,
-		ChunkSize:  chunker.Size,
-		ChunkCount: len(hashList),
-		Hashes:     hashList,
+		Name:      name,
+		Hash:      string(crypt.Encode(contentHash.Sum(nil))),
+		PKey:      string(crypt.Encode(pKey[:])),
+		Size:      contentLen,
+		ChunkSize: chunker.Size,
 	}
 
 	return ctpkg

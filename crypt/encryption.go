@@ -8,11 +8,8 @@ import (
 	"io"
 )
 
-// AESKeySize ...
-const AESKeySize = 32
-
 // Encrypt ...
-func Encrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
+func Encrypt(key AESKey, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -36,7 +33,7 @@ func Encrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 }
 
 // Decrypt ...
-func Decrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
+func Decrypt(key AESKey, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -62,14 +59,4 @@ func Decrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	}
 
 	return plaintext, nil
-}
-
-// NewKey ...
-func NewKey() *[AESKeySize]byte {
-	key := [AESKeySize]byte{}
-	_, err := io.ReadFull(rand.Reader, key[:])
-	if err != nil {
-		panic(err)
-	}
-	return &key
 }
