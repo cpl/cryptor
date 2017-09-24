@@ -19,38 +19,42 @@ const jsonExtension = "json"
 type CTPKG struct {
 	Name      string
 	Hash      string
+	Tail      string
 	Size      int
 	ChunkSize uint32
 	PKey      string
 }
 
 // NewCTPKG ...
-func NewCTPKG(source, name string, chunkSize uint32, pKey crypt.AESKey) *CTPKG {
+func NewCTPKG(s, name string, chunkSize uint32, pKey crypt.AESKey) *CTPKG {
 	contentBuffer := new(bytes.Buffer)
 
 	// Create tar.gz of file/dir
-	if err := archive.TarGz(source, contentBuffer); err != nil {
+	if err := archive.TarGz(s, contentBuffer); err != nil {
 		panic(err)
 	}
 
 	// Hash tar.gz for integrity check
 	contentHash := crypt.SHA256Data(contentBuffer.Bytes())
+
 	// Get content lenght
 	contentLen := contentBuffer.Len()
 
 	// Generate a random primary key for the package
-	if pKey.Bytes() == nil {
+	if pKey == crypt.NullKey {
 		pKey = crypt.NewKey()
 	}
 
 	// Create a chunker
 	chunker := &chunker.Chunker{
 		Size:   chunkSize,
+		PKey:   pKey,
 		Reader: contentBuffer,
 	}
 
 	// Start chunking the tar.gz
-	if err := chunker.Chunk(); err != nil {
+	tailHash, err := chunker.Chunk()
+	if err != nil {
 		panic(err)
 	}
 
@@ -58,7 +62,8 @@ func NewCTPKG(source, name string, chunkSize uint32, pKey crypt.AESKey) *CTPKG {
 	ctpkg := &CTPKG{
 		Name:      name,
 		Hash:      string(crypt.Encode(contentHash.Sum(nil))),
-		PKey:      string(crypt.Encode(pKey[:])),
+		Tail:      string(crypt.Encode(tailHash)),
+		PKey:      pKey.String(),
 		Size:      contentLen,
 		ChunkSize: chunker.Size,
 	}
@@ -72,7 +77,7 @@ func LoadCTPKG(ctpkgFile string) (ctpkg *CTPKG) {
 }
 
 // Assemble ...
-func Assemble(pKey *[32]byte) error {
+func (ctpkg *CTPKG) Assemble(pKey crypt.AESKey) error {
 	return nil
 }
 
@@ -83,18 +88,23 @@ func (ctpkg *CTPKG) ToJSON() ([]byte, error) {
 
 // Save ...
 func (ctpkg *CTPKG) Save() error {
+	// Create file name
 	pkgFileName := fmt.Sprintf("%s.%s", ctpkg.Hash, jsonExtension)
+
+	// Create file for CTPKG
 	pkgFile, err := os.Create(path.Join(utility.GetPacksPath(), pkgFileName))
 	if err != nil {
 		return err
 	}
 	defer pkgFile.Close()
 
+	// Convert CTPKG to JSON
 	pkgJSON, err := ctpkg.ToJSON()
 	if err != nil {
 		return err
 	}
 
+	// Store CTPKG JSON to CTPKG File
 	_, err = pkgFile.Write(pkgJSON)
 	if err != nil {
 		return err

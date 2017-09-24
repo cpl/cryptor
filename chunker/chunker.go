@@ -2,7 +2,6 @@ package chunker
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -14,26 +13,28 @@ import (
 // Chunker ...
 type Chunker struct {
 	Size   uint32
+	PKey   crypt.AESKey
 	Reader io.Reader
-	Key    crypt.AESKey
 }
 
 // Chunk ...
-func (chunker *Chunker) Chunk() (err error) {
-	// Keep count of chunks
+func (c *Chunker) Chunk() (pHash []byte, err error) {
+	// Count chunks
 	count := 0
 
-	// Prepare data
+	// chunkHeader stores information about the chunk
 	chunkHeader := NewChunkHeader()
+	// chunkContent contains chunker.Size bytes of data from the archive
+	chunkContent := make([]byte, c.Size)
+	// chunkData contains both the header and the content
 	chunkData := new(bytes.Buffer)
-	chunkCont := make([]byte, chunker.Size)
 
-	key := crypt.NullKey
-	var pHash []byte
+	pKey := crypt.NullKey
+	pHash = make([]byte, 32)
 
 	for {
 		// Read archive content into chunks
-		read, err := chunker.Reader.Read(chunkCont)
+		read, err := c.Reader.Read(chunkContent)
 
 		// Check for EOF
 		if read == 0 || err == io.EOF {
@@ -42,36 +43,39 @@ func (chunker *Chunker) Chunk() (err error) {
 
 		// Check for errors
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// Add random padding if needed
-		if read < int(chunker.Size) {
-			chunkCont = append(
-				chunkCont[read:],
-				crypt.RandomData(uint(chunker.Size)-uint(read))...)
-			chunkHeader.Padd = chunker.Size - uint32(read)
+		if read < int(c.Size) {
+			chunkContent = append(
+				chunkContent[:read],
+				crypt.RandomData(uint(c.Size)-uint(read))...)
+			chunkHeader.Padd = c.Size - uint32(read)
 		} else {
 			chunkHeader.Padd = 0
 		}
 
-		// Store used key for next key
-		chunkHeader.NKey = key
+		// Compute content hash for future checks
+		chunkHeader.Hash = crypt.SHA256Data(chunkContent).Sum(nil)
 
-		// Store previous hash as next chunk hash
+		// Store previous encryption key inside this chunk's header
+		chunkHeader.NKey = pKey
+
+		// Store previous encrypted chunk hash inside this chunk's header
 		chunkHeader.Next = pHash
 
 		// Create chunk with header and content
 		chunkData.Write(chunkHeader.Bytes())
-		chunkData.Write(chunkCont)
+		chunkData.Write(chunkContent)
 
-		// Prepare keys for encryption
-		key = crypt.NewKey()
+		// Generatea a new encryption key for each chunk
+		pKey = crypt.NewKey()
 
 		// Encrypt chunk
-		eData, err := crypt.Encrypt(key, chunkData.Bytes())
+		eData, err := crypt.Encrypt(pKey, chunkData.Bytes())
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// Hash encrypted content
@@ -81,27 +85,23 @@ func (chunker *Chunker) Chunk() (err error) {
 		chunkFile, err := os.Create(
 			path.Join(utility.GetCachePath(), string(crypt.Encode(eHash))))
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer chunkFile.Close()
 
 		// Write encrypted data to chunk file
 		_, err = chunkFile.Write(eData)
 		if err != nil {
-			return err
+			return nil, err
 		}
-
-		fmt.Println(string(crypt.Encode(pHash)))
 
 		// Update previous hash
 		pHash = eHash
-
-		fmt.Println(string(crypt.Encode(pHash)))
 
 		// Reset buffer
 		chunkData.Reset()
 		count++
 	}
 
-	return nil
+	return pHash, nil
 }

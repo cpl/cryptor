@@ -28,3 +28,13 @@ func NewKey() AESKey {
 func (key *AESKey) Bytes() []byte {
 	return key[:]
 }
+
+// Encode ...
+func (key *AESKey) Encode() []byte {
+	return Encode(key.Bytes())
+}
+
+// String ...
+func (key *AESKey) String() string {
+	return string(key.Encode())
+}

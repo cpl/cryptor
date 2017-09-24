@@ -8,13 +8,14 @@ import (
 )
 
 // HeaderSize ...
-const HeaderSize = 96
+const HeaderSize = 128
 
 // ChunkHeader ...
 type ChunkHeader struct {
-	Padd uint32
-	NKey crypt.AESKey
-	Next []byte
+	NKey crypt.AESKey // Key for the next chunk
+	Hash []byte       // Hash of the chunk content
+	Next []byte       // Hash of the next chunk
+	Padd uint32       // Byte size of the padding
 }
 
 // NewChunkHeader ...
@@ -23,6 +24,7 @@ func NewChunkHeader() (header *ChunkHeader) {
 		NKey: crypt.NullKey,
 		Padd: 0,
 		Next: nil,
+		Hash: nil,
 	}
 }
 
@@ -30,9 +32,11 @@ func NewChunkHeader() (header *ChunkHeader) {
 func (header *ChunkHeader) Bytes() []byte {
 	buffer := new(bytes.Buffer)
 
-	buffer.Write(header.Next)         // 32
 	buffer.Write(header.NKey.Bytes()) // 32
+	buffer.Write(header.Next)         // 32
+	buffer.Write(header.Hash)         // 32
 
+	// Convert uint32 to byte array
 	uintConv := make([]byte, 4)
 	binary.LittleEndian.PutUint32(uintConv, header.Padd)
 	buffer.Write(uintConv) // 32
