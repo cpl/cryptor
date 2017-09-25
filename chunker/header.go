@@ -13,18 +13,18 @@ const HeaderSize = 128
 // ChunkHeader ...
 type ChunkHeader struct {
 	NKey crypt.AESKey // Key for the next chunk
-	Hash []byte       // Hash of the chunk content
 	Next []byte       // Hash of the next chunk
+	Hash []byte       // Hash of the chunk content
 	Padd uint32       // Byte size of the padding
 }
 
 // NewChunkHeader ...
-func NewChunkHeader() (header *ChunkHeader) {
+func NewChunkHeader() *ChunkHeader {
 	return &ChunkHeader{
 		NKey: crypt.NullKey,
-		Padd: 0,
 		Next: nil,
 		Hash: nil,
+		Padd: 0,
 	}
 }
 
