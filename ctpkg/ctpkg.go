@@ -9,7 +9,6 @@ import (
 	"path"
 
 	"github.com/thee-engineer/cryptor/archive"
-	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
@@ -73,7 +72,7 @@ func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) *CTPKG {
 }
 
 // LoadCTPKG ...
-func LoadCTPKG(ctpkgHash string) (ctpkg *CTPKG) {
+func LoadCTPKG(ctpkgHash string) *CTPKG {
 	// Obtain packs path
 	packsPath := cache.GetPacksPath()
 	packName := fmt.Sprintf("%s.%s", ctpkgHash, jsonExtension)
@@ -92,6 +91,7 @@ func LoadCTPKG(ctpkgHash string) (ctpkg *CTPKG) {
 	}
 
 	// Convert JSON to CTPKG
+	ctpkg := &CTPKG{}
 	if err = json.Unmarshal(data, ctpkg); err != nil {
 		panic(err)
 	}
@@ -99,15 +99,7 @@ func LoadCTPKG(ctpkgHash string) (ctpkg *CTPKG) {
 	return ctpkg
 }
 
-// Assemble ...
-func (ctpkg *CTPKG) Assemble() error {
-	tKey := crypt.NewKeyFromString(ctpkg.TKey)
-	assembler.Assemble(ctpkg.Tail, tKey)
-	return nil
-}
-
-// ToJSON ...
-func (ctpkg *CTPKG) ToJSON() ([]byte, error) {
+func (ctpkg *CTPKG) toJSON() ([]byte, error) {
 	return json.MarshalIndent(ctpkg, "", "\t")
 }
 
@@ -124,7 +116,7 @@ func (ctpkg *CTPKG) Save() error {
 	defer pkgFile.Close()
 
 	// Convert CTPKG to JSON
-	pkgJSON, err := ctpkg.ToJSON()
+	pkgJSON, err := ctpkg.toJSON()
 	if err != nil {
 		return err
 	}

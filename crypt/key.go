@@ -25,7 +25,7 @@ func NewKey() AESKey {
 }
 
 // NewKeyFromString ...
-func NewKeyFromString(hex string) (key *AESKey) {
+func NewKeyFromString(hex string) (key AESKey) {
 	keyData, err := Decode([]byte(hex))
 	if err != nil {
 		panic(err)
@@ -35,7 +35,7 @@ func NewKeyFromString(hex string) (key *AESKey) {
 }
 
 // NewKeyFromBytes ...
-func NewKeyFromBytes(data []byte) (key *AESKey) {
+func NewKeyFromBytes(data []byte) (key AESKey) {
 	copy(key[:], data)
 	return key
 }
