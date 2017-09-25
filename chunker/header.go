@@ -29,7 +29,7 @@ func NewChunkHeader() *ChunkHeader {
 }
 
 // Bytes ...
-func (header *ChunkHeader) Bytes() []byte {
+func (header ChunkHeader) Bytes() []byte {
 	buffer := new(bytes.Buffer)
 
 	buffer.Write(header.NKey.Bytes()) // 32

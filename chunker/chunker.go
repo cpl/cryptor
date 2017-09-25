@@ -17,7 +17,7 @@ type Chunker struct {
 }
 
 // Chunk ...
-func (c *Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
+func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 	// Count chunks
 	count := 0
 

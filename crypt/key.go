@@ -41,16 +41,16 @@ func NewKeyFromBytes(data []byte) (key AESKey) {
 }
 
 // Bytes ...
-func (key *AESKey) Bytes() []byte {
+func (key AESKey) Bytes() []byte {
 	return key[:]
 }
 
 // Encode ...
-func (key *AESKey) Encode() []byte {
+func (key AESKey) Encode() []byte {
 	return Encode(key.Bytes())
 }
 
 // String ...
-func (key *AESKey) String() string {
+func (key AESKey) String() string {
 	return string(key.Encode())
 }

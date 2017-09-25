@@ -99,12 +99,12 @@ func LoadCTPKG(ctpkgHash string) *CTPKG {
 	return ctpkg
 }
 
-func (ctpkg *CTPKG) toJSON() ([]byte, error) {
+func (ctpkg CTPKG) toJSON() ([]byte, error) {
 	return json.MarshalIndent(ctpkg, "", "\t")
 }
 
 // Save ...
-func (ctpkg *CTPKG) Save() error {
+func (ctpkg CTPKG) Save() error {
 	// Create file name
 	pkgFileName := fmt.Sprintf("%s.%s", ctpkg.Hash, jsonExtension)
 
