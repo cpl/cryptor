@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 
 	"github.com/thee-engineer/cryptor/archive"
+	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
@@ -71,12 +73,36 @@ func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) *CTPKG {
 }
 
 // LoadCTPKG ...
-func LoadCTPKG(ctpkgFile string) (ctpkg *CTPKG) {
+func LoadCTPKG(ctpkgHash string) (ctpkg *CTPKG) {
+	// Obtain packs path
+	packsPath := cache.GetPacksPath()
+	packName := fmt.Sprintf("%s.%s", ctpkgHash, jsonExtension)
+	packPath := path.Join(packsPath, packName)
+
+	// Check that pack exist
+	_, err := os.Stat(packPath)
+	if err != nil {
+		panic(err)
+	}
+
+	// Obtain pack contents
+	data, err := ioutil.ReadFile(packPath)
+	if err != nil {
+		panic(err)
+	}
+
+	// Convert JSON to CTPKG
+	if err = json.Unmarshal(data, ctpkg); err != nil {
+		panic(err)
+	}
+
 	return ctpkg
 }
 
 // Assemble ...
-func (ctpkg *CTPKG) Assemble(pKey crypt.AESKey) error {
+func (ctpkg *CTPKG) Assemble() error {
+	tKey := crypt.NewKeyFromString(ctpkg.TKey)
+	assembler.Assemble(ctpkg.Tail, tKey)
 	return nil
 }
 

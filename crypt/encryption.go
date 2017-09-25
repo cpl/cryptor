@@ -33,7 +33,7 @@ func Encrypt(key AESKey, msg []byte) ([]byte, error) {
 }
 
 // Decrypt ...
-func Decrypt(key AESKey, msg []byte) ([]byte, error) {
+func Decrypt(key *AESKey, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
