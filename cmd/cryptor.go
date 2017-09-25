@@ -5,10 +5,10 @@ import (
 	"os"
 	"path"
 
+	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/crypt"
 
 	"github.com/thee-engineer/cryptor/ctpkg"
-	"github.com/thee-engineer/cryptor/utility"
 )
 
 // HelpMsg ...
@@ -22,8 +22,8 @@ func main() {
 	}
 
 	// Check that cryptor packs and chunk cache dir exist
-	utility.CheckPath(utility.CryptorCachePath)
-	utility.CheckPath(utility.CryptorPacksPath)
+	cache.CheckPath(cache.CryptorCachePath)
+	cache.CheckPath(cache.CryptorPacksPath)
 
 	// Check that enough args were given
 	if len(os.Args) < 3 {

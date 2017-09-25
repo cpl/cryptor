@@ -8,25 +8,25 @@ import (
 	"path"
 
 	"github.com/thee-engineer/cryptor/archive"
+	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
-	"github.com/thee-engineer/cryptor/utility"
 )
 
 const jsonExtension = "json"
 
 // CTPKG ...
 type CTPKG struct {
-	Name      string
-	Hash      string
-	Tail      string
-	Size      int
-	ChunkSize uint32
-	PKey      string
+	Name      string `json:"name"`
+	Hash      string `json:"hash"`
+	Tail      string `json:"tail"`
+	Size      int    `json:"size"`
+	ChunkSize uint32 `json:"chunk_size"`
+	TKey      string `json:"tail_key"`
 }
 
 // NewCTPKG ...
-func NewCTPKG(s, name string, chunkSize uint32, pKey crypt.AESKey) *CTPKG {
+func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) *CTPKG {
 	contentBuffer := new(bytes.Buffer)
 
 	// Create tar.gz of file/dir
@@ -41,19 +41,18 @@ func NewCTPKG(s, name string, chunkSize uint32, pKey crypt.AESKey) *CTPKG {
 	contentLen := contentBuffer.Len()
 
 	// Generate a random primary key for the package
-	if pKey == crypt.NullKey {
-		pKey = crypt.NewKey()
+	if tKey == crypt.NullKey {
+		tKey = crypt.NewKey()
 	}
 
 	// Create a chunker
 	chunker := &chunker.Chunker{
 		Size:   chunkSize,
-		PKey:   pKey,
 		Reader: contentBuffer,
 	}
 
 	// Start chunking the tar.gz
-	tailHash, err := chunker.Chunk()
+	tailHash, err := chunker.Chunk(tKey)
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +62,7 @@ func NewCTPKG(s, name string, chunkSize uint32, pKey crypt.AESKey) *CTPKG {
 		Name:      name,
 		Hash:      string(crypt.Encode(contentHash.Sum(nil))),
 		Tail:      string(crypt.Encode(tailHash)),
-		PKey:      pKey.String(),
+		TKey:      tKey.String(),
 		Size:      contentLen,
 		ChunkSize: chunker.Size,
 	}
@@ -92,7 +91,7 @@ func (ctpkg *CTPKG) Save() error {
 	pkgFileName := fmt.Sprintf("%s.%s", ctpkg.Hash, jsonExtension)
 
 	// Create file for CTPKG
-	pkgFile, err := os.Create(path.Join(utility.GetPacksPath(), pkgFileName))
+	pkgFile, err := os.Create(path.Join(cache.GetPacksPath(), pkgFileName))
 	if err != nil {
 		return err
 	}

@@ -6,19 +6,18 @@ import (
 	"os"
 	"path"
 
+	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/crypt"
-	"github.com/thee-engineer/cryptor/utility"
 )
 
 // Chunker ...
 type Chunker struct {
 	Size   uint32
-	PKey   crypt.AESKey
 	Reader io.Reader
 }
 
 // Chunk ...
-func (c *Chunker) Chunk() (pHash []byte, err error) {
+func (c *Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 	// Count chunks
 	count := 0
 
@@ -70,7 +69,12 @@ func (c *Chunker) Chunk() (pHash []byte, err error) {
 		chunkData.Write(chunkContent)
 
 		// Generatea a new encryption key for each chunk
-		pKey = crypt.NewKey()
+		if read < int(c.Size) {
+			// Use tail key for the last chunk
+			pKey = tKey
+		} else {
+			pKey = crypt.NewKey()
+		}
 
 		// Encrypt chunk
 		eData, err := crypt.Encrypt(pKey, chunkData.Bytes())
@@ -83,7 +87,7 @@ func (c *Chunker) Chunk() (pHash []byte, err error) {
 
 		// Create chunk file
 		chunkFile, err := os.Create(
-			path.Join(utility.GetCachePath(), string(crypt.Encode(eHash))))
+			path.Join(cache.GetCachePath(), string(crypt.Encode(eHash))))
 		if err != nil {
 			return nil, err
 		}
