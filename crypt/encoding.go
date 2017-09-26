@@ -25,3 +25,8 @@ func Decode(msg []byte) ([]byte, error) {
 func DecodeString(msg string) ([]byte, error) {
 	return Decode([]byte(msg))
 }
+
+// EncodeString ...
+func EncodeString(msg []byte) string {
+	return string(Encode(msg))
+}

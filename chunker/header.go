@@ -8,7 +8,7 @@ import (
 )
 
 // HeaderSize ...
-const HeaderSize = 128
+const HeaderSize = 100
 
 // ChunkHeader ...
 type ChunkHeader struct {
@@ -39,7 +39,7 @@ func (header ChunkHeader) Bytes() []byte {
 	// Convert uint32 to byte array
 	uintConv := make([]byte, 4)
 	binary.LittleEndian.PutUint32(uintConv, header.Padd)
-	buffer.Write(uintConv) // 32
+	buffer.Write(uintConv) // 4
 
 	return buffer.Bytes()
 }

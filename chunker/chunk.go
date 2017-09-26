@@ -1,10 +1,13 @@
 package chunker
 
-import "bytes"
-import "github.com/thee-engineer/cryptor/crypt"
+import (
+	"bytes"
+
+	"github.com/thee-engineer/cryptor/crypt"
+)
 
 // NullByteArray ...
-var NullByteArray []byte
+var NullByteArray [32]byte
 
 // Chunk ...
 type Chunk struct {
@@ -37,5 +40,5 @@ func (c Chunk) IsValid() bool {
 
 // IsLast ...
 func (c Chunk) IsLast() bool {
-	return bytes.Compare(c.Header.Next, NullByteArray) == 0
+	return bytes.Compare(c.Header.Next, NullByteArray[:]) == 0
 }
