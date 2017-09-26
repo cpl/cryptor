@@ -20,3 +20,8 @@ func Decode(msg []byte) ([]byte, error) {
 	}
 	return out[:read], nil
 }
+
+// DecodeString ...
+func DecodeString(msg string) ([]byte, error) {
+	return Decode([]byte(msg))
+}
