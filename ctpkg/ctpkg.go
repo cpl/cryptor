@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/thee-engineer/cryptor/assembler"
+
 	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/chunker"
@@ -128,4 +130,9 @@ func (ctpkg CTPKG) Save() error {
 	}
 
 	return nil
+}
+
+// Assemble ...
+func (ctpkg *CTPKG) Assemble() {
+	assembler.Assemble(ctpkg.Tail, ctpkg.TKey)
 }

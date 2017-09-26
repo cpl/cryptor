@@ -12,6 +12,9 @@ const CryptorPacksPath = ".cryptor/packs"
 // CryptorCachePath ...
 const CryptorCachePath = ".cryptor/chunks"
 
+// CryptorAssemblyPath ...
+const CryptorAssemblyPath = ".cryptor/assembly"
+
 // CheckPath ...
 func CheckPath(dirPath string) {
 	fullPath := path.Join(getUserHomePath(), dirPath)
@@ -32,6 +35,11 @@ func GetPacksPath() string {
 // GetCachePath ...
 func GetCachePath() string {
 	return path.Join(getUserHomePath(), CryptorCachePath)
+}
+
+// GetAssemblyPath ...
+func GetAssemblyPath() string {
+	return path.Join(getUserHomePath(), CryptorAssemblyPath)
 }
 
 func getUserHomePath() string {
