@@ -26,6 +26,12 @@ func NewKey() AESKey {
 
 // NewKeyFromString ...
 func NewKeyFromString(hex string) (key AESKey) {
+	// If empty string is given as key, return null key
+	if hex == "" || hex == " " {
+		return NullKey
+	}
+
+	// Decode hex string and convert to bytes
 	keyData, err := Decode([]byte(hex))
 	if err != nil {
 		panic(err)

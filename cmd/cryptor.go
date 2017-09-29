@@ -21,6 +21,8 @@ func main() {
 	size := flag.Int("size", 1048576, "Chunk size in bytes")
 	file := flag.String("file", ".", "Source file/dir to chunk")
 
+	flag.Parse()
+
 	// Check that cryptor packs and chunk cache dir exist
 	cache.CheckPath(cache.CryptorCachePath)
 	cache.CheckPath(cache.CryptorPacksPath)

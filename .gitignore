@@ -17,3 +17,5 @@
 launch.json
 .vscode/
 **/.DS_Store
+build/
+dist/

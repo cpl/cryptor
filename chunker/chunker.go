@@ -1,7 +1,6 @@
 package chunker
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -54,7 +53,6 @@ func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 
 		// Compute content hash for future checks
 		chunk.Header.Hash = crypt.SHA256Data(chunk.Content[:read]).Sum(nil)
-		fmt.Println(crypt.EncodeString(chunk.Header.Hash))
 
 		// Store previous encryption key inside this chunk's header
 		chunk.Header.NKey = pKey

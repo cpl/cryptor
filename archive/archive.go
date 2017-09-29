@@ -69,8 +69,16 @@ func tarDir(source string, tarWriter *tar.Writer) error {
 				return nil
 			}
 
+			// Check for symlinks and handle it
+			var link string
+			if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
+				if link, err = os.Readlink(source); err != nil {
+					return nil
+				}
+			}
+
 			// Create tar header
-			header, err := tar.FileInfoHeader(fileInfo, fileInfo.Name())
+			header, err := tar.FileInfoHeader(fileInfo, link)
 			if err != nil {
 				return err
 			}
