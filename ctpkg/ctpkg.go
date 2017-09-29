@@ -8,9 +8,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/thee-engineer/cryptor/assembler"
-
 	"github.com/thee-engineer/cryptor/archive"
+	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
@@ -29,7 +28,7 @@ type CTPKG struct {
 }
 
 // NewCTPKG ...
-func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) (*CTPKG, error) {
+func NewCTPKG(s, name string, size uint32, tKey crypt.AESKey) (*CTPKG, error) {
 	contentBuffer := new(bytes.Buffer)
 
 	// Create tar.gz of file/dir
@@ -50,7 +49,7 @@ func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) (*CTPKG, erro
 
 	// Create a chunker
 	chunker := &chunker.Chunker{
-		Size:   chunkSize,
+		Size:   size,
 		Reader: contentBuffer,
 	}
 

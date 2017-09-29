@@ -8,54 +8,12 @@ import (
 	"strings"
 )
 
-// TarArchive ...
 func tarArchive(source string, out io.Writer) error {
-	// Get file/dir status
-	stat, err := os.Stat(source)
-	if err != nil {
-		return err
-	}
 
 	// Prepare tar writer
 	tarWriter := tar.NewWriter(out)
 	defer tarWriter.Close()
 
-	// Check if source is file or dir
-	if stat.IsDir() {
-		return tarDir(source, tarWriter)
-	}
-
-	return tarFile(stat, tarWriter)
-}
-
-func tarFile(fileInfo os.FileInfo, tarWriter *tar.Writer) error {
-	// Create tar header
-	header, err := tar.FileInfoHeader(fileInfo, fileInfo.Name())
-	if err != nil {
-		return err
-	}
-
-	// Write file header to tar
-	if err := tarWriter.WriteHeader(header); err != nil {
-		return err
-	}
-
-	// Open file for reading
-	f, err := os.Open(fileInfo.Name())
-	defer f.Close()
-	if err != nil {
-		return err
-	}
-
-	// Copy file content to tar writer
-	if _, err := io.Copy(tarWriter, f); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func tarDir(source string, tarWriter *tar.Writer) error {
 	// Walk source tree
 	return filepath.Walk(source,
 		func(file string, fileInfo os.FileInfo, err error) error {
@@ -65,9 +23,9 @@ func tarDir(source string, tarWriter *tar.Writer) error {
 			}
 
 			// Ignore root directory
-			if source == file {
-				return nil
-			}
+			// if source == file {
+			// 	return nil
+			// }
 
 			// Check for symlinks and handle it
 			var link string
