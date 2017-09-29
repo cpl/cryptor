@@ -108,7 +108,7 @@ func (ctpkg CTPKG) toJSON() ([]byte, error) {
 // Save ...
 func (ctpkg CTPKG) Save() error {
 	// Create file name
-	pkgFileName := fmt.Sprintf("%s.%s", ctpkg.Hash, jsonExtension)
+	pkgFileName := fmt.Sprintf("%s.%s", ctpkg.Tail, jsonExtension)
 
 	// Create file for CTPKG
 	pkgFile, err := os.Create(path.Join(cache.GetPacksPath(), pkgFileName))

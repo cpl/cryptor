@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/thee-engineer/cryptor/archive"
-
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
@@ -46,5 +45,4 @@ func Assemble(tail, key string) {
 	fmt.Println(crypt.EncodeString(crypt.SHA256Data(aBuffer.Bytes()).Sum(nil)))
 
 	archive.UnTarGz("untar", &aBuffer)
-
 }

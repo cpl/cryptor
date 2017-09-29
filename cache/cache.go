@@ -10,19 +10,14 @@ import (
 func ListChunks() {
 	CheckPath(CryptorCachePath)
 	path := GetCachePath()
-	dirs, err := ioutil.ReadDir(path)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("CHUNKs")
-
-	if len(dirs) == 0 {
-		fmt.Println("None")
-	}
-
-	for index, dir := range dirs {
-		fmt.Printf("%08d | %s\n", index, dir.Name())
+	fmt.Printf("%64s | %s \n", "HASH", "SIZE")
+	for _, file := range files {
+		fmt.Printf("%64s | %d \n", file.Name(), file.Size())
 	}
 	fmt.Println()
 }
@@ -31,19 +26,14 @@ func ListChunks() {
 func ListPacks() {
 	CheckPath(CryptorPacksPath)
 	path := GetPacksPath()
-	dirs, err := ioutil.ReadDir(path)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("CTPKGs")
-
-	if len(dirs) == 0 {
-		fmt.Println("None")
-	}
-
-	for index, dir := range dirs {
-		fmt.Printf("%04d | %s\n", index, dir.Name())
+	fmt.Printf("%64s\n", "HASH")
+	for _, file := range files {
+		fmt.Printf("%64s\n", file.Name())
 	}
 	fmt.Println()
 }
