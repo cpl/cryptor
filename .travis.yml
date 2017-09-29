@@ -9,7 +9,7 @@ before_install:
   - go get -v ./...
 
 script:
-  - compile-coverage
+  - ./compile-coverage
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
