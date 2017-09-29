@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -29,6 +30,7 @@ func Encrypt(key AESKey, msg []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	fmt.Println(EncodeString(nonce))
 	return gcm.Seal(nonce, nonce, msg, nil), nil
 }
 

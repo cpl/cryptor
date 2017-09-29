@@ -1,42 +1,42 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"os"
 	"path"
 
-	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/crypt"
 
+	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/ctpkg"
 )
 
 // HelpMsg ...
-const HelpMsg = `Usage: cryptor <file/dir> <name>`
+const HelpMsg = `Usage: cryptor`
 
 func main() {
+
+	sKey := flag.String("key", "", "AES256 Key with hex encoding")
+	name := flag.String("name", "", "Optional package name")
+	size := flag.Int("size", 1048576, "Chunk size in bytes")
+	file := flag.String("file", ".", "Source file/dir to chunk")
+
+	// Check that cryptor packs and chunk cache dir exist
+	cache.CheckPath(cache.CryptorCachePath)
+	cache.CheckPath(cache.CryptorPacksPath)
+
 	// Get current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 
-	// Check that cryptor packs and chunk cache dir exist
-	cache.CheckPath(cache.CryptorCachePath)
-	cache.CheckPath(cache.CryptorPacksPath)
-
-	// Check that enough args were given
-	if len(os.Args) < 3 {
-		fmt.Println(HelpMsg)
-		return
-	}
-
 	// Create Package info
 	pkg := ctpkg.NewCTPKG(
-		path.Join(cwd, os.Args[1]), // Source
-		os.Args[2],                 // Name
-		1024,                       // Chunk Size
-		crypt.NullKey)              // PKey
+		path.Join(cwd, *file), // Source
+		*name,                         // Name
+		uint32(*size),                 // Chunk Size
+		crypt.NewKeyFromString(*sKey)) // PKey
 
 	// Store package
 	err = pkg.Save()
