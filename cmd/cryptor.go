@@ -2,17 +2,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path"
 
-	"github.com/thee-engineer/cryptor/crypt"
-
 	"github.com/thee-engineer/cryptor/cache"
+	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/ctpkg"
 )
-
-// HelpMsg ...
-const HelpMsg = `Usage: cryptor`
 
 func main() {
 
@@ -20,6 +17,7 @@ func main() {
 	name := flag.String("name", "", "Optional package name")
 	size := flag.Int("size", 1048576, "Chunk size in bytes")
 	file := flag.String("file", ".", "Source file/dir to chunk")
+	save := flag.Bool("save", false, "If true, a package json file will be created")
 
 	flag.Parse()
 
@@ -34,15 +32,22 @@ func main() {
 	}
 
 	// Create Package info
-	pkg := ctpkg.NewCTPKG(
+	pkg, err := ctpkg.NewCTPKG(
 		path.Join(cwd, *file), // Source
 		*name,                         // Name
 		uint32(*size),                 // Chunk Size
 		crypt.NewKeyFromString(*sKey)) // PKey
-
-	// Store package
-	err = pkg.Save()
 	if err != nil {
 		panic(err)
 	}
+
+	// Store package
+	if *save {
+		err = pkg.Save()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	fmt.Printf("tail: %s\ntkey: %s\n", pkg.Tail, pkg.TKey)
 }

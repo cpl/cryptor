@@ -29,12 +29,12 @@ type CTPKG struct {
 }
 
 // NewCTPKG ...
-func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) *CTPKG {
+func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) (*CTPKG, error) {
 	contentBuffer := new(bytes.Buffer)
 
 	// Create tar.gz of file/dir
 	if err := archive.TarGz(s, contentBuffer); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Hash tar.gz for integrity check
@@ -57,7 +57,7 @@ func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) *CTPKG {
 	// Start chunking the tar.gz
 	tailHash, err := chunker.Chunk(tKey)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Create package info
@@ -70,11 +70,11 @@ func NewCTPKG(s, name string, chunkSize uint32, tKey crypt.AESKey) *CTPKG {
 		ChunkSize: chunker.Size,
 	}
 
-	return ctpkg
+	return ctpkg, nil
 }
 
 // LoadCTPKG ...
-func LoadCTPKG(ctpkgHash string) *CTPKG {
+func LoadCTPKG(ctpkgHash string) (*CTPKG, error) {
 	// Obtain packs path
 	packsPath := cache.GetPacksPath()
 	packName := fmt.Sprintf("%s.%s", ctpkgHash, jsonExtension)
@@ -83,22 +83,22 @@ func LoadCTPKG(ctpkgHash string) *CTPKG {
 	// Check that pack exist
 	_, err := os.Stat(packPath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Obtain pack contents
 	data, err := ioutil.ReadFile(packPath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Convert JSON to CTPKG
 	ctpkg := &CTPKG{}
 	if err = json.Unmarshal(data, ctpkg); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return ctpkg
+	return ctpkg, nil
 }
 
 func (ctpkg CTPKG) toJSON() ([]byte, error) {
