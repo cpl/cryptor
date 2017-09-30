@@ -38,6 +38,11 @@ func TestCryptoErrors(t *testing.T) {
 		t.Error(err)
 	}
 
+	_, err = Decrypt(key, RandomData(10))
+	if err.Error() != "Invalid nonce" {
+		t.Error(err)
+	}
+
 	mMsg := append(RandomData(12), eMsg[12:]...)
 	_, err = Decrypt(NullKey, mMsg)
 	if err.Error() != "cipher: message authentication failed" {

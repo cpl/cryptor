@@ -6,18 +6,21 @@ import (
 	"path"
 )
 
-// CryptorPacksPath ...
-const CryptorPacksPath = ".cryptor/packs"
+// CryptorPath ...
+const CryptorPath = ".cryptor"
 
-// CryptorCachePath ...
-const CryptorCachePath = ".cryptor/chunks"
+// PacksDir ...
+const PacksDir = "packs"
 
-// CryptorAssemblyPath ...
-const CryptorAssemblyPath = ".cryptor/assembly"
+// CacheDir ...
+const CacheDir = "chunks"
+
+// AssemblyDir ...
+const AssemblyDir = "assembly"
 
 // CheckPath ...
 func CheckPath(dirPath string) {
-	fullPath := path.Join(getUserHomePath(), dirPath)
+	fullPath := path.Join(getUserHomePath(), CryptorPath, dirPath)
 
 	_, err := os.Stat(fullPath)
 	if err != nil {
@@ -29,17 +32,17 @@ func CheckPath(dirPath string) {
 
 // GetPacksPath ...
 func GetPacksPath() string {
-	return path.Join(getUserHomePath(), CryptorPacksPath)
+	return path.Join(getUserHomePath(), CryptorPath, PacksDir)
 }
 
 // GetCachePath ...
 func GetCachePath() string {
-	return path.Join(getUserHomePath(), CryptorCachePath)
+	return path.Join(getUserHomePath(), CryptorPath, CacheDir)
 }
 
 // GetAssemblyPath ...
 func GetAssemblyPath() string {
-	return path.Join(getUserHomePath(), CryptorAssemblyPath)
+	return path.Join(getUserHomePath(), CryptorPath, AssemblyDir)
 }
 
 func getUserHomePath() string {

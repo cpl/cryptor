@@ -12,6 +12,7 @@ import (
 // Chunker ...
 type Chunker struct {
 	Size   uint32
+	Cache  string
 	Reader io.Reader
 }
 
@@ -19,6 +20,9 @@ type Chunker struct {
 func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 	// Count chunks
 	var count int
+
+	// Check for chunk cache directory
+	cache.CheckPath(cache.CacheDir)
 
 	// Make a chunk structure
 	chunk := NewChunk(c.Size)
@@ -79,7 +83,7 @@ func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 
 		// Create chunk file
 		chunkFile, err := os.Create(
-			path.Join(cache.GetCachePath(), string(crypt.Encode(eHash))))
+			path.Join(c.Cache, string(crypt.Encode(eHash))))
 		if err != nil {
 			return nil, err
 		}

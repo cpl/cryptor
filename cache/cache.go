@@ -8,7 +8,7 @@ import (
 
 // ListChunks ...
 func ListChunks() {
-	CheckPath(CryptorCachePath)
+	CheckPath(CacheDir)
 	path := GetCachePath()
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -24,7 +24,7 @@ func ListChunks() {
 
 // ListPacks ...
 func ListPacks() {
-	CheckPath(CryptorPacksPath)
+	CheckPath(PacksDir)
 	path := GetPacksPath()
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -41,11 +41,11 @@ func ListPacks() {
 // ClearCache ...
 func ClearCache() {
 	os.RemoveAll(GetCachePath())
-	CheckPath(CryptorCachePath)
+	CheckPath(CacheDir)
 }
 
 // ClearPacks ...
 func ClearPacks() {
 	os.RemoveAll(GetPacksPath())
-	CheckPath(CryptorPacksPath)
+	CheckPath(PacksDir)
 }
