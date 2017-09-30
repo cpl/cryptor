@@ -74,11 +74,15 @@ func NewCTPKG(s, n, o string, size uint32, tKey crypt.AESKey) (*CTPKG, error) {
 }
 
 // LoadCTPKG ...
-func LoadCTPKG(ctpkgHash string) (*CTPKG, error) {
+func LoadCTPKG(ctpkgHash, source string) (*CTPKG, error) {
+	// Default source directory
+	if source == "" {
+		source = cache.GetPacksPath()
+	}
+
 	// Obtain packs path
-	packsPath := cache.GetPacksPath()
 	packName := fmt.Sprintf("%s.%s", ctpkgHash, jsonExtension)
-	packPath := path.Join(packsPath, packName)
+	packPath := path.Join(source, packName)
 
 	// Check that pack exist
 	_, err := os.Stat(packPath)
@@ -106,12 +110,17 @@ func (ctpkg CTPKG) toJSON() ([]byte, error) {
 }
 
 // Save ...
-func (ctpkg CTPKG) Save() error {
+func (ctpkg CTPKG) Save(destination string) error {
 	// Create file name
 	pkgFileName := fmt.Sprintf("%s.%s", ctpkg.Tail, jsonExtension)
 
+	// Resort to default location
+	if destination == "" {
+		destination = cache.GetPacksPath()
+	}
+
 	// Create file for CTPKG
-	pkgFile, err := os.Create(path.Join(cache.GetPacksPath(), pkgFileName))
+	pkgFile, err := os.Create(path.Join(destination, pkgFileName))
 	if err != nil {
 		return err
 	}
