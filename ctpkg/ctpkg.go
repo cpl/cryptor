@@ -9,7 +9,6 @@ import (
 	"path"
 
 	"github.com/thee-engineer/cryptor/archive"
-	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
@@ -139,9 +138,4 @@ func (ctpkg CTPKG) Save(destination string) error {
 	}
 
 	return nil
-}
-
-// Assemble ...
-func (ctpkg *CTPKG) Assemble() {
-	assembler.Assemble(ctpkg.Tail, ctpkg.TKey)
 }
