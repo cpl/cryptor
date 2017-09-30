@@ -19,16 +19,16 @@ const jsonExtension = "json"
 
 // CTPKG ...
 type CTPKG struct {
-	Name      string `json:"name"`
-	Hash      string `json:"hash"`
-	Tail      string `json:"tail"`
-	Size      int    `json:"size"`
-	ChunkSize uint32 `json:"chunk_size"`
-	TKey      string `json:"tail_key"`
+	Name      string `json:"name"`       // Name of the package
+	Hash      string `json:"hash"`       // Hash of initial data
+	Tail      string `json:"tail"`       // Tail chunk hash
+	Size      int    `json:"size"`       // Size in bytes of initial data
+	ChunkSize uint32 `json:"chunk_size"` // Chunk content size
+	TKey      string `json:"tail_key"`   // Tail chunk key
 }
 
 // NewCTPKG ...
-func NewCTPKG(s, name string, size uint32, tKey crypt.AESKey) (*CTPKG, error) {
+func NewCTPKG(s, n, o string, size uint32, tKey crypt.AESKey) (*CTPKG, error) {
 	contentBuffer := new(bytes.Buffer)
 
 	// Create tar.gz of file/dir
@@ -50,6 +50,7 @@ func NewCTPKG(s, name string, size uint32, tKey crypt.AESKey) (*CTPKG, error) {
 	// Create a chunker
 	chunker := &chunker.Chunker{
 		Size:   size,
+		Cache:  o,
 		Reader: contentBuffer,
 	}
 
@@ -61,7 +62,7 @@ func NewCTPKG(s, name string, size uint32, tKey crypt.AESKey) (*CTPKG, error) {
 
 	// Create package info
 	ctpkg := &CTPKG{
-		Name:      name,
+		Name:      n,
 		Hash:      string(crypt.Encode(contentHash.Sum(nil))),
 		Tail:      string(crypt.Encode(tailHash)),
 		TKey:      tKey.String(),
