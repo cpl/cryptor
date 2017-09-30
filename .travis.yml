@@ -10,7 +10,9 @@ before_install:
 
 script:
   - ./compile-coverage
-  - cp build/report.out coverage.txt
+  - ls
+  - ls ./build/
+  - cp ./build/report.out coverage.txt
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
