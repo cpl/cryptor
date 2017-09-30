@@ -8,7 +8,6 @@ import (
 	"path"
 
 	"github.com/thee-engineer/cryptor/cache"
-
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 )
@@ -19,9 +18,14 @@ type EChunk struct {
 }
 
 // GetEChunk ...
-func GetEChunk(hash string) *EChunk {
+func GetEChunk(hash, source string) *EChunk {
+	// Default source
+	if source == "" {
+		source = cache.GetCachePath()
+	}
+
 	// Get chunk path and check that it exists
-	eChunkPath := path.Join(cache.GetCachePath(), hash)
+	eChunkPath := path.Join(source, hash)
 	if _, err := os.Stat(eChunkPath); os.IsNotExist(err) {
 		panic(err)
 	}
@@ -38,10 +42,10 @@ func GetEChunk(hash string) *EChunk {
 }
 
 // Decrypt ...
-func (eC EChunk) Decrypt(key crypt.AESKey) *chunker.Chunk {
+func (eC EChunk) Decrypt(key crypt.AESKey) (*chunker.Chunk, error) {
 	data, err := crypt.Decrypt(key, eC.Data)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	header := extractHeader(data)
@@ -49,7 +53,7 @@ func (eC EChunk) Decrypt(key crypt.AESKey) *chunker.Chunk {
 	return &chunker.Chunk{
 		Header:  header,
 		Content: data[chunker.HeaderSize : len(data)-int(header.Padd)],
-	}
+	}, nil
 }
 
 func extractHeader(data []byte) *chunker.ChunkHeader {

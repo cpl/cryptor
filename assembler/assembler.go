@@ -2,32 +2,35 @@ package assembler
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
+// Assembler ...
+type Assembler struct {
+	Tail  string
+	Cache string
+}
+
 // Assemble ...
-func Assemble(tail, key string) {
+func (a *Assembler) Assemble(key string) error {
 	var cBuffer bytes.Buffer
 	var aBuffer bytes.Buffer
 
-	eChunk := GetEChunk(tail)
-	chunk := eChunk.Decrypt(crypt.NewKeyFromString(key))
-
-	if !chunk.IsValid() {
-		fmt.Println("Invalid chunk!")
+	eChunk := GetEChunk(a.Tail, a.Cache)
+	chunk, err := eChunk.Decrypt(crypt.NewKeyFromString(key))
+	if err != nil {
+		return err
 	}
 
 	cBuffer.Write(chunk.Content)
 
 	for !chunk.IsLast() {
-		eChunk = GetEChunk(crypt.EncodeString(chunk.Header.Next))
-		chunk = eChunk.Decrypt(chunk.Header.NKey)
-
-		if !chunk.IsValid() {
-			fmt.Println("Invalid chunk!")
+		eChunk = GetEChunk(crypt.EncodeString(chunk.Header.Next), a.Cache)
+		chunk, err = eChunk.Decrypt(chunk.Header.NKey)
+		if err != nil {
+			return err
 		}
 
 		cBuffer.Write(chunk.Content)
@@ -42,7 +45,7 @@ func Assemble(tail, key string) {
 	}
 
 	aBuffer.Write(bufferData[0 : bufferLen%chunkSize])
-	fmt.Println(crypt.EncodeString(crypt.SHA256Data(aBuffer.Bytes()).Sum(nil)))
-
 	archive.UnTarGz("untar", &aBuffer)
+
+	return nil
 }

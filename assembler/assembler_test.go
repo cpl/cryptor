@@ -1,0 +1,51 @@
+package assembler
+
+import (
+	"bytes"
+	"io/ioutil"
+	"os"
+	"testing"
+
+	"github.com/thee-engineer/cryptor/chunker"
+	"github.com/thee-engineer/cryptor/crypt"
+)
+
+func TestAssembler(t *testing.T) {
+	// Create temporary dir for test
+	tmpDir, err := ioutil.TempDir("/tmp", "assembler")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Generate random data
+	var buffer bytes.Buffer
+	buffer.Write(crypt.RandomData(10740))
+
+	// Create chunker
+	c := &chunker.Chunker{
+		Size:   1024,
+		Cache:  tmpDir,
+		Reader: &buffer,
+	}
+
+	// Chunk data
+	tail, err := c.Chunk(crypt.NullKey)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Create assembler
+	asm := &Assembler{
+		Tail:  crypt.EncodeString(tail),
+		Cache: tmpDir,
+	}
+
+	// Start assembling package
+	err = asm.Assemble(crypt.EncodeString(crypt.NullKey.Bytes()))
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Remove test files
+	os.RemoveAll(tmpDir)
+}
