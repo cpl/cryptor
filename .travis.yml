@@ -9,7 +9,7 @@ before_install:
   - go get -v ./...
 
 script:
-  - ./compile-coverage
+  - make cover
   - cp build/report.out coverage.txt
 
 after_success:
