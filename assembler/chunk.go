@@ -3,11 +3,8 @@ package assembler
 import (
 	"encoding/binary"
 	"errors"
-	"io/ioutil"
-	"os"
-	"path"
 
-	"github.com/thee-engineer/cryptor/cache"
+	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 )
@@ -18,20 +15,10 @@ type EChunk struct {
 }
 
 // GetEChunk ...
-func GetEChunk(hash, source string) *EChunk {
-	// Default source
-	if source == "" {
-		source = cache.GetCachePath()
-	}
+func GetEChunk(hash []byte, cache cachedb.Database) *EChunk {
 
-	// Get chunk path and check that it exists
-	eChunkPath := path.Join(source, hash)
-	if _, err := os.Stat(eChunkPath); os.IsNotExist(err) {
-		panic(err)
-	}
-
-	// Get chunk content
-	data, err := ioutil.ReadFile(eChunkPath)
+	// Get data from cache
+	data, err := cache.Get(hash)
 	if err != nil {
 		panic(err)
 	}

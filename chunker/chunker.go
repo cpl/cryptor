@@ -2,34 +2,28 @@ package chunker
 
 import (
 	"io"
-	"os"
-	"path"
 
-	"github.com/thee-engineer/cryptor/cache"
+	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
 // Chunker ...
 type Chunker struct {
 	Size   uint32
-	Cache  string
+	Cache  cachedb.Database
 	Reader io.Reader
 }
 
 // Chunk ...
 func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
-	// Count chunks
-	var count int
-
-	// Check for chunk cache directory
-	cache.CheckPath(cache.CacheDir)
-
 	// Make a chunk structure
 	chunk := NewChunk(c.Size)
 
 	// Prepare previous hash and key
 	pKey := crypt.NullKey
 	pHash = make([]byte, 32)
+
+	batch := c.Cache.NewBatch()
 
 	for {
 		// Read archive content into chunks
@@ -81,25 +75,17 @@ func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 		// Hash encrypted content
 		eHash := crypt.SHA256Data(eData).Sum(nil)
 
-		// Create chunk file
-		chunkFile, err := os.Create(
-			path.Join(c.Cache, string(crypt.Encode(eHash))))
-		if err != nil {
-			return nil, err
-		}
-		defer chunkFile.Close()
-
-		// Write encrypted data to chunk file
-		_, err = chunkFile.Write(eData)
-		if err != nil {
+		if err := batch.Put(eHash, eData); err != nil {
 			return nil, err
 		}
 
 		// Update previous hash
 		pHash = eHash
+	}
 
-		// Count chunks
-		count++
+	// Write chunks
+	if err := batch.Write(); err != nil {
+		return nil, err
 	}
 
 	return pHash, nil

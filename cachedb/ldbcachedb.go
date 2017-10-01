@@ -6,8 +6,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/opt"
 )
 
-// CacheDB ...
-type CacheDB struct {
+// LDBCache ...
+type LDBCache struct {
 	file string
 	db   *leveldb.DB
 }
@@ -17,8 +17,8 @@ const (
 	minHandles = 16
 )
 
-// NewCacheDB ...
-func NewCacheDB(file string, cache, handles int) (Database, error) {
+// NewLDBCache ...
+func NewLDBCache(file string, cache, handles int) (Database, error) {
 	// Check for minimum caches and handles
 	if cache < minCache {
 		cache = minCache
@@ -38,43 +38,43 @@ func NewCacheDB(file string, cache, handles int) (Database, error) {
 		return nil, err
 	}
 
-	return &CacheDB{
+	return &LDBCache{
 		file: file,
 		db:   db,
 	}, nil
 }
 
 // Close ...
-func (cdb *CacheDB) Close() error {
+func (cdb *LDBCache) Close() error {
 	return cdb.db.Close()
 }
 
 // Path ...
-func (cdb *CacheDB) Path() string {
+func (cdb *LDBCache) Path() string {
 	return cdb.file
 }
 
 // DB ...
-func (cdb *CacheDB) DB() *leveldb.DB {
+func (cdb *LDBCache) DB() *leveldb.DB {
 	return cdb.db
 }
 
 // Put ...
-func (cdb *CacheDB) Put(key, value []byte) error {
+func (cdb *LDBCache) Put(key, value []byte) error {
 	return cdb.db.Put(key, value, nil)
 }
 
 // Get ...
-func (cdb *CacheDB) Get(key []byte) ([]byte, error) {
+func (cdb *LDBCache) Get(key []byte) ([]byte, error) {
 	return cdb.db.Get(key, nil)
 }
 
 // Has ...
-func (cdb *CacheDB) Has(key []byte) (bool, error) {
+func (cdb *LDBCache) Has(key []byte) (bool, error) {
 	return cdb.db.Has(key, nil)
 }
 
 // Del ...
-func (cdb *CacheDB) Del(key []byte) error {
+func (cdb *LDBCache) Del(key []byte) error {
 	return cdb.db.Delete(key, nil)
 }

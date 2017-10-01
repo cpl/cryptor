@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 )
@@ -17,6 +18,12 @@ func TestAssembler(t *testing.T) {
 		t.Error(err)
 	}
 
+	// Create temp cache
+	cache, err := cachedb.NewLDBCache(tmpDir, 0, 0)
+	if err != nil {
+		t.Error(err)
+	}
+
 	// Generate random data
 	var buffer bytes.Buffer
 	buffer.Write(crypt.RandomData(10740))
@@ -24,7 +31,7 @@ func TestAssembler(t *testing.T) {
 	// Create chunker
 	c := &chunker.Chunker{
 		Size:   1024,
-		Cache:  tmpDir,
+		Cache:  cache,
 		Reader: &buffer,
 	}
 
@@ -36,12 +43,12 @@ func TestAssembler(t *testing.T) {
 
 	// Create assembler
 	asm := &Assembler{
-		Tail:  crypt.EncodeString(tail),
-		Cache: tmpDir,
+		Tail:  tail,
+		Cache: cache,
 	}
 
 	// Start assembling package
-	err = asm.Assemble(crypt.EncodeString(crypt.NullKey.Bytes()))
+	err = asm.Assemble(crypt.NullKey)
 	if err != nil {
 		t.Error(err)
 	}

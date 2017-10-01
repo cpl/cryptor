@@ -18,7 +18,7 @@ func createTestEnv() (string, Database, error) {
 
 	// Create test db
 	// Use 0 cache and 0 handlers, should default to min
-	cdb, err := NewCacheDB(tmpDir, 0, 0)
+	cdb, err := NewLDBCache(tmpDir, 0, 0)
 	if err != nil {
 		return "", nil, err
 	}

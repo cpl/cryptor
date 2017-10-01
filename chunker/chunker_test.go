@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
@@ -20,10 +21,16 @@ func TestChunker(t *testing.T) {
 		t.Error(err)
 	}
 
+	// Create cache for test
+	cache, err := cachedb.NewLDBCache(tmpDir, 0, 0)
+	if err != nil {
+		t.Error(err)
+	}
+
 	// Create chunker
 	chunker := &Chunker{
 		Size:   1024,
-		Cache:  tmpDir,
+		Cache:  cache,
 		Reader: &buffer,
 	}
 
@@ -32,20 +39,20 @@ func TestChunker(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Get chunks file info
-	chunks, err := ioutil.ReadDir(tmpDir)
-	if err != nil {
-		panic(err)
-	}
+	// // Get chunks file info
+	// chunks, err := ioutil.ReadDir(tmpDir)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Validate chunk sizes
-	for _, chunk := range chunks {
-		if int(chunk.Size()) != 1152 {
-			t.Errorf("Invalid chunk size, got %d expected %d",
-				chunk.Size(), 1152)
-		}
-	}
+	// // Validate chunk sizes
+	// for _, chunk := range chunks {
+	// 	if int(chunk.Size()) != 1152 {
+	// 		t.Errorf("Invalid chunk size, got %d expected %d",
+	// 			chunk.Size(), 1152)
+	// 	}
+	// }
 
-	// Remove all chunks
+	// Remove all test chunks
 	os.RemoveAll(tmpDir)
 }

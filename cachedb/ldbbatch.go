@@ -4,35 +4,35 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-// CDBBatch ...
-type CDBBatch struct {
+// LDBBatch ...
+type LDBBatch struct {
 	db    *leveldb.DB
 	batch *leveldb.Batch
 	size  int
 }
 
 // NewBatch ...
-func (cdb *CacheDB) NewBatch() Batch {
-	return &CDBBatch{
-		db:    cdb.db,
+func (db *LDBCache) NewBatch() Batch {
+	return &LDBBatch{
+		db:    db.db,
 		batch: new(leveldb.Batch),
 	}
 }
 
 // Put ...
-func (b *CDBBatch) Put(key, value []byte) error {
+func (b *LDBBatch) Put(key, value []byte) error {
 	b.batch.Put(key, value)
 	b.size += len(value)
 	return nil
 }
 
 // Del ...
-func (b *CDBBatch) Del(key []byte) error {
+func (b *LDBBatch) Del(key []byte) error {
 	b.batch.Delete(key)
 	return nil
 }
 
 // Write ...
-func (b *CDBBatch) Write() error {
+func (b *LDBBatch) Write() error {
 	return b.db.Write(b.batch, nil)
 }
