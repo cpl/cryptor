@@ -10,6 +10,8 @@ import (
 )
 
 func TestUnTarEmptyInput(t *testing.T) {
+	t.Parallel()
+
 	var buffer bytes.Buffer
 
 	// Check for empty input, EOF
@@ -21,6 +23,8 @@ func TestUnTarEmptyInput(t *testing.T) {
 }
 
 func TestUnTarWrongInput(t *testing.T) {
+	t.Parallel()
+
 	var buffer bytes.Buffer
 
 	buffer.Write([]byte{10, 20, 30, 40, 50, 60, 70})
@@ -46,6 +50,8 @@ func TestUnTarWrongInput(t *testing.T) {
 }
 
 func TestUnTarNoOutputFile(t *testing.T) {
+	t.Parallel()
+
 	var buffer bytes.Buffer
 
 	os.Remove("data/out/noout.dat")

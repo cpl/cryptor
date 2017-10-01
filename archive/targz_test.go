@@ -9,6 +9,8 @@ import (
 )
 
 func TestTarUnTar(t *testing.T) {
+	t.Parallel()
+
 	// Hash initial file
 	hash, err := crypt.SHA256File("data/tarfile.txt")
 	if err != nil {

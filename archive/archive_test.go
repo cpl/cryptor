@@ -7,6 +7,8 @@ import (
 )
 
 func TestTarFile(t *testing.T) {
+	t.Parallel()
+
 	// Create output file
 	file, err := os.Create("data/out/tarfile.tar.gz")
 	if err != nil {
@@ -26,6 +28,8 @@ func TestTarFile(t *testing.T) {
 }
 
 func TestTarDir(t *testing.T) {
+	t.Parallel()
+
 	// Create output file
 	file, err := os.Create("data/out/tardir.tar.gz")
 	if err != nil {
@@ -45,6 +49,8 @@ func TestTarDir(t *testing.T) {
 }
 
 func TestTarErrors(t *testing.T) {
+	t.Parallel()
+
 	// Create output buffer
 	var buffer bytes.Buffer
 

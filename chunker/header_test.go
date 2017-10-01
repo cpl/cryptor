@@ -4,6 +4,8 @@ import "testing"
 import "github.com/thee-engineer/cryptor/crypt"
 
 func TestChunkHeader(t *testing.T) {
+	t.Parallel()
+
 	header := NewChunkHeader()
 
 	header.Hash = crypt.RandomData(32)

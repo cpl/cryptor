@@ -11,6 +11,8 @@ import (
 )
 
 func TestChunker(t *testing.T) {
+	t.Parallel()
+
 	// Simulate data
 	var buffer bytes.Buffer
 	buffer.Write(crypt.RandomData(7747))

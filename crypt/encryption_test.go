@@ -6,6 +6,8 @@ import (
 )
 
 func TestCrypt(t *testing.T) {
+	t.Parallel()
+
 	key := NewKeyFromString("0873eacc863d4748b237fd4d4c877926aa111092c14e19d9f5730479c7fb92a6")
 	msg := []byte("Hello, World!")
 
@@ -25,6 +27,8 @@ func TestCrypt(t *testing.T) {
 }
 
 func TestCryptoErrors(t *testing.T) {
+	t.Parallel()
+
 	key := NewKeyFromString("0873eacc863d4748b237fd4d4c877926aa111092c14e19d9f5730479c7fb92a6")
 	msg := []byte("Hello, World!")
 

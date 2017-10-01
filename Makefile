@@ -6,7 +6,7 @@ cover:
 	do \
 	if ls $$dir/*.go &> /dev/null; then \
 		cd $$dir; \
-		go test -coverprofile=coverage.out -race; \
+		go test -coverprofile=coverage.out -race -v -parallel 4; \
 		cat coverage.out | tail -n +2 >> ../build/report.out; \
 		rm coverage.out; \
 		cd ..; \

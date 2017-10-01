@@ -12,6 +12,8 @@ import (
 )
 
 func TestEChunk(t *testing.T) {
+	t.Parallel()
+
 	// Create temporary dir for test
 	tmpDir, err := ioutil.TempDir("/tmp", "assembler")
 	if err != nil {

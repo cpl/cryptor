@@ -8,6 +8,8 @@ import (
 )
 
 func TestCompression(t *testing.T) {
+	t.Parallel()
+
 	_, err := Compress(crypt.RandomData(100))
 	if err != nil {
 		t.Error(err)
@@ -20,6 +22,8 @@ func TestCompression(t *testing.T) {
 }
 
 func TestDecompression(t *testing.T) {
+	t.Parallel()
+
 	initialData := crypt.RandomData(100)
 	buffer, err := Compress(initialData)
 	if err != nil {

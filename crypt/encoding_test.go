@@ -6,6 +6,8 @@ import (
 )
 
 func TestEncodeDecode(t *testing.T) {
+	t.Parallel()
+
 	data := RandomData(32)
 	dData, err := Decode(Encode(data))
 	if err != nil {
@@ -18,6 +20,8 @@ func TestEncodeDecode(t *testing.T) {
 }
 
 func TestStringEncodeDecode(t *testing.T) {
+	t.Parallel()
+
 	data := RandomData(32)
 	dData, err := DecodeString(EncodeString(data))
 	if err != nil {
@@ -30,6 +34,8 @@ func TestStringEncodeDecode(t *testing.T) {
 }
 
 func TestDecodeErrors(t *testing.T) {
+	t.Parallel()
+
 	if _, err := Decode([]byte{0, 1, 2, 3, 4}); err != nil {
 		if err.Error() != "encoding/hex: odd length hex string" {
 			t.Error(err)
