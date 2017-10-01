@@ -15,3 +15,13 @@ cover:
 
 view:
 	@go tool cover -html=build/report.out
+
+push:
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		git status; \
+	else \
+		git push; \
+	fi \
+
+update:
+	git pull
