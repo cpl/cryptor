@@ -17,6 +17,7 @@ func TestAssembler(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer os.RemoveAll(tmpDir)
 
 	// Create temp cache
 	cache, err := cachedb.NewLDBCache(tmpDir, 0, 0)
@@ -52,7 +53,4 @@ func TestAssembler(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	// Remove test files
-	os.RemoveAll(tmpDir)
 }

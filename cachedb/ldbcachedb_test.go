@@ -34,6 +34,7 @@ func TestCDBBasic(t *testing.T) {
 		t.Error(err)
 	}
 	defer cdb.Close()
+	defer os.RemoveAll(dbPath)
 
 	// Check db path
 	if cdb.Path() != dbPath {
@@ -76,9 +77,6 @@ func TestCDBBasic(t *testing.T) {
 	if status != false {
 		t.Error("Found deleted key")
 	}
-
-	// Remove test files
-	os.RemoveAll(dbPath)
 }
 
 func TestCDBSameKeyPut(t *testing.T) {
@@ -89,14 +87,13 @@ func TestCDBSameKeyPut(t *testing.T) {
 		t.Error(err)
 	}
 	defer cdb.Close()
+	defer os.RemoveAll(dbPath)
 
 	// Put count entries with the same keys and random data
 	for count := 0; count < 5; count++ {
 		data := crypt.Encode(crypt.RandomData(10))
 		cdb.Put([]byte("key"), data)
 	}
-
-	os.RemoveAll(dbPath)
 }
 
 func TestCDBAdvanced(t *testing.T) {
@@ -107,6 +104,7 @@ func TestCDBAdvanced(t *testing.T) {
 		t.Error(err)
 	}
 	defer cdb.Close()
+	defer os.RemoveAll(dbPath)
 
 	var testData = []string{"", "world", "1409", "\x00cd16\x00", ""}
 
@@ -163,6 +161,4 @@ func TestCDBAdvanced(t *testing.T) {
 			t.Error("Got deleted data")
 		}
 	}
-
-	os.RemoveAll(dbPath)
 }

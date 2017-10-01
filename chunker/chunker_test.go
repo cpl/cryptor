@@ -20,6 +20,7 @@ func TestChunker(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer os.RemoveAll(tmpDir)
 
 	// Create cache for test
 	cache, err := cachedb.NewLDBCache(tmpDir, 0, 0)
@@ -52,7 +53,4 @@ func TestChunker(t *testing.T) {
 	// 			chunk.Size(), 1152)
 	// 	}
 	// }
-
-	// Remove all test chunks
-	os.RemoveAll(tmpDir)
 }

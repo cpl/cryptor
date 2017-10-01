@@ -17,6 +17,7 @@ func TestEChunk(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer os.RemoveAll(tmpDir)
 
 	// Create temp cache
 	cache, err := cachedb.NewLDBCache(tmpDir, 0, 0)
@@ -61,7 +62,4 @@ func TestEChunk(t *testing.T) {
 	if !bytes.Equal(dChunk.Content, data) {
 		t.Error("Data mismatch!")
 	}
-
-	// Remove test files
-	os.RemoveAll(tmpDir)
 }
