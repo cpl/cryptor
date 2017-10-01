@@ -35,10 +35,10 @@ func (c Chunk) Bytes() []byte {
 
 // IsValid ...
 func (c Chunk) IsValid() bool {
-	return bytes.Compare(c.Header.Hash, crypt.SHA256Data(c.Content).Sum(nil)) == 0
+	return bytes.Equal(c.Header.Hash, crypt.SHA256Data(c.Content).Sum(nil))
 }
 
 // IsLast ...
 func (c Chunk) IsLast() bool {
-	return bytes.Compare(c.Header.Next, NullByteArray[:]) == 0
+	return bytes.Equal(c.Header.Next, NullByteArray[:])
 }

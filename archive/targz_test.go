@@ -41,7 +41,7 @@ func TestTarUnTar(t *testing.T) {
 	}
 
 	// Compare the two hashes
-	if bytes.Compare(fHash.Sum(nil), hash.Sum(nil)) != 0 {
+	if !bytes.Equal(fHash.Sum(nil), hash.Sum(nil)) {
 		t.Error("Output hash does not match initial hash!")
 	}
 

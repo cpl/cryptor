@@ -124,7 +124,7 @@ func TestCDBAdvanced(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if bytes.Compare(value, []byte(data)) != 0 {
+		if !bytes.Equal(value, []byte(data)) {
 			t.Error("Got unexpected value")
 		}
 	}

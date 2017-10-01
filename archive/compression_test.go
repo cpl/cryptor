@@ -31,7 +31,7 @@ func TestDecompression(t *testing.T) {
 		t.Error(err)
 	}
 
-	if bytes.Compare(data, initialData) != 0 {
+	if !bytes.Equal(data, initialData) {
 		t.Error("Initial data and uncompressed data do not match!")
 	}
 }

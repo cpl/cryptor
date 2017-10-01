@@ -12,7 +12,7 @@ func TestEncodeDecode(t *testing.T) {
 		t.Error(err)
 	}
 
-	if bytes.Compare(dData, data) != 0 {
+	if !bytes.Equal(dData, data) {
 		t.Error("Initial data does not match encoded->decoded data!")
 	}
 }
@@ -24,7 +24,7 @@ func TestStringEncodeDecode(t *testing.T) {
 		t.Error(err)
 	}
 
-	if bytes.Compare(dData, data) != 0 {
+	if !bytes.Equal(dData, data) {
 		t.Error("Initial data does not match encoded->decoded data!")
 	}
 }

@@ -57,7 +57,7 @@ func TestEChunk(t *testing.T) {
 	}
 
 	// Compare initial data with data after encryption, storage and decryption
-	if bytes.Compare(dChunk.Content, data) != 0 {
+	if !bytes.Equal(dChunk.Content, data) {
 		t.Error("Data mismatch!")
 	}
 

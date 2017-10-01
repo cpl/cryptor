@@ -19,7 +19,7 @@ func TestCrypt(t *testing.T) {
 		t.Error(err)
 	}
 
-	if bytes.Compare(dMsg, msg) != 0 {
+	if !bytes.Equal(dMsg, msg) {
 		t.Error("Initial message does not match encrypted->decrypted msg!")
 	}
 }
