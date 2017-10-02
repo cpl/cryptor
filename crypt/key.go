@@ -2,7 +2,10 @@ package crypt
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"io"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
 // AESKeySize used by AES256
@@ -46,6 +49,13 @@ func NewKeyFromString(hex string) (key AESKey) {
 func NewKeyFromBytes(data []byte) (key AESKey) {
 	copy(key[:], data)
 	return key
+}
+
+// NewKeyFromPassword returns a valid key derived from a password string
+// It uses SHA256 and iterates 100000 times. No salt is used.
+func NewKeyFromPassword(password string) AESKey {
+	return NewKeyFromBytes(
+		pbkdf2.Key([]byte(password), nil, 100000, AESKeySize, sha256.New))
 }
 
 // Bytes returns the key as []byte
