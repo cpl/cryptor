@@ -52,16 +52,16 @@ func TestEChunk(t *testing.T) {
 
 	// Invalid hash
 	if !dChunk.IsValid() {
-		t.Error("Chunk is not valid!")
+		t.Error("chunk: is not valid")
 	}
 
 	// Chunk should be the tail (as it is the only chunk)
 	if !dChunk.IsLast() {
-		t.Error("Chunk is not tail!")
+		t.Error("chunk: is not last")
 	}
 
 	// Compare initial data with data after encryption, storage and decryption
 	if !bytes.Equal(dChunk.Content, data) {
-		t.Error("Data mismatch!")
+		t.Error("data mismatch: initial package data and assembled chunks")
 	}
 }

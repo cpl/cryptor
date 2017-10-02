@@ -14,7 +14,12 @@ type EChunk struct {
 	Data []byte
 }
 
-// GetEChunk ...
+// GetEChunk returns the chunk with matching hash key from the given cache.
+// TODO: Replace GetEChunk with Get call in Database. Move this as a method
+// on Assembler struct.
+// func (a *Assembler) GetChunk(hash) {
+//   a.cache.Get(hash)
+// }
 func GetEChunk(hash []byte, cache cachedb.Database) *EChunk {
 
 	// Get data from cache
@@ -28,15 +33,19 @@ func GetEChunk(hash []byte, cache cachedb.Database) *EChunk {
 	}
 }
 
-// Decrypt ...
+// Decrypt returns the decrypted content of the encrypted chunk as a
+// normal chunk containign a chunk header and content ([]byte).
 func (eC EChunk) Decrypt(key crypt.AESKey) (*chunker.Chunk, error) {
+	// Decrypt encrypted chunk data
 	data, err := crypt.Decrypt(key, eC.Data)
 	if err != nil {
 		return nil, err
 	}
 
+	// Extract header from decrypted data
 	header := extractHeader(data)
 
+	// Return the chunk
 	return &chunker.Chunk{
 		Header:  header,
 		Content: data[chunker.HeaderSize : len(data)-int(header.Padd)],

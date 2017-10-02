@@ -1,3 +1,7 @@
+//Package archive contains functions for reading files & directories and creating
+// tar archives (https://golang.org/pkg/archive/tar/).
+// This package also contains functions for compressing data using gzip
+// (https://golang.org/pkg/compress/gzip/).
 package archive
 
 import (
@@ -77,6 +81,7 @@ func tarExtract(destination string, in io.Reader) error {
 
 	// Make sure destination exists
 	if _, err := os.Stat(destination); err != nil {
+		// Create missing directories
 		if err := os.MkdirAll(destination, 0755); err != nil {
 			return err
 		}

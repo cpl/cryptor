@@ -5,7 +5,8 @@ import (
 	"compress/gzip"
 )
 
-// Compress ...
+// Compress takes an array of bytes and returns a byte buffer containing the
+// gzip compressed data.
 func Compress(data []byte) (out bytes.Buffer, err error) {
 	// Create gzip writer
 	gzipWriter := gzip.NewWriter(&out)
@@ -20,7 +21,8 @@ func Compress(data []byte) (out bytes.Buffer, err error) {
 	return out, nil
 }
 
-// Decompress ...
+// Decompress takes a byte buffer containing gzip compressed data and returns
+// the initial data as a byte array.
 func Decompress(data bytes.Buffer) ([]byte, error) {
 	var buffer bytes.Buffer
 

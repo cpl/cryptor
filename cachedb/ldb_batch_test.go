@@ -32,7 +32,7 @@ func TestLDBatch(t *testing.T) {
 			t.Error(err)
 		}
 		if !bytes.Equal(value, []byte(data)) {
-			t.Error("Got unexpected value")
+			t.Error("value error: unexpected value")
 		}
 	}
 
@@ -46,7 +46,7 @@ func TestLDBatch(t *testing.T) {
 	for _, data := range testData {
 		_, err := cache.Get([]byte(data))
 		if err == nil {
-			t.Error("Got deleted value")
+			t.Error("value error: got deleted value")
 		}
 	}
 }

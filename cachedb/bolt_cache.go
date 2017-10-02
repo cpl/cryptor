@@ -3,6 +3,7 @@ package cachedb
 import "github.com/boltdb/bolt"
 
 // BoltCache ...
+// TODO: Under development
 type BoltCache struct {
 	file string
 	db   *bolt.DB

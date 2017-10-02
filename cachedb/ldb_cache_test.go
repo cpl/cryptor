@@ -9,6 +9,9 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
+// Test data for all key/value pair tests
+var testData = []string{"", "world", "1409", "\x00cd16\x00", ""}
+
 func createTestEnv() (string, Database, error) {
 	// Create tmp dir for test
 	tmpDir, err := ioutil.TempDir("/tmp", "cachedb_test")
@@ -29,6 +32,7 @@ func createTestEnv() (string, Database, error) {
 func TestCDBBasic(t *testing.T) {
 	t.Parallel()
 
+	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	if err != nil {
 		t.Error(err)
@@ -38,7 +42,7 @@ func TestCDBBasic(t *testing.T) {
 
 	// Check db path
 	if cdb.Path() != dbPath {
-		t.Error("Path mismatch")
+		t.Error("wrong path")
 	}
 
 	// Test Put
@@ -52,7 +56,7 @@ func TestCDBBasic(t *testing.T) {
 		t.Error(err)
 	}
 	if status != true {
-		t.Error("Expected key not found")
+		t.Error("key error: expected key not found")
 	}
 
 	// Test Has (false)
@@ -61,7 +65,7 @@ func TestCDBBasic(t *testing.T) {
 		t.Error(err)
 	}
 	if status != false {
-		t.Error("Found unexpected key")
+		t.Error("key error: found unexpected key")
 	}
 
 	// Test Del
@@ -75,13 +79,14 @@ func TestCDBBasic(t *testing.T) {
 		t.Error(err)
 	}
 	if status != false {
-		t.Error("Found deleted key")
+		t.Error("key error: found deleted key")
 	}
 }
 
 func TestCDBSameKeyPut(t *testing.T) {
 	t.Parallel()
 
+	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	if err != nil {
 		t.Error(err)
@@ -94,19 +99,20 @@ func TestCDBSameKeyPut(t *testing.T) {
 		data := crypt.Encode(crypt.RandomData(10))
 		cdb.Put([]byte("key"), data)
 	}
+
+	// TODO: Add iterator to check keys
 }
 
 func TestCDBAdvanced(t *testing.T) {
 	t.Parallel()
 
+	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	if err != nil {
 		t.Error(err)
 	}
 	defer cdb.Close()
 	defer os.RemoveAll(dbPath)
-
-	var testData = []string{"", "world", "1409", "\x00cd16\x00", ""}
 
 	// Put
 	for _, data := range testData {
@@ -123,7 +129,7 @@ func TestCDBAdvanced(t *testing.T) {
 			t.Error(err)
 		}
 		if !bytes.Equal(value, []byte(data)) {
-			t.Error("Got unexpected value")
+			t.Error("value error: got unexpected value")
 		}
 	}
 
@@ -142,7 +148,7 @@ func TestCDBAdvanced(t *testing.T) {
 			t.Error(err)
 		}
 		if !bytes.Equal(value, []byte("OVERWRITE")) {
-			t.Error("Got unexpected value")
+			t.Error("value error: got unexpected value")
 		}
 	}
 
@@ -158,7 +164,7 @@ func TestCDBAdvanced(t *testing.T) {
 	for _, data := range testData {
 		_, err := cdb.Get([]byte(data))
 		if err == nil {
-			t.Error("Got deleted data")
+			t.Error("value error: got deleted value")
 		}
 	}
 }

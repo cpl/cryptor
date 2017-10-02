@@ -5,18 +5,20 @@ import (
 	"io"
 )
 
-// AESKeySize ...
+// AESKeySize used by AES256
 const AESKeySize = 32
 
-// AESKey ...
+// AESKey is a byte array of AES256 Key sizes
 type AESKey [AESKeySize]byte
 
-// NullKey ...
+// NullKey key containing 32 of byte 0
 var NullKey AESKey = [AESKeySize]byte{}
 
-// NewKey ...
+// NewKey returns a new random AES256 Key
 func NewKey() AESKey {
 	key := [AESKeySize]byte{}
+
+	// TODO: Add option for selecting rand.Reader
 	_, err := io.ReadFull(rand.Reader, key[:])
 	if err != nil {
 		panic(err)
@@ -24,7 +26,7 @@ func NewKey() AESKey {
 	return key
 }
 
-// NewKeyFromString ...
+// NewKeyFromString takes a hex encoded string and returns a AES256 Key
 func NewKeyFromString(hex string) (key AESKey) {
 	// If empty string is given as key, return null key
 	if hex == "" || hex == " " {
@@ -40,23 +42,23 @@ func NewKeyFromString(hex string) (key AESKey) {
 	return key
 }
 
-// NewKeyFromBytes ...
+// NewKeyFromBytes takes a byte array and builds an AES256 Key
 func NewKeyFromBytes(data []byte) (key AESKey) {
 	copy(key[:], data)
 	return key
 }
 
-// Bytes ...
+// Bytes returns the key as []byte
 func (key AESKey) Bytes() []byte {
 	return key[:]
 }
 
-// Encode ...
+// Encode returns a hex encoded []byte
 func (key AESKey) Encode() []byte {
 	return Encode(key.Bytes())
 }
 
-// String ...
+// String returns a hex encoded string
 func (key AESKey) String() string {
 	return string(key.Encode())
 }

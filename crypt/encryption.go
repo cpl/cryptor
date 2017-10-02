@@ -1,3 +1,5 @@
+// Package crypt contains functions and structs that help with encryption,
+// hash computation, encoding/decoding and generating random data.
 package crypt
 
 import (
@@ -8,7 +10,7 @@ import (
 	"io"
 )
 
-// Encrypt ...
+// Encrypt a msg using AES256 Key and 12B random nonce
 func Encrypt(key AESKey, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
@@ -32,7 +34,7 @@ func Encrypt(key AESKey, msg []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, msg, nil), nil
 }
 
-// Decrypt ...
+// Decrypt msg encrypted with AES256 Key
 func Decrypt(key AESKey, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
@@ -48,7 +50,7 @@ func Decrypt(key AESKey, msg []byte) ([]byte, error) {
 
 	// Check for nonce existence in ciphertext
 	if len(msg) < gcm.NonceSize() {
-		return nil, errors.New("Invalid nonce")
+		return nil, errors.New("invalid nonce")
 	}
 
 	// Obtain plaintext msg

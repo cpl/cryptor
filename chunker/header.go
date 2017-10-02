@@ -7,7 +7,7 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
-// HeaderSize ...
+// HeaderSize defines the expected size of the header
 const HeaderSize = 100
 
 // ChunkHeader ...
@@ -18,7 +18,7 @@ type ChunkHeader struct {
 	Padd uint32       // Byte size of the padding
 }
 
-// NewChunkHeader ...
+// NewChunkHeader returns a new chunk header
 func NewChunkHeader() *ChunkHeader {
 	return &ChunkHeader{
 		NKey: crypt.NullKey,
@@ -28,7 +28,10 @@ func NewChunkHeader() *ChunkHeader {
 	}
 }
 
-// Bytes ...
+// Bytes returns the chunk header as a byte array. Data is distributed as
+// follows:
+//
+// | NKEY 32B | NEXT 32B | HASH 32B | PADD 4B |
 func (header ChunkHeader) Bytes() []byte {
 	buffer := new(bytes.Buffer)
 
