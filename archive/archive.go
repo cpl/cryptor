@@ -79,14 +79,6 @@ func tarArchive(source string, out io.Writer) error {
 func tarExtract(destination string, in io.Reader) error {
 	tarReader := tar.NewReader(in)
 
-	// Make sure destination exists
-	if _, err := os.Stat(destination); err != nil {
-		// Create missing directories
-		if err := os.MkdirAll(destination, 0755); err != nil {
-			return err
-		}
-	}
-
 	for {
 		// Read each header
 		header, err := tarReader.Next()

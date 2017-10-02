@@ -64,7 +64,10 @@ func (a *Assembler) Assemble(key crypt.AESKey) error {
 	aBuffer.Write(bufferData[0 : bufferLen%chunkSize])
 
 	// Start extracting the .tar.gz archive
-	archive.UnTarGz("untar", &aBuffer)
+	err = archive.UnTarGz("untar", &aBuffer)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

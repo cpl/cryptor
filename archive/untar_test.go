@@ -63,11 +63,8 @@ func TestUnTarNoOutputFile(t *testing.T) {
 
 	// Check for empty input, EOF
 	if err := UnTarGz("data/out/noout.dat", &buffer); err != nil {
-		if err.Error() != "open data/out/noout.dat: is a directory" {
+		if err != nil {
 			t.Error(err)
 		}
-		return
 	}
-
-	t.Fail()
 }
