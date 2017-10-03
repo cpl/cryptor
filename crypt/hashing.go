@@ -5,6 +5,8 @@ import (
 	"hash"
 	"io"
 	"os"
+
+	"golang.org/x/crypto/sha3"
 )
 
 // SHA256File takes a file path and returns the hash for the file content
@@ -33,5 +35,14 @@ func SHA256Data(data []byte) hash.Hash {
 		panic(err)
 	}
 
+	return h
+}
+
+// SHA512Data takes multiple []byte arrays and returns the combined hash
+func SHA512Data(data []byte) hash.Hash {
+	h := sha3.New512()
+	if _, err := h.Write(data); err != nil {
+		panic(err)
+	}
 	return h
 }
