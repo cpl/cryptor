@@ -25,7 +25,7 @@ func createTestCache() ([]byte, error) {
 
 	// Create chunker
 	c := &chunker.Chunker{
-		Size:   1024,
+		Size:   16,
 		Cache:  cache,
 		Reader: &buffer,
 	}
