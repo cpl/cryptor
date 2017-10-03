@@ -31,6 +31,9 @@ update:
 build:
 	go build -o build/cryptor -v -x cmd/cryptor-cli/*.go
 
+install:
+	go build -i -o $$GOBIN/cryptor -v -x cmd/cryptor-cli/*.go
+
 test-cli:
 	@make build && \
 	echo "TEST CLI"
