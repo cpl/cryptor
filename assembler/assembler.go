@@ -17,6 +17,17 @@ type Assembler struct {
 	Cache cachedb.Database
 }
 
+// GetChunk returns an encrypted chunk from the attached cached
+func (a *Assembler) GetChunk(hash []byte) (*EChunk, error) {
+	data, err := a.Cache.Get(hash)
+	if err != nil {
+		return nil, err
+	}
+	return &EChunk{
+		Data: data,
+	}, nil
+}
+
 // Assemble starts decrypting the tail chunk with the given AES Key. The
 // process extracts the next chunk's data from the current header. If a chunk
 // is not found during the assembly process, a network request will be sent
@@ -26,7 +37,11 @@ func (a *Assembler) Assemble(key crypt.AESKey) error {
 	var aBuffer bytes.Buffer // Assembly buffer, final package
 
 	// Request chunk from cache
-	eChunk := GetEChunk(a.Tail, a.Cache)
+	eChunk, err := a.GetChunk(a.Tail)
+	if err != nil {
+		return err
+	}
+
 	// Decrypt given chunk with given key
 	chunk, err := eChunk.Decrypt(key)
 	if err != nil {
@@ -39,7 +54,10 @@ func (a *Assembler) Assemble(key crypt.AESKey) error {
 	// Process chunks until a final chunk is passed
 	for !chunk.IsLast() {
 		// Get the next chunk by using the header.Next hash
-		eChunk = GetEChunk(chunk.Header.Next, a.Cache)
+		eChunk, err = a.GetChunk(chunk.Header.Next)
+		if err != nil {
+			return err
+		}
 		// Decrypt the next chunk
 		chunk, err = eChunk.Decrypt(chunk.Header.NKey)
 		if err != nil {

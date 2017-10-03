@@ -15,11 +15,6 @@ type EChunk struct {
 }
 
 // GetEChunk returns the chunk with matching hash key from the given cache.
-// TODO: Replace GetEChunk with Get call in Database. Move this as a method
-// on Assembler struct.
-// func (a *Assembler) GetChunk(hash) {
-//   a.cache.Get(hash)
-// }
 func GetEChunk(hash []byte, cache cachedb.Database) *EChunk {
 
 	// Get data from cache
