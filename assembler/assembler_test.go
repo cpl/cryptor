@@ -64,7 +64,7 @@ func TestAssembler(t *testing.T) {
 
 	// Start assembling package
 	defer os.RemoveAll("untar")
-	err = asm.Assemble(crypt.NullKey)
+	err = asm.Assemble(crypt.NullKey, "untar")
 	if err != nil {
 		t.Error(err)
 	}

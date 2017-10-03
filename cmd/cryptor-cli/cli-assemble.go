@@ -14,7 +14,8 @@ type assembleArg struct {
 	cli.Helper
 	Hash  string `cli:"*hash" usage:"tail hash, point of start for assembly"`
 	Pass  string `pw:"p,password" usage:"password for encryption" prompt:"password"`
-	Cache string `cli:"*c,cache" usage:"provide cache source" dft:"default"`
+	Cache string `cli:"*c,cache" usage:"provide cache location" dft:"default"`
+	Out   string `cli:"*o,out" usage:"specify output location for assembly" dft:"out"`
 }
 
 // Command for assembler
@@ -51,7 +52,7 @@ var assembleCLI = &cli.Command{
 		}
 
 		// Start assembly
-		err = a.Assemble(crypt.NewKeyFromPassword(argv.Pass))
+		err = a.Assemble(crypt.NewKeyFromPassword(argv.Pass), argv.Out)
 		handleErr(err)
 
 		return nil

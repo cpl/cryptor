@@ -32,7 +32,7 @@ func (a *Assembler) GetChunk(hash []byte) (*EChunk, error) {
 // process extracts the next chunk's data from the current header. If a chunk
 // is not found during the assembly process, a network request will be sent
 // to the known peers, asking for the missing chunk.
-func (a *Assembler) Assemble(key crypt.AESKey) error {
+func (a *Assembler) Assemble(key crypt.AESKey, destination string) error {
 	var cBuffer bytes.Buffer // Chunk buffer, content (no header)
 	var aBuffer bytes.Buffer // Assembly buffer, final package
 
@@ -83,7 +83,7 @@ func (a *Assembler) Assemble(key crypt.AESKey) error {
 	aBuffer.Write(bufferData[0 : bufferLen%chunkSize])
 
 	// Start extracting the .tar.gz archive
-	err = archive.UnTarGz("untar", &aBuffer)
+	err = archive.UnTarGz(destination, &aBuffer)
 	if err != nil {
 		return err
 	}
