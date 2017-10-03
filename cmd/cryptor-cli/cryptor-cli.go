@@ -19,9 +19,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/mkideal/cli"
+	"github.com/thee-engineer/cryptor/cachedb"
 )
 
 var help = cli.HelpCommand("display this help message")
@@ -32,7 +34,10 @@ func main() {
 		cli.Tree(help),
 		cli.Tree(chunkCLI),
 		cli.Tree(assembleCLI),
-		cli.Tree(cacheCLI),
+		cli.Tree(cacheCLI,
+			cli.Tree(newCacheCLI),
+			cli.Tree(listCacheCLI),
+		),
 	).Run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -45,6 +50,22 @@ func handleErr(err error) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func handleCache(cache string) string {
+
+	// Check which cache to use
+	cachePath := ""
+	switch cache {
+	case "default":
+		cachePath = cachedb.GetCryptorDir()
+	case "temp":
+		cachePath, _ = ioutil.TempDir("/tmp", "cryptor_cache")
+	default:
+		cachePath = cache
+	}
+
+	return cachePath
 }
 
 // Arguments that cen be used in root
