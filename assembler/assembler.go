@@ -68,7 +68,8 @@ func (a *Assembler) Assemble(key crypt.AESKey) error {
 		cBuffer.Write(chunk.Content)
 	}
 
-	chunkSize := len(chunk.Content)
+	// Fix single chunk size error being 0 by adding chunk header padding
+	chunkSize := len(chunk.Content) + int(chunk.Header.Padd)
 	bufferLen := cBuffer.Len()
 	bufferData := cBuffer.Bytes()
 

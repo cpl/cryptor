@@ -168,3 +168,39 @@ func TestCDBAdvanced(t *testing.T) {
 		}
 	}
 }
+
+func TestCDBIterator(t *testing.T) {
+	t.Parallel()
+
+	// Create test env
+	dbPath, cdb, err := createTestEnv()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cdb.Close()
+	defer os.RemoveAll(dbPath)
+
+	// Put test data in cache
+	for _, data := range testData {
+		err := cdb.Put([]byte(data), []byte(data))
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	// Open iterator over cache
+	iter := cdb.NewIterator()
+	count := 0
+	for iter.Next() {
+		// Get current key/value pair
+		iter.Key()
+		iter.Value()
+		count++
+	}
+	if count != len(testData)-1 {
+		t.Errorf("iter error: invalid iterator lenght; got %d; expected %d;",
+			count, len(testData)-1)
+	}
+
+	iter.Release()
+}

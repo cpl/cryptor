@@ -54,17 +54,17 @@ func TestUnTarNoOutputFile(t *testing.T) {
 
 	var buffer bytes.Buffer
 
-	os.Remove("data/out/noout.dat")
-
 	// Get a valid tar archive
 	if err := TarGz("data/tarfile.txt", &buffer); err != nil {
 		t.Error(err)
 	}
 
-	// Check for empty input, EOF
+	// Check for empty output, EOF
+	defer os.Remove("data/out/noout.dat")
 	if err := UnTarGz("data/out/noout.dat", &buffer); err != nil {
 		if err != nil {
 			t.Error(err)
 		}
 	}
+
 }

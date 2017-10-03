@@ -12,6 +12,7 @@ type Database interface {
 	Close() error                   // Close I/O with DB
 	Path() string                   // Returns the DB file path
 	NewBatch() Batch                // Create a Batch for the DB
+	NewIterator() Iterator          // Return a new iterator for the DB
 }
 
 // Batch contains a set of write instructions that can be executed by a
@@ -20,4 +21,14 @@ type Batch interface {
 	Put(key, value []byte) error // Store key/value pair instruction
 	Del(key []byte) error        // Delete value with key insturction
 	Write() error                // Write all instructions in the Batch
+}
+
+// Iterator allows iterating over all elements in the DB in a order.
+type Iterator interface {
+	Next() bool       // Set the iterator to the next item
+	Prev() bool       // Set the iterator to the previous item
+	Key() []byte      // Returns the key of the current item
+	Value() []byte    // Returns the value of the current item
+	Seek([]byte) bool // Set the iteratorto the key[]byte param
+	Release()         // Release the iterator from use
 }

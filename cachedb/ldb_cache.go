@@ -79,3 +79,8 @@ func (cdb *LDBCache) Has(key []byte) (bool, error) {
 func (cdb *LDBCache) Del(key []byte) error {
 	return cdb.db.Delete(key, nil)
 }
+
+// NewIterator return a new LevelDB iterator
+func (cdb *LDBCache) NewIterator() Iterator {
+	return cdb.db.NewIterator(nil, nil)
+}
