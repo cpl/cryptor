@@ -1,5 +1,17 @@
 .PHONY: cover view push update build
 
+profile-cpu:
+	@cd $(PKG); \
+	go test -race -parallel 4 -cpuprofile prof.cpu; \
+	go tool pprof $(PKG).test ./prof.cpu; \
+	rm prof.cpu $(PKG).test; \
+
+profile-mem:
+	@cd $(PKG); \
+	go test -race -parallel 4 -memprofile prof.mem; \
+	go tool pprof $(PKG).test ./prof.mem; \
+	rm prof.mem $(PKG).test; \
+
 cover:
 	@mkdir -p build
 	@echo "mode: atomic" > build/report.out
