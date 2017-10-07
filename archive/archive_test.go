@@ -1,9 +1,11 @@
-package archive
+package archive_test
 
 import (
 	"bytes"
 	"os"
 	"testing"
+
+	"github.com/thee-engineer/cryptor/archive"
 )
 
 func TestTarFile(t *testing.T) {
@@ -17,7 +19,7 @@ func TestTarFile(t *testing.T) {
 	defer file.Close()
 
 	// Archive input to output
-	if err := TarGz("data/tarfile.txt", file); err != nil {
+	if err := archive.TarGz("data/tarfile.txt", file); err != nil {
 		t.Error(err)
 	}
 
@@ -38,7 +40,7 @@ func TestTarDir(t *testing.T) {
 	defer file.Close()
 
 	// Archive input to output
-	if err := TarGz("data/tardir", file); err != nil {
+	if err := archive.TarGz("data/tardir", file); err != nil {
 		t.Error(err)
 	}
 
@@ -55,21 +57,21 @@ func TestTarErrors(t *testing.T) {
 	var buffer bytes.Buffer
 
 	// Try to archive non existent file
-	if err := TarGz("data/nosuchfile.txt", &buffer); err != nil {
+	if err := archive.TarGz("data/nosuchfile.txt", &buffer); err != nil {
 		if err.Error() != "lstat data/nosuchfile.txt: no such file or directory" {
 			t.Error(err)
 		}
 	}
 
 	// Try to archive file without permissions
-	if err := TarGz("data/tar000.txt", &buffer); err != nil {
+	if err := archive.TarGz("data/tar000.txt", &buffer); err != nil {
 		if err.Error() != "open data/tar000.txt: permission denied" {
 			t.Error(err)
 		}
 	}
 
 	// Try to archive empty dir
-	if err := TarGz("data/emptydir", &buffer); err != nil {
+	if err := archive.TarGz("data/emptydir", &buffer); err != nil {
 		t.Error(err)
 	}
 }

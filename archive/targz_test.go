@@ -1,10 +1,11 @@
-package archive
+package archive_test
 
 import (
 	"bytes"
 	"os"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
@@ -21,7 +22,7 @@ func TestTarUnTar(t *testing.T) {
 	var buffer bytes.Buffer
 
 	// Tar the file
-	if err := TarGz("data/tarfile.txt", &buffer); err != nil {
+	if err := archive.TarGz("data/tarfile.txt", &buffer); err != nil {
 		t.Error(err)
 	}
 
@@ -32,7 +33,7 @@ func TestTarUnTar(t *testing.T) {
 	}
 
 	// Untar the file
-	if err := UnTarGz("data/out/tarfile.txt", &buffer); err != nil {
+	if err := archive.UnTarGz("data/out/tarfile.txt", &buffer); err != nil {
 		t.Error(err)
 	}
 

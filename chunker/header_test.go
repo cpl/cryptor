@@ -1,20 +1,24 @@
-package chunker
+package chunker_test
 
-import "testing"
-import "github.com/thee-engineer/cryptor/crypt"
+import (
+	"testing"
+
+	"github.com/thee-engineer/cryptor/chunker"
+	"github.com/thee-engineer/cryptor/crypt"
+)
 
 func TestChunkHeader(t *testing.T) {
 	t.Parallel()
 
 	// Create chunk header
-	header := NewChunkHeader()
+	header := chunker.NewChunkHeader()
 
 	header.Hash = crypt.RandomData(32) // Random content hash
 	header.Next = crypt.RandomData(32) // Random next hash
 
 	// Check header size to match expectations
-	if len(header.Bytes()) != HeaderSize {
+	if len(header.Bytes()) != chunker.HeaderSize {
 		t.Errorf("header error: invalid size; expected %d; got %d;",
-			HeaderSize, len(header.Bytes()))
+			chunker.HeaderSize, len(header.Bytes()))
 	}
 }

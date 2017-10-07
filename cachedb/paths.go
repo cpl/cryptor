@@ -6,17 +6,18 @@ import (
 )
 
 const (
-	cryptorDir = ".cryptor"
+	// CryptorDir is the default name of the Cryptor directory
+	CryptorDir = ".cryptor"
 )
 
 // GetCryptorDir returns the default cryptor cache dir for the user running
 // cryptor.
 func GetCryptorDir() string {
-	return path.Join(getUserHomePath(), cryptorDir)
+	return path.Join(GetUserHomePath(), CryptorDir)
 }
 
-// Get the current user and return the home dir abs path
-func getUserHomePath() string {
+// GetUserHomePath returns the current user's home dir abs path
+func GetUserHomePath() string {
 	usr, err := user.Current()
 	if err != nil {
 		panic(err)

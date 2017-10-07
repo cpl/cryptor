@@ -1,4 +1,4 @@
-package cachedb
+package cachedb_test
 
 import (
 	"bytes"

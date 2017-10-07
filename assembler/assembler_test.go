@@ -1,4 +1,4 @@
-package assembler
+package assembler_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/archive"
+	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
@@ -57,7 +58,7 @@ func TestAssembler(t *testing.T) {
 	defer cache.Close()
 
 	// Create assembler
-	asm := &Assembler{
+	asm := &assembler.Assembler{
 		Tail:  tail,
 		Cache: cache,
 	}

@@ -1,4 +1,4 @@
-package cachedb
+package cachedb_test
 
 import (
 	"bytes"
@@ -6,13 +6,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
 // Test data for all key/value pair tests
 var testData = []string{"", "world", "1409", "\x00cd16\x00", ""}
 
-func createTestEnv() (string, Database, error) {
+func createTestEnv() (string, cachedb.Database, error) {
 	// Create tmp dir for test
 	tmpDir, err := ioutil.TempDir("/tmp", "cachedb_test")
 	if err != nil {
@@ -21,7 +22,7 @@ func createTestEnv() (string, Database, error) {
 
 	// Create test db
 	// Use 0 cache and 0 handlers, should default to min
-	cdb, err := NewLDBCache(tmpDir, 0, 0)
+	cdb, err := cachedb.NewLDBCache(tmpDir, 0, 0)
 	if err != nil {
 		return "", nil, err
 	}

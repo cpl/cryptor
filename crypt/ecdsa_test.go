@@ -1,15 +1,17 @@
-package crypt
+package crypt_test
 
 import (
 	"bytes"
 	"testing"
+
+	"github.com/thee-engineer/cryptor/crypt"
 )
 
 func TestImportExport(t *testing.T) {
 	t.Parallel()
 
 	// Generate key pair
-	prv, err := GenerateKey()
+	prv, err := crypt.GenerateKey()
 	if err != nil {
 		t.Error(err)
 	}
@@ -20,14 +22,14 @@ func TestImportExport(t *testing.T) {
 	ecdsaPub := pub.Export()
 
 	// Import private key
-	impPrv := Import(ecdsaPrv)
+	impPrv := crypt.Import(ecdsaPrv)
 
 	if !bytes.Equal(impPrv.D.Bytes(), prv.D.Bytes()) {
 		t.Error("ecdsa: imported and inital key mismatch, private")
 	}
 
 	// Import public key
-	impPub := ImportPublic(ecdsaPub)
+	impPub := crypt.ImportPublic(ecdsaPub)
 
 	if !bytes.Equal(impPub.X.Bytes(), pub.X.Bytes()) {
 		t.Error("ecdsa: imported and inital key mismatch, public")
@@ -42,14 +44,14 @@ func TestSharedSecret(t *testing.T) {
 	t.Parallel()
 
 	// Generate first key pair
-	prv0, err := GenerateKey()
+	prv0, err := crypt.GenerateKey()
 	if err != nil {
 		t.Error(err)
 	}
 	pub0 := &prv0.PublicKey
 
 	// Generate second key pair
-	prv1, err := GenerateKey()
+	prv1, err := crypt.GenerateKey()
 	if err != nil {
 		t.Error(err)
 	}

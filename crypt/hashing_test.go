@@ -1,7 +1,9 @@
-package crypt
+package crypt_test
 
 import (
 	"testing"
+
+	"github.com/thee-engineer/cryptor/crypt"
 )
 
 func TestHashing(t *testing.T) {
@@ -10,9 +12,9 @@ func TestHashing(t *testing.T) {
 	// Use hash of "Hello, World!" generated outside cryptor
 	eHash := "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f"
 	// Hash "Hello, World!" using cryptor/crypt
-	hash := SHA256Data([]byte("Hello, World!"))
+	hash := crypt.SHA256Data([]byte("Hello, World!"))
 	// Encode the hash as a string
-	sHash := EncodeString(hash.Sum(nil))
+	sHash := crypt.EncodeString(hash.Sum(nil))
 
 	// Compare hashes
 	if eHash != sHash {
@@ -20,7 +22,7 @@ func TestHashing(t *testing.T) {
 	}
 
 	// Attempt to hash source file
-	_, err := SHA256File("hashing.go")
+	_, err := crypt.SHA256File("hashing.go")
 	if err != nil {
 		t.Error(err)
 	}
@@ -40,8 +42,8 @@ func TestSHA512(t *testing.T) {
 
 	// Hash each test and check for expected results
 	for index, data := range testData {
-		hash := SHA512Data([]byte(data))
-		if EncodeString(hash.Sum(nil)) != results[index] {
+		hash := crypt.SHA512Data([]byte(data))
+		if crypt.EncodeString(hash.Sum(nil)) != results[index] {
 			t.Error("hash error: wrong hash result")
 		}
 	}

@@ -1,17 +1,19 @@
-package crypt
+package crypt_test
 
 import (
 	"testing"
+
+	"github.com/thee-engineer/cryptor/crypt"
 )
 
 func TestKey(t *testing.T) {
 	t.Parallel()
 
-	key := NewKey()
-	NewKeyFromBytes(key.Bytes())
-	NewKeyFromBytes(RandomData(AESKeySize))
-	NewKeyFromString(key.String())
-	NewKeyFromString("")
+	key := crypt.NewKey()
+	crypt.NewKeyFromBytes(key.Bytes())
+	crypt.NewKeyFromBytes(crypt.RandomData(crypt.AESKeySize))
+	crypt.NewKeyFromString(key.String())
+	crypt.NewKeyFromString("")
 	key.Encode()
 }
 
@@ -36,7 +38,7 @@ func TestKeyFPassword(t *testing.T) {
 
 	// Test all values
 	for index, test := range testValues {
-		if testResult[index] != string(NewKeyFromPassword(test).Encode()) {
+		if testResult[index] != string(crypt.NewKeyFromPassword(test).Encode()) {
 			t.Error("key error: wrong key derivation")
 		}
 	}

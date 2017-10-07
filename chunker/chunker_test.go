@@ -1,4 +1,4 @@
-package chunker
+package chunker_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
@@ -31,7 +32,7 @@ func TestChunker(t *testing.T) {
 	}
 
 	// Create chunker
-	chunker := &Chunker{
+	chunker := &chunker.Chunker{
 		Size:   1024,
 		Cache:  cache,
 		Reader: &buffer,

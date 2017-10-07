@@ -1,4 +1,4 @@
-package assembler
+package assembler_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
@@ -44,7 +45,7 @@ func TestEChunk(t *testing.T) {
 	}
 
 	// Read encrypted chunk
-	eChunk := GetEChunk(chunkHash, cache)
+	eChunk := assembler.GetEChunk(chunkHash, cache)
 	dChunk, err := eChunk.Decrypt(crypt.NullKey)
 	if err != nil {
 		t.Error(err)
