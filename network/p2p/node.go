@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/thee-engineer/cryptor/network"
@@ -10,14 +11,18 @@ import (
 type Node struct {
 	NodeConfig // Static configuration generated at node creation
 
+	conn *net.UDPConn // UDP listening connection
+
 	addr *net.UDPAddr  // Node UDP address
 	quit chan struct{} // Stops node from running when it receives
 	errc chan *error   // Channell for transmiting errors
+
 	addp chan *Peer    // Add peer request channel
 	pops chan peerFunc // Peer count and peer list operations
 	popd chan struct{} // Peer operation done
 
-	peers map[string]*Peer // Memory map with key/value peer pairs
+	peers map[string]*Peer  // Memory map with key/value peer pairs
+	token map[string][]byte // List of tokens used in requests
 }
 
 // Function for peer list and peer count
@@ -37,8 +42,14 @@ func NewNode(ip string, port int, quit chan struct{}) *Node {
 
 // Start ...
 func (n *Node) Start() {
+
+	go n.listen()
+
 	for {
 		select {
+		case err := <-n.errc:
+			fmt.Println(err) // DEBUG
+			return
 		case <-n.quit:
 			return
 		case peer := <-n.addp:
@@ -56,10 +67,10 @@ func (n *Node) Stop() {
 }
 
 // AddPeer ...
-func (n *Node) AddPeer(ip string, port int) {
+func (n *Node) AddPeer(peer *Peer) {
 	select {
 	case <-n.quit:
-	case n.addp <- NewPeer(ip, port):
+	case n.addp <- peer:
 	}
 }
 
@@ -92,4 +103,28 @@ func (n *Node) PeerCount() int {
 	}
 
 	return count
+}
+
+func (n *Node) listen() {
+	fmt.Println("listening")
+	conn, err := net.ListenUDP("udp", n.addr)
+	if err != nil {
+		n.errc <- &err
+		return
+	}
+	defer conn.Close()
+
+	var buffer [1024]byte
+
+	for {
+		r, addr, err := conn.ReadFromUDP(buffer[:])
+		if err != nil {
+			n.errc <- &err
+			return
+		}
+		if r > 0 {
+			// DEBUG
+			fmt.Println(addr.String(), "|", r, "|", string(buffer[:r]))
+		}
+	}
 }

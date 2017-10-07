@@ -9,25 +9,27 @@ import (
 )
 
 func TestNetwork(t *testing.T) {
-	qc := make(chan struct{})
+	qc0 := make(chan struct{})
+	qc1 := make(chan struct{})
 
-	n0 := p2p.NewNode("localhost", 2000, qc)
+	fmt.Println("making nodes")
+	n0 := p2p.NewNode("localhost", 2000, qc0)
+	n1 := p2p.NewNode("localhost", 2001, qc1)
 
+	fmt.Println("starting nodes")
 	go n0.Start()
+	go n1.Start()
 
-	// time.Sleep(2000 * time.Millisecond)
-
-	for port := 9990; port < 10000; port++ {
-		go n0.AddPeer("localhost", port)
+	fmt.Println("adding peers")
+	for port := 9000; port < 9020; port++ {
+		go n0.AddPeer(p2p.NewPeer("localhost", port))
 	}
-
-	go n0.AddPeer("localhost", 9990)
 
 	time.Sleep(2000 * time.Millisecond)
 
+	fmt.Println("getting count")
 	fmt.Println(n0.PeerCount())
-	fmt.Println(n0.Peers())
+	fmt.Println(n1.PeerCount())
 
-	// time.Sleep(2000 * time.Millisecond)
-
+	<-qc0
 }
