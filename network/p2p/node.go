@@ -44,8 +44,6 @@ func NewNode(ip string, port int, quit chan struct{}) *Node {
 // Start ...
 func (n *Node) Start() {
 
-	go n.listen()
-
 	for {
 		select {
 		case err := <-n.errc:
@@ -103,42 +101,4 @@ func (n *Node) PeerCount() int {
 	}
 
 	return count
-}
-
-func (n *Node) listen() {
-	fmt.Println("listening")
-	conn, err := net.ListenUDP("udp", n.addr)
-	if err != nil {
-		n.errc <- err
-		return
-	}
-	defer conn.Close()
-
-	var buffer [1024]byte
-
-	for {
-		r, addr, err := conn.ReadFromUDP(buffer[:])
-		if err != nil {
-			n.errc <- err
-			return
-		}
-		if r > 0 {
-			// DEBUG
-			fmt.Println(addr.String(), "|", r, "|", string(buffer[:r]))
-			go n.dial(addr)
-		}
-	}
-}
-
-// WIP
-func (n *Node) dial(addr *net.UDPAddr) {
-	fmt.Println("dial")
-	conn, err := net.DialUDP("udp", n.addr, addr)
-	if err != nil {
-		n.errc <- err
-		return
-	}
-	defer conn.Close()
-
-	conn.Write([]byte("hello world"))
 }
