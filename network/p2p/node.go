@@ -15,7 +15,7 @@ type Node struct {
 
 	addr *net.UDPAddr  // Node UDP address
 	quit chan struct{} // Stops node from running when it receives
-	errc chan *error   // Channell for transmiting errors
+	errc chan error    // Channell for transmiting errors
 
 	addp chan *Peer    // Add peer request channel
 	pops chan peerFunc // Peer count and peer list operations
@@ -34,6 +34,7 @@ func NewNode(ip string, port int, quit chan struct{}) *Node {
 		addr:  network.IPPToUDP(ip, port),
 		quit:  quit,
 		addp:  make(chan *Peer),
+		errc:  make(chan error),
 		pops:  make(chan peerFunc),
 		popd:  make(chan struct{}),
 		peers: make(map[string]*Peer),
@@ -48,8 +49,7 @@ func (n *Node) Start() {
 	for {
 		select {
 		case err := <-n.errc:
-			fmt.Println(err) // DEBUG
-			return
+			fmt.Println("err:", err) // DEBUG
 		case <-n.quit:
 			return
 		case peer := <-n.addp:
@@ -109,7 +109,7 @@ func (n *Node) listen() {
 	fmt.Println("listening")
 	conn, err := net.ListenUDP("udp", n.addr)
 	if err != nil {
-		n.errc <- &err
+		n.errc <- err
 		return
 	}
 	defer conn.Close()
@@ -119,12 +119,26 @@ func (n *Node) listen() {
 	for {
 		r, addr, err := conn.ReadFromUDP(buffer[:])
 		if err != nil {
-			n.errc <- &err
+			n.errc <- err
 			return
 		}
 		if r > 0 {
 			// DEBUG
 			fmt.Println(addr.String(), "|", r, "|", string(buffer[:r]))
+			go n.dial(addr)
 		}
 	}
+}
+
+// WIP
+func (n *Node) dial(addr *net.UDPAddr) {
+	fmt.Println("dial")
+	conn, err := net.DialUDP("udp", n.addr, addr)
+	if err != nil {
+		n.errc <- err
+		return
+	}
+	defer conn.Close()
+
+	conn.Write([]byte("hello world"))
 }
