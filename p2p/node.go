@@ -11,6 +11,8 @@ import (
 type Node struct {
 	config NodeConfig // Static configuration generated at node creation
 
+	running bool // Node stat
+
 	udpAddr *net.UDPAddr // Node UDP address
 	tcpAddr *net.TCPAddr // Node TCP address
 
@@ -61,6 +63,7 @@ func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
 // operations/requests handling.
 func (n *Node) Start() {
 
+	n.running = true
 	go n.listen()
 
 	for {
@@ -68,9 +71,10 @@ func (n *Node) Start() {
 		case err := <-n.errc:
 			fmt.Println("err:", err) // DEBUG
 		case <-n.quit:
+			n.running = false
 			return
 		case peer := <-n.addp:
-			n.peers[peer.addr.String()] = peer
+			n.peers[peer.tcpAddr.String()] = peer
 		case operation := <-n.pops:
 			operation(n.peers)
 			n.popd <- struct{}{}
@@ -80,9 +84,9 @@ func (n *Node) Start() {
 				"| packet from |", packet.addr.String(),
 				"| containing  |", string(packet.data))
 			// DEBUG
-			n.udpOutgoing <- UDPPacket{
-				data: []byte("ok\n"),
-				addr: packet.addr}
+			// n.udpOutgoing <- UDPPacket{
+			// 	data: []byte("ok\n"),
+			// 	addr: packet.addr}
 		}
 	}
 }
@@ -90,7 +94,7 @@ func (n *Node) Start() {
 func (n *Node) listen() {
 
 	// Listen for UDP on the given node address port
-	conn, err := net.ListenUDP("udp", n.udpAddr)
+	conn, err := net.ListenUDP("udp4", n.udpAddr)
 	if err != nil {
 		n.errc <- err
 		return
@@ -113,18 +117,44 @@ func (n *Node) listen() {
 				n.errc <- err
 				continue
 			}
+			if r == 0 {
+				continue
+			}
 			n.udpIncoming <- UDPPacket{buffer[:r], addr}
 		}
 	}
 }
 
+// Send is currently a test method that sends one packet.
+func (n *Node) Send(packet UDPPacket) {
+	if !n.running {
+		return
+	}
+
+	n.udpOutgoing <- packet
+}
+
+// UDPAddr is just for testing for now.
+func (n *Node) UDPAddr() *net.UDPAddr {
+	return n.udpAddr
+}
+
 // Stop closes the quit channel of the Node.
 func (n *Node) Stop() {
+	if !n.running {
+		return
+	}
+	n.running = false
+
 	close(n.quit)
 }
 
 // AddPeer adds a given peer to the peer memory map.
 func (n *Node) AddPeer(peer *Peer) {
+	if !n.running {
+		return
+	}
+
 	select {
 	case <-n.quit:
 	case n.addp <- peer:
@@ -133,6 +163,10 @@ func (n *Node) AddPeer(peer *Peer) {
 
 // Peers returns a list of all peers related to this Node.
 func (n *Node) Peers() []*Peer {
+	if !n.running {
+		return nil
+	}
+
 	var peerList []*Peer
 
 	select {
@@ -151,6 +185,10 @@ func (n *Node) Peers() []*Peer {
 
 // PeerCount returns the number of related peers for this Node.
 func (n *Node) PeerCount() int {
+	if !n.running {
+		return 0
+	}
+
 	var count int
 
 	select {

@@ -18,9 +18,9 @@ cover:
 
 	@for dir in $$(ls); \
 	do \
-	if ls $$dir/*.go &> /dev/null; then \
+	if ls $$dir/*_test.go &> /dev/null; then \
 		cd $$dir; \
-		go test -coverprofile=coverage.out -race -v -parallel 4; \
+		go test -coverprofile=coverage.out -v -race -parallel 4; \
 		cat coverage.out | tail -n +2 >> ../build/report.out; \
 		rm coverage.out; \
 		cd ..; \
