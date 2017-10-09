@@ -1,8 +1,10 @@
 package p2p
 
 import (
+	"errors"
 	"fmt"
 	"net"
+	"sync"
 )
 
 // Node is a representation of the machine on the Cryptor network. A node
@@ -11,7 +13,8 @@ import (
 type Node struct {
 	config NodeConfig // Static configuration generated at node creation
 
-	running bool // Node stat
+	lock    sync.Mutex // Protects the running state
+	running bool       // Node state
 
 	udpAddr *net.UDPAddr // Node UDP address
 	tcpAddr *net.TCPAddr // Node TCP address
@@ -62,8 +65,14 @@ func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
 // Start begins the listening process for the Node on the network and all
 // operations/requests handling.
 func (n *Node) Start() {
-
+	n.lock.Lock()
+	defer n.lock.Unlock()
+	if n.running {
+		n.errc <- errors.New("node: already running")
+		return
+	}
 	n.running = true
+
 	go n.listen()
 
 	for {
@@ -127,10 +136,6 @@ func (n *Node) listen() {
 
 // Send is currently a test method that sends one packet.
 func (n *Node) Send(packet UDPPacket) {
-	if !n.running {
-		return
-	}
-
 	n.udpOutgoing <- packet
 }
 
@@ -141,6 +146,8 @@ func (n *Node) UDPAddr() *net.UDPAddr {
 
 // Stop closes the quit channel of the Node.
 func (n *Node) Stop() {
+	n.lock.Lock()
+	defer n.lock.Unlock()
 	if !n.running {
 		return
 	}
@@ -151,10 +158,6 @@ func (n *Node) Stop() {
 
 // AddPeer adds a given peer to the peer memory map.
 func (n *Node) AddPeer(peer *Peer) {
-	if !n.running {
-		return
-	}
-
 	select {
 	case <-n.quit:
 	case n.addp <- peer:
@@ -163,10 +166,6 @@ func (n *Node) AddPeer(peer *Peer) {
 
 // Peers returns a list of all peers related to this Node.
 func (n *Node) Peers() []*Peer {
-	if !n.running {
-		return nil
-	}
-
 	var peerList []*Peer
 
 	select {
@@ -185,10 +184,6 @@ func (n *Node) Peers() []*Peer {
 
 // PeerCount returns the number of related peers for this Node.
 func (n *Node) PeerCount() int {
-	if !n.running {
-		return 0
-	}
-
 	var count int
 
 	select {
