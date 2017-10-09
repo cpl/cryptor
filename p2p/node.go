@@ -13,13 +13,18 @@ import (
 type Node struct {
 	config NodeConfig // Static configuration generated at node creation
 
-	lock    sync.Mutex // Protects the running state
-	running bool       // Node state
+	lock      sync.Mutex // Protects the running state
+	running   bool       // Node state
+	listening bool       // Node state
 
 	udpAddr *net.UDPAddr // Node UDP address
 	tcpAddr *net.TCPAddr // Node TCP address
 
+	udpConn *net.UDPConn // Node UDP connection
+	tcpConn *net.TCPConn // Node TCP connection
+
 	quit chan struct{} // Stops node from running when it receives
+	disc chan struct{} // Disconnects node from network
 	errc chan error    // Channel for transmiting errors
 
 	addp chan *Peer    // Add peer request channel
@@ -52,6 +57,7 @@ func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
 		udpAddr:     &net.UDPAddr{Port: config.UDP},
 		tcpAddr:     &net.TCPAddr{IP: config.IP, Port: config.TCP},
 		quit:        quit,
+		disc:        make(chan struct{}),
 		addp:        make(chan *Peer),
 		errc:        make(chan error),
 		pops:        make(chan peerFunc),
@@ -65,15 +71,13 @@ func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
 // Start begins the listening process for the Node on the network and all
 // operations/requests handling.
 func (n *Node) Start() {
+	n.lock.Lock()
 	if n.running {
 		n.errc <- errors.New("node: already running")
 		return
 	}
-	n.lock.Lock()
 	n.running = true
 	n.lock.Unlock()
-
-	go n.listen()
 
 	for {
 		select {
@@ -87,11 +91,6 @@ func (n *Node) Start() {
 		case operation := <-n.pops:
 			operation(n.peers)
 			n.popd <- struct{}{}
-		case packet := <-n.udpIncoming:
-			// DEBUG
-			log.Println(
-				"| packet from |", packet.addr.String(),
-				"| containing  |", string(packet.data))
 			// DEBUG
 			// n.udpOutgoing <- UDPPacket{
 			// 	data: []byte("ok\n"),
@@ -100,22 +99,65 @@ func (n *Node) Start() {
 	}
 }
 
-func (n *Node) listen() {
+// Listen currently in a drafting stage.
+func (n *Node) Listen() {
+	n.lock.Lock()
+	if !n.running {
+		return
+	}
+
+	if n.listening {
+		n.errc <- errors.New("node: already listening")
+		return
+	}
+
+	n.listening = true
+	n.lock.Unlock()
+
 	// Listen for UDP on the given node address port
 	conn, err := net.ListenUDP("udp4", n.udpAddr)
 	if err != nil {
 		n.errc <- err
 		return
 	}
+	n.udpConn = conn
 
-	go n.receive(conn) // Pass incoming packets to incoming channel
-	go n.send(conn)    // Pass outgoing packets to outgoing channel
+	go n.receive() // Pass incoming packets to incoming channel
+	go n.send()    // Pass outgoing packets to outgoing channel
+
+	for {
+		select {
+		case <-n.disc:
+			n.listening = false
+			return
+		case packet := <-n.udpIncoming:
+			// DEBUG
+			log.Println(
+				"| packet from |", packet.addr.String(),
+				"| containing  |", string(packet.data))
+		}
+	}
 }
 
-func (n *Node) receive(conn *net.UDPConn) {
+// Disconnect stops the node from listening.
+func (n *Node) Disconnect() {
+	n.lock.Lock()
+	defer n.lock.Unlock()
+
+	if !n.listening {
+		return
+	}
+	n.listening = false
+
+	close(n.disc)
+
+	return
+}
+
+func (n *Node) receive() {
 	buffer := make([]byte, UDPPacketSize)
 	for {
-		r, addr, err := conn.ReadFromUDP(buffer)
+		r, addr, err := n.udpConn.ReadFromUDP(buffer)
 		if err != nil {
 			n.errc <- err
 			continue
@@ -124,9 +166,9 @@ func (n *Node) receive(conn *net.UDPConn) {
 	}
 }
 
-func (n *Node) send(conn *net.UDPConn) {
+func (n *Node) send() {
 	for packet := range n.udpOutgoing {
-		_, err := conn.WriteToUDP(packet.data, packet.addr)
+		_, err := n.udpConn.WriteToUDP(packet.data, packet.addr)
 		if err != nil {
 			n.errc <- err
 			continue
@@ -148,6 +190,7 @@ func (n *Node) UDPAddr() *net.UDPAddr {
 func (n *Node) Stop() {
 	n.lock.Lock()
 	defer n.lock.Unlock()
+
 	if !n.running {
 		return
 	}

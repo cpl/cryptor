@@ -7,32 +7,6 @@ import (
 	"github.com/thee-engineer/cryptor/p2p"
 )
 
-func TestNodeDefault(t *testing.T) {
-	qc := make(chan struct{})
-
-	// Create node
-	node := p2p.NewNode("127.0.0.1", 2000, 9000, qc)
-	go node.Start()
-
-	time.Sleep(time.Second)
-
-	// Add 20 peers
-	for peerCount := 0; peerCount < 20; peerCount++ {
-		node.AddPeer(p2p.NewPeer("127.0.0.1", 2100+peerCount, 9100+peerCount))
-	}
-
-	// Count peers
-	if node.PeerCount() != 20 {
-		t.Error("node: unexpected peer count")
-	}
-
-	if len(node.Peers()) != 20 {
-		t.Error("node: unexpected peer count")
-	}
-
-	qc <- *new(struct{})
-}
-
 func TestNodeStop(t *testing.T) {
 	qc := make(chan struct{})
 	node := p2p.NewNode("127.0.0.1", 2002, 9002, qc)
@@ -68,8 +42,78 @@ func TestNodeConnection(t *testing.T) {
 
 	go n0.Start()
 	go n1.Start()
+	go n0.Listen()
+	go n1.Listen()
 
 	time.Sleep(time.Second)
 
 	qc <- *new(struct{})
+}
+
+func TestNodeMutex(t *testing.T) {
+	qc := make(chan struct{})
+	n0 := p2p.NewNode("127.0.0.1", 2020, 9020, qc)
+
+	n0.Stop()
+	go n0.Stop()
+	n0.Stop()
+
+	n0.Disconnect()
+	go n0.Disconnect()
+	n0.Disconnect()
+
+	time.Sleep(time.Second)
+
+	go n0.Start()
+	go n0.Start()
+
+	time.Sleep(time.Second)
+
+	go n0.Listen()
+	go n0.Listen()
+
+	time.Sleep(time.Second)
+
+	go n0.Listen()
+
+	time.Sleep(time.Second)
+
+	go n0.Disconnect()
+	go n0.Stop()
+
+	time.Sleep(time.Second)
+
+	qc <- *new(struct{})
+}
+
+func TestNodeDisconnect(t *testing.T) {
+	qc := make(chan struct{})
+	n0 := p2p.NewNode("127.0.0.1", 2030, 9030, qc)
+
+	go n0.Start()
+
+	time.Sleep(time.Second)
+
+	go n0.Listen()
+
+	time.Sleep(time.Second)
+
+	go n0.Disconnect()
+
+	time.Sleep(time.Second)
+
+	go n0.Stop()
+}
+
+func TestNodeDisconnectStrange(t *testing.T) {
+	qc := make(chan struct{})
+	n0 := p2p.NewNode("127.0.0.1", 2040, 9040, qc)
+
+	go n0.Listen()
+	go n0.Start()
+	go n0.Listen()
+	go n0.Stop()
+	go n0.Disconnect()
+
+	time.Sleep(2 * time.Second)
 }
