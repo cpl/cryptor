@@ -2,7 +2,7 @@ package p2p
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"net"
 	"sync"
 )
@@ -65,20 +65,20 @@ func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
 // Start begins the listening process for the Node on the network and all
 // operations/requests handling.
 func (n *Node) Start() {
-	n.lock.Lock()
-	defer n.lock.Unlock()
 	if n.running {
 		n.errc <- errors.New("node: already running")
 		return
 	}
+	n.lock.Lock()
 	n.running = true
+	n.lock.Unlock()
 
 	go n.listen()
 
 	for {
 		select {
 		case err := <-n.errc:
-			fmt.Println("err:", err) // DEBUG
+			log.Println("err:", err) // DEBUG
 		case <-n.quit:
 			n.running = false
 			return
@@ -89,7 +89,7 @@ func (n *Node) Start() {
 			n.popd <- struct{}{}
 		case packet := <-n.udpIncoming:
 			// DEBUG
-			fmt.Println(
+			log.Println(
 				"| packet from |", packet.addr.String(),
 				"| containing  |", string(packet.data))
 			// DEBUG
@@ -101,7 +101,6 @@ func (n *Node) Start() {
 }
 
 func (n *Node) listen() {
-
 	// Listen for UDP on the given node address port
 	conn, err := net.ListenUDP("udp4", n.udpAddr)
 	if err != nil {
@@ -109,27 +108,28 @@ func (n *Node) listen() {
 		return
 	}
 
+	go n.receive(conn) // Pass incoming packets to incoming channel
+	go n.send(conn)    // Pass outgoing packets to outgoing channel
+}
+
+func (n *Node) receive(conn *net.UDPConn) {
+	buffer := make([]byte, UDPPacketSize)
 	for {
-		select {
-		// Check for outgoing packet requests
-		case packet := <-n.udpOutgoing:
-			_, err := conn.WriteToUDP(packet.data, packet.addr)
-			if err != nil {
-				n.errc <- err
-				continue
-			}
-		// Listen for incoming UDP packets
-		default:
-			buffer := make([]byte, UDPPacketSize)
-			r, addr, err := conn.ReadFromUDP(buffer)
-			if err != nil {
-				n.errc <- err
-				continue
-			}
-			if r == 0 {
-				continue
-			}
-			n.udpIncoming <- UDPPacket{buffer[:r], addr}
+		r, addr, err := conn.ReadFromUDP(buffer)
+		if err != nil {
+			n.errc <- err
+			continue
+		}
+		n.udpIncoming <- UDPPacket{buffer[:r], addr}
+	}
+}
+
+func (n *Node) send(conn *net.UDPConn) {
+	for packet := range n.udpOutgoing {
+		_, err := conn.WriteToUDP(packet.data, packet.addr)
+		if err != nil {
+			n.errc <- err
+			continue
 		}
 	}
 }
@@ -159,7 +159,6 @@ func (n *Node) Stop() {
 // AddPeer adds a given peer to the peer memory map.
 func (n *Node) AddPeer(peer *Peer) {
 	select {
-	case <-n.quit:
 	case n.addp <- peer:
 	}
 }
@@ -175,8 +174,6 @@ func (n *Node) Peers() []*Peer {
 		}
 	}:
 		<-n.popd
-	case <-n.quit:
-
 	}
 
 	return peerList

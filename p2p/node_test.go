@@ -14,7 +14,7 @@ func TestNodeDefault(t *testing.T) {
 	node := p2p.NewNode("127.0.0.1", 2000, 9000, qc)
 	go node.Start()
 
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(time.Second)
 
 	// Add 20 peers
 	for peerCount := 0; peerCount < 20; peerCount++ {
@@ -36,26 +36,40 @@ func TestNodeDefault(t *testing.T) {
 func TestNodeStop(t *testing.T) {
 	qc := make(chan struct{})
 	node := p2p.NewNode("127.0.0.1", 2002, 9002, qc)
-	go node.Stop()
+	go node.Stop() // Stop before starting
 
 	go node.Start()
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(time.Second)
 
 	go node.Stop()
 }
 
-func TestNodeRunning(t *testing.T) {
+func TestNodeStart(t *testing.T) {
 	qc := make(chan struct{})
 
 	node := p2p.NewNode("127.0.0.1", 2001, 9001, qc)
 
 	go node.Start()
 
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(time.Second)
 
-	go node.Start()
+	qc <- *new(struct{})
+}
 
-	time.Sleep(1000 * time.Millisecond)
+func TestNodeConnection(t *testing.T) {
+	qc := make(chan struct{})
+
+	n0 := p2p.NewNode("127.0.0.1", 2010, 9010, qc)
+	n1 := p2p.NewNode("127.0.0.1", 2011, 9011, qc)
+
+	n0.Send(p2p.NewUDPPacket([]byte("hello world"), n0.UDPAddr()))
+
+	time.Sleep(time.Second)
+
+	go n0.Start()
+	go n1.Start()
+
+	time.Sleep(time.Second)
 
 	qc <- *new(struct{})
 }
