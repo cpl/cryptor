@@ -57,7 +57,4 @@ docker:
 	@docker build . -t cryptor
 
 container:
-	@for port in {2001..$(COUNT)}; \
-	do \
-	docker run -p $$port:2000/udp -td cryptor; \
-	done \
+	@docker run -p $(PORT):2000/udp -td cryptor; \

@@ -3,17 +3,19 @@ package p2p
 import (
 	"fmt"
 	"net"
-
-	"github.com/thee-engineer/cryptor/network"
 )
 
-// Node ..
+// Node is a representation of the machine on the Cryptor network. A node
+// listens both UDP (Peer discovery and requests) and TCP (Chunk sharing and
+// handshakes).
 type Node struct {
-	NodeConfig // Static configuration generated at node creation
+	config NodeConfig // Static configuration generated at node creation
 
-	addr *net.UDPAddr  // Node UDP address
+	udpAddr *net.UDPAddr // Node UDP address
+	tcpAddr *net.TCPAddr // Node TCP address
+
 	quit chan struct{} // Stops node from running when it receives
-	errc chan error    // Channell for transmiting errors
+	errc chan error    // Channel for transmiting errors
 
 	addp chan *Peer    // Add peer request channel
 	pops chan peerFunc // Peer count and peer list operations
@@ -22,32 +24,44 @@ type Node struct {
 	peers map[string]*Peer  // Memory map with key/value peer pairs
 	token map[string][]byte // List of tokens used in requests
 
-	inbound  chan Packet
-	outbound chan Packet
+	udpIncoming chan UDPPacket // Incoming UDP channel
+	udpOutgoing chan UDPPacket // Outgoing UDP channel
 }
 
 // Function for peer list and peer count
 type peerFunc func(map[string]*Peer)
 
-// NewNode ...
-func NewNode(ip string, port int, quit chan struct{}) *Node {
+// NewNode returns a Node attached to the given IP:PORT pair, and controlled
+// using the given quit channel. This is more for testing and debugging than
+// actual production.
+func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
+	// Create node configuration
+	config := NodeConfig{
+		IP:  net.ParseIP(ip),
+		TCP: tcp,
+		UDP: udp,
+	}
+
 	return &Node{
-		addr:     network.IPPToUDP(ip, port),
-		quit:     quit,
-		addp:     make(chan *Peer),
-		errc:     make(chan error),
-		pops:     make(chan peerFunc),
-		popd:     make(chan struct{}),
-		peers:    make(map[string]*Peer),
-		inbound:  make(chan Packet, 1024),
-		outbound: make(chan Packet, 1024),
+		config:      config,
+		udpAddr:     &net.UDPAddr{Port: config.UDP},
+		tcpAddr:     &net.TCPAddr{IP: config.IP, Port: config.TCP},
+		quit:        quit,
+		addp:        make(chan *Peer),
+		errc:        make(chan error),
+		pops:        make(chan peerFunc),
+		popd:        make(chan struct{}),
+		peers:       make(map[string]*Peer),
+		udpIncoming: make(chan UDPPacket, UDPPacketSize),
+		udpOutgoing: make(chan UDPPacket, UDPPacketSize),
 	}
 }
 
-// Start ...
+// Start begins the listening process for the Node on the network and all
+// operations/requests handling.
 func (n *Node) Start() {
 
-	go n.connect(n.addr.Port)
+	go n.listen()
 
 	for {
 		select {
@@ -60,21 +74,56 @@ func (n *Node) Start() {
 		case operation := <-n.pops:
 			operation(n.peers)
 			n.popd <- struct{}{}
-		case packet := <-n.inbound:
+		case packet := <-n.udpIncoming:
+			// DEBUG
 			fmt.Println(
 				"| packet from |", packet.addr.String(),
 				"| containing  |", string(packet.data))
-			n.outbound <- Packet{data: []byte("ok\n"), addr: packet.addr}
+			// DEBUG
+			n.udpOutgoing <- UDPPacket{
+				data: []byte("ok\n"),
+				addr: packet.addr}
 		}
 	}
 }
 
-// Stop ...
+func (n *Node) listen() {
+
+	// Listen for UDP on the given node address port
+	conn, err := net.ListenUDP("udp", n.udpAddr)
+	if err != nil {
+		n.errc <- err
+		return
+	}
+
+	for {
+		select {
+		// Check for outgoing packet requests
+		case packet := <-n.udpOutgoing:
+			_, err := conn.WriteToUDP(packet.data, packet.addr)
+			if err != nil {
+				n.errc <- err
+				continue
+			}
+		// Listen for incoming UDP packets
+		default:
+			buffer := make([]byte, UDPPacketSize)
+			r, addr, err := conn.ReadFromUDP(buffer)
+			if err != nil {
+				n.errc <- err
+				continue
+			}
+			n.udpIncoming <- UDPPacket{buffer[:r], addr}
+		}
+	}
+}
+
+// Stop closes the quit channel of the Node.
 func (n *Node) Stop() {
 	close(n.quit)
 }
 
-// AddPeer ...
+// AddPeer adds a given peer to the peer memory map.
 func (n *Node) AddPeer(peer *Peer) {
 	select {
 	case <-n.quit:
@@ -82,7 +131,7 @@ func (n *Node) AddPeer(peer *Peer) {
 	}
 }
 
-// Peers ...
+// Peers returns a list of all peers related to this Node.
 func (n *Node) Peers() []*Peer {
 	var peerList []*Peer
 
@@ -100,7 +149,7 @@ func (n *Node) Peers() []*Peer {
 	return peerList
 }
 
-// PeerCount ...
+// PeerCount returns the number of related peers for this Node.
 func (n *Node) PeerCount() int {
 	var count int
 
@@ -111,38 +160,4 @@ func (n *Node) PeerCount() int {
 	}
 
 	return count
-}
-
-// Packet ...
-type Packet struct {
-	data []byte
-	addr *net.UDPAddr
-}
-
-func (n *Node) connect(port int) {
-
-	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: port})
-	if err != nil {
-		n.errc <- err
-		return
-	}
-
-	for {
-		select {
-		case packet := <-n.outbound:
-			_, err := conn.WriteToUDP(packet.data, packet.addr)
-			if err != nil {
-				n.errc <- err
-				continue
-			}
-		default:
-			buffer := make([]byte, 1024)
-			r, addr, err := conn.ReadFromUDP(buffer)
-			if err != nil {
-				n.errc <- err
-				continue
-			}
-			n.inbound <- Packet{buffer[:r], addr}
-		}
-	}
 }

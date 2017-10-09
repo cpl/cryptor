@@ -2,8 +2,8 @@ package p2p
 
 import "net"
 
-// NodeConfig ...
+// NodeConfig is a static structure defined at node creation.
 type NodeConfig struct {
 	IP       net.IP // IP Adress of the node
-	TCP, UDP int    // Ports used for P2P and file sharing
+	TCP, UDP int    // Ports used for P2P and chunk sharing
 }
