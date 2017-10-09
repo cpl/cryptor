@@ -14,13 +14,13 @@ profile-mem:
 
 cover:
 	@mkdir -p build
-	@echo "mode: atomic" > build/report.out
+	@echo "mode: set" > build/report.out
 
 	@for dir in $$(ls); \
 	do \
 	if ls $$dir/*_test.go &> /dev/null; then \
 		cd $$dir; \
-		go test -coverprofile=coverage.out -v -race -parallel 4; \
+		go test -coverprofile=coverage.out -v -parallel 4; \
 		cat coverage.out | tail -n +2 >> ../build/report.out; \
 		rm coverage.out; \
 		cd ..; \
