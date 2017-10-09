@@ -42,6 +42,9 @@ func TestNodeConnection(t *testing.T) {
 
 	go n0.Start()
 	go n1.Start()
+
+	time.Sleep(time.Second)
+
 	go n0.Listen()
 	go n1.Listen()
 

@@ -102,9 +102,9 @@ func (n *Node) Start() {
 // Listen currently in a drafting stage.
 func (n *Node) Listen() {
 	n.lock.Lock()
-	if !n.running {
-		return
-	}
+	// if !n.running {
+	// 	return
+	// }
 
 	if n.listening {
 		n.errc <- errors.New("node: already listening")
