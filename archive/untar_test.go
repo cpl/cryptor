@@ -69,3 +69,23 @@ func TestUnTarNoOutputFile(t *testing.T) {
 	}
 
 }
+
+func TestUnTarNoOutputDir(t *testing.T) {
+	t.Parallel()
+
+	var buffer bytes.Buffer
+
+	// Get a valid tar archive
+	if err := archive.TarGz("data/", &buffer); err != nil {
+		t.Error(err)
+	}
+
+	// Check for empty output, EOF
+	defer os.RemoveAll("tmpdat")
+	if err := archive.UnTarGz("tmpdat/down/the/test", &buffer); err != nil {
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+}

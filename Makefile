@@ -58,3 +58,6 @@ docker:
 
 container:
 	@docker run -p $(PORT):2000/udp -td cryptor; \
+
+bench:
+	@go test -bench=. ./crypt
