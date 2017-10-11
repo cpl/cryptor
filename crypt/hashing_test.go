@@ -20,12 +20,6 @@ func TestHashing(t *testing.T) {
 	if eHash != sHash {
 		t.Error("data mismatch: hash and hash")
 	}
-
-	// Attempt to hash source file
-	_, err := crypt.SHA256File("hashing.go")
-	if err != nil {
-		t.Error(err)
-	}
 }
 
 // Test SHA512

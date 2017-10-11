@@ -108,7 +108,7 @@ func TestFullChunkAssemble(t *testing.T) {
 	}
 
 	// Assemble package
-	// defer os.RemoveAll("/tmp/asm")
+	defer os.RemoveAll("/tmp/asm")
 	if err := asm.Assemble(key, "/tmp/asm"); err != nil {
 		t.Error(err)
 	}

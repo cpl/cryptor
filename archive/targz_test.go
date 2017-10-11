@@ -7,17 +7,10 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/archive"
-	"github.com/thee-engineer/cryptor/crypt"
 )
 
 func TestTarUnTar(t *testing.T) {
 	t.Parallel()
-
-	// Hash initial file
-	hash, err := crypt.SHA256File("data/tarfile.txt")
-	if err != nil {
-		t.Error(err)
-	}
 
 	// Median buffer
 	var buffer bytes.Buffer
@@ -28,7 +21,7 @@ func TestTarUnTar(t *testing.T) {
 	}
 
 	// Create output file
-	_, err = os.Create("data/out/tarfile.txt")
+	_, err := os.Create("data/out/tarfile.txt")
 	if err != nil {
 		t.Error(err)
 	}
@@ -38,20 +31,8 @@ func TestTarUnTar(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Hash file after taring and untaring
-	fHash, err := crypt.SHA256File("data/out/tarfile.txt")
-	if err != nil {
-		t.Error(err)
-	}
-
-	// Compare the two hashes
-	if !bytes.Equal(fHash.Sum(nil), hash.Sum(nil)) {
-		t.Error("Output hash does not match initial hash!")
-	}
-
 	// Remove output file
-	err = os.Remove("data/out/tarfile.txt")
-	if err != nil {
+	if err := os.Remove("data/out/tarfile.txt"); err != nil {
 		t.Error(err)
 	}
 }
