@@ -2,6 +2,7 @@ package archive_test
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -51,6 +52,30 @@ func TestTarUnTar(t *testing.T) {
 	// Remove output file
 	err = os.Remove("data/out/tarfile.txt")
 	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestFullTar(t *testing.T) {
+	t.Parallel()
+	var buffer bytes.Buffer
+
+	// Archive cryptor package
+	if err := archive.TarGz("..", &buffer); err != nil {
+		t.Error(err)
+	}
+
+	// Get a temporary path
+	tmpPath, err := ioutil.TempDir("/tmp", "targztest")
+	if err != nil {
+		t.Error(err)
+	}
+	// Remove directory, let UnTar create it
+	os.RemoveAll(tmpPath)
+
+	// Untar cryptor package
+	defer os.RemoveAll(tmpPath)
+	if err := archive.UnTarGz(tmpPath, &buffer); err != nil {
 		t.Error(err)
 	}
 }

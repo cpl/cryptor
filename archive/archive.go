@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func tarArchive(source string, out io.Writer) error {
@@ -45,10 +44,12 @@ func tarArchive(source string, out io.Writer) error {
 				return err
 			}
 
-			// Update header for directories
-			header.Name = strings.TrimPrefix(
-				strings.Replace(file, source, "", -1),
-				string(filepath.Separator))
+			// Update tar header to relative path
+			if file == source {
+				header.Name = ""
+			} else {
+				header.Name = file[len(source)+1:]
+			}
 
 			// Write file/dir header to tar
 			if err := tarWriter.WriteHeader(header); err != nil {

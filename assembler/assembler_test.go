@@ -70,3 +70,46 @@ func TestAssembler(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestFullChunkAssemble(t *testing.T) {
+	t.Parallel()
+
+	// Prepare tar archive of cryptor in buffer
+	var buffer bytes.Buffer
+	if err := archive.TarGz("..", &buffer); err != nil {
+		t.Error(err)
+	}
+
+	// Create cache for chunks
+	cache, err := cachedb.NewLDBCache("/tmp/asmcnktest", 16, 16)
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.RemoveAll("/tmp/asmcnktest")
+
+	// Create chunker
+	cnk := &chunker.Chunker{
+		Size:   1000000,
+		Cache:  cache,
+		Reader: &buffer,
+	}
+
+	// Chunk with derived key
+	key := crypt.NewKeyFromPassword("testing")
+	tail, err := cnk.Chunk(key)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Create assembler
+	asm := &assembler.Assembler{
+		Tail:  tail,
+		Cache: cache,
+	}
+
+	// Assemble package
+	// defer os.RemoveAll("/tmp/asm")
+	if err := asm.Assemble(key, "/tmp/asm"); err != nil {
+		t.Error(err)
+	}
+}

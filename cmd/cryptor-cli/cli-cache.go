@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
@@ -25,6 +28,22 @@ var cacheCLI = &cli.Command{
 	},
 }
 
+func handleCache(cache string) string {
+
+	// Check which cache to use
+	cachePath := ""
+	switch cache {
+	case "default":
+		cachePath = cachedb.GetCryptorDir()
+	case "temp":
+		cachePath, _ = ioutil.TempDir("/tmp", "cryptor_cache")
+	default:
+		cachePath = cache
+	}
+
+	return cachePath
+}
+
 // Command for creating new cache
 var newCacheCLI = &cli.Command{
 	Name: "add",
@@ -34,9 +53,12 @@ var newCacheCLI = &cli.Command{
 		argv := ctx.Argv().(*cacheArg)
 
 		// Create cache
-		cache, err := cachedb.NewLDBCache(handleCache(argv.Cache), 0, 0)
+		cachePath := handleCache(argv.Cache)
+		cache, err := cachedb.NewLDBCache(cachePath, 0, 0)
 		handleErr(err)
 		defer cache.Close()
+
+		log.Println("created new cache:", cachePath)
 
 		return nil
 	},
@@ -45,13 +67,20 @@ var newCacheCLI = &cli.Command{
 // Command for listing items in a cache
 var listCacheCLI = &cli.Command{
 	Name: "list",
-	Desc: "cache removal",
+	Desc: "list cache chunks",
 	Argv: func() interface{} { return new(cacheArg) },
 	Fn: func(ctx *cli.Context) error {
 		argv := ctx.Argv().(*cacheArg)
 
+		// Check that the cache exists
+		cachePath := handleCache(argv.Cache)
+		if _, err := os.Stat(cachePath); os.IsNotExist(err) {
+			log.Println("path", cachePath, "does not exist cache")
+			return err
+		}
+
 		// Open (or create)
-		cache, err := cachedb.NewLDBCache(handleCache(argv.Cache), 0, 0)
+		cache, err := cachedb.NewLDBCache(cachePath, 0, 0)
 		handleErr(err)
 		defer cache.Close()
 
