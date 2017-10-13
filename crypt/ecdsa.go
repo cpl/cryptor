@@ -7,16 +7,12 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/sha256"
 	"errors"
 	"hash"
 	"math/big"
 
 	"golang.org/x/crypto/sha3"
-)
-
-const (
-	secLen = 33
-	macLen = 33
 )
 
 // PublicKey is a substitute for ecdsa.PublicKey.
@@ -51,13 +47,22 @@ type Param struct {
 }
 
 var (
-	// ECDSA521Param are all the standard parameters for Curve 521
+	// ECDSA521Param are all the standard parameters for Curve 521.
 	ECDSA521Param = &Param{
 		Hash:      sha3.New512,   // Using 512 sha3 function
 		hType:     crypto.SHA512, // Using 512 sha3
 		Cipher:    aes.NewCipher, // Asymetric cipher block
 		BlockSize: aes.BlockSize, // Asymetric cipher block size
 		KeyLength: 32}            // Length of the asymetric key
+
+	// ECDSA256Param are all the standard parameters for Curve 251.
+	ECDSA256Param = &Param{
+		Hash:      sha256.New,
+		hType:     crypto.SHA256,
+		Cipher:    aes.NewCipher,
+		BlockSize: aes.BlockSize,
+		KeyLength: 32,
+	}
 )
 
 // PrivateKey is a substitute for ecdsa.PrivateKey.
@@ -79,10 +84,8 @@ func (prv *PrivateKey) Export() *ecdsa.PrivateKey {
 	return &ecdsa.PrivateKey{PublicKey: *ecdsaPublicKey, D: prv.D}
 }
 
-// GenerateKey generates a new Private/Public key pair using P521 Curve
-// which implements P-521 (see FIPS 186-3, section D.2.5).
-func GenerateKey() (*PrivateKey, error) {
-	pb, x, y, err := elliptic.GenerateKey(elliptic.P521(), rand.Reader)
+func generateKey(curve elliptic.Curve) (*PrivateKey, error) {
+	pb, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -90,14 +93,26 @@ func GenerateKey() (*PrivateKey, error) {
 	prv := new(PrivateKey)
 	prv.PublicKey.X = x
 	prv.PublicKey.Y = y
-	prv.PublicKey.Curve = elliptic.P521()
+	prv.PublicKey.Curve = curve
 	prv.D = new(big.Int).SetBytes(pb)
 
 	return prv, nil
 }
 
+// GenerateKey256 generates a new Private/Public key pair using P256 Curve
+// which implements P-256 (see).
+func GenerateKey256() (*PrivateKey, error) {
+	return generateKey(elliptic.P256())
+}
+
+// GenerateKey521 generates a new Private/Public key pair using P521 Curve
+// which implements P-521 (see FIPS 186-3, section D.2.5).
+func GenerateKey521() (*PrivateKey, error) {
+	return generateKey(elliptic.P521())
+}
+
 // GenerateShared creates a new shared secret of given lenght.
-func (prv *PrivateKey) GenerateShared(pub *PublicKey) (sec []byte, err error) {
+func (prv *PrivateKey) GenerateShared(pub *PublicKey, secLen, macLen int) (sec []byte, err error) {
 	// Verify matching curves on both public and private keys
 	if prv.PublicKey.Curve != pub.Curve {
 		return nil, errors.New("shared key: invalid curve match")

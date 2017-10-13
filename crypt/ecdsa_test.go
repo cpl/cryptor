@@ -11,7 +11,7 @@ func TestImportExport(t *testing.T) {
 	t.Parallel()
 
 	// Generate key pair
-	prv, err := crypt.GenerateKey()
+	prv, err := crypt.GenerateKey256()
 	if err != nil {
 		t.Error(err)
 	}
@@ -44,27 +44,27 @@ func TestSharedSecret(t *testing.T) {
 	t.Parallel()
 
 	// Generate first key pair
-	prv0, err := crypt.GenerateKey()
+	prv0, err := crypt.GenerateKey256()
 	if err != nil {
 		t.Error(err)
 	}
 	pub0 := &prv0.PublicKey
 
 	// Generate second key pair
-	prv1, err := crypt.GenerateKey()
+	prv1, err := crypt.GenerateKey256()
 	if err != nil {
 		t.Error(err)
 	}
 	pub1 := &prv1.PublicKey
 
 	// Obtain shared secret from first private key and second public key
-	ss0, err := prv0.GenerateShared(pub1)
+	ss0, err := prv0.GenerateShared(pub1, 16, 16)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// Obtain shared secret from second private key and first public key
-	ss1, err := prv1.GenerateShared(pub0)
+	ss1, err := prv1.GenerateShared(pub0, 16, 16)
 	if err != nil {
 		t.Error(err)
 	}
@@ -72,5 +72,60 @@ func TestSharedSecret(t *testing.T) {
 	// Compare the two secrets
 	if !bytes.Equal(ss0, ss1) {
 		t.Errorf("shared secret: not matching")
+	}
+}
+
+func Test521Key(t *testing.T) {
+	t.Parallel()
+
+	// Generate 521 curve keys
+	key0, err := crypt.GenerateKey521()
+	if err != nil {
+		t.Error(err)
+	}
+
+	key1, err := crypt.GenerateKey521()
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Generate secrets on each "side"
+	ss0, err := key0.GenerateShared(&key1.PublicKey, 33, 33)
+	if err != nil {
+		t.Error(err)
+	}
+
+	ss1, err := key1.GenerateShared(&key0.PublicKey, 33, 33)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Compare the two secrets
+	if !bytes.Equal(ss0, ss1) {
+		t.Errorf("shared secret: not matching")
+	}
+}
+
+func TestErrors(t *testing.T) {
+	t.Parallel()
+
+	key0, err := crypt.GenerateKey256()
+	if err != nil {
+		t.Error(err)
+	}
+
+	key1, err := crypt.GenerateKey521()
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = key0.GenerateShared(&key1.PublicKey, 33, 33)
+	if err == nil {
+		t.Error("ecdsa: invalid key operation")
+	}
+
+	_, err = key1.GenerateShared(&key0.PublicKey, 16, 16)
+	if err == nil {
+		t.Error("ecdsa: invalid key operation")
 	}
 }
