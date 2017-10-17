@@ -1,3 +1,5 @@
+// Package crypt contains functions and structs that help with encryption,
+// hash computation, encoding/decoding and generating random data.
 package crypt
 
 import (
@@ -8,11 +10,8 @@ import (
 	"io"
 )
 
-// AESKeySize ...
-const AESKeySize = 32
-
-// Encrypt ...
-func Encrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
+// Encrypt a msg using AES256 Key and 12B random nonce
+func Encrypt(key AESKey, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -35,8 +34,8 @@ func Encrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, msg, nil), nil
 }
 
-// Decrypt ...
-func Decrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
+// Decrypt msg encrypted with AES256 Key
+func Decrypt(key AESKey, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -51,7 +50,7 @@ func Decrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 
 	// Check for nonce existence in ciphertext
 	if len(msg) < gcm.NonceSize() {
-		return nil, errors.New("invalid msg")
+		return nil, errors.New("invalid nonce")
 	}
 
 	// Obtain plaintext msg
@@ -62,14 +61,4 @@ func Decrypt(key *[AESKeySize]byte, msg []byte) ([]byte, error) {
 	}
 
 	return plaintext, nil
-}
-
-// NewKey ...
-func NewKey() *[AESKeySize]byte {
-	key := [AESKeySize]byte{}
-	_, err := io.ReadFull(rand.Reader, key[:])
-	if err != nil {
-		panic(err)
-	}
-	return &key
 }

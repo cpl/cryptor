@@ -1,45 +1,41 @@
+// Package chunker contains data structures and functions that
+// read, chunk and write from an io.Reader to a Database cache where
+// data is stored in chunks (the hash acts as key).
 package chunker
 
 import (
-	"bytes"
 	"io"
-	"os"
-	"path"
 
+	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
-	"github.com/thee-engineer/cryptor/utility"
 )
 
-// Chunker ...
+// Chunker takes a reader as input, a chunk size and the cache in which to
+// store any resulting chunks.
 type Chunker struct {
 	Size   uint32
-	Key    *[32]byte
+	Cache  cachedb.Database
 	Reader io.Reader
 }
 
-// Chunk ...
-func (chunker *Chunker) Chunk() (hashList []string, err error) {
-	// Keep count of chunks
-	count := 0
+// Chunk starts chunking all data from the Chunker reader into the cache.
+// If a non-null AES Key is given, the the tail chunk will be encrypted
+// using this key, allowing the user more control. If a null key is given
+// then a random AES Key will be used
+func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
+	// Make a chunk struct
+	chunk := NewChunk(c.Size)
 
-	// Prepare data
-	chunkHeader := NewChunkHeader()
-	chunkData := new(bytes.Buffer)
-	chunkCont := make([]byte, chunker.Size)
+	// Prepare previous hash and key
+	pKey := crypt.NullKey    // Previous key is empty (this is the first chunk)
+	pHash = make([]byte, 32) // Previous hash is empty
 
-	// Create temporary directory
-	// tmpDir, err := ioutil.TempDir(tmpPath, tmpPref)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// Prepare keys
-	var keyNext *[32]byte
-	var keyThis *[32]byte
+	// Prepare a batch for the cache, all chunks will be written at once
+	batch := c.Cache.NewBatch()
 
 	for {
 		// Read archive content into chunks
-		read, err := chunker.Reader.Read(chunkCont)
+		read, err := c.Reader.Read(chunk.Content)
 
 		// Check for EOF
 		if read == 0 || err == io.EOF {
@@ -51,57 +47,59 @@ func (chunker *Chunker) Chunk() (hashList []string, err error) {
 			return nil, err
 		}
 
-		// Switch keys
-		if count == 0 {
-			keyThis = chunker.Key
+		// Add random padding if needed
+		if read < int(c.Size) {
+			chunk.Content = append(
+				chunk.Content[:read],
+				crypt.RandomData(uint(c.Size)-uint(read))...)
+			chunk.Header.Padd = c.Size - uint32(read)
 		} else {
-			keyThis = keyNext
-		}
-		keyNext = crypt.NewKey()
-
-		// Update chunk header
-		chunkHeader.Hash = crypt.SHA256Data(chunkCont).Sum(nil)
-		chunkHeader.NKey = keyNext[:]
-		chunkHeader.Padd = chunker.Size - uint32(read)
-
-		// Add padding if needed
-		if read < int(chunker.Size) {
-			for index := read; index < int(chunker.Size); index++ {
-				chunkCont[index] = 0
-			}
+			// No padding needed
+			chunk.Header.Padd = 0
 		}
 
-		// Create chunk with header and content
-		chunkData.Write(chunkHeader.Bytes())
-		chunkData.Write(chunkCont)
+		// Compute content hash for validity check
+		chunk.Header.Hash = crypt.SHA256Data(chunk.Content[:read]).Sum(nil)
 
-		// Encrypt chunk
-		eData, err := crypt.Encrypt(keyThis, chunkData.Bytes())
+		// Store previous encryption key inside this chunk's header
+		chunk.Header.NKey = pKey
+
+		// Store previous encrypted chunk hash inside this chunk's header
+		chunk.Header.Next = pHash
+
+		// Generatea a new encryption key for each chunk
+		// TODO: Find a better way of checking for last chunk
+		if read < int(c.Size) {
+			// Use tail key for the last chunk
+			pKey = tKey
+		} else {
+			// Generate new random key
+			pKey = crypt.NewKey()
+		}
+
+		// Encrypt chunk data
+		eData, err := crypt.Encrypt(pKey, chunk.Bytes())
 		if err != nil {
 			return nil, err
 		}
 
-		// Hash encrypted content, for ctpkg
-		eHash := string(crypt.Encode(crypt.SHA256Data(eData).Sum(nil)))
-		hashList = append(hashList, eHash)
+		// Hash encrypted content
+		eHash := crypt.SHA256Data(eData).Sum(nil)
 
-		// Create chunk file
-		chunkFile, err := os.Create(path.Join(utility.GetCachePath(), eHash))
-		if err != nil {
-			return nil, err
-		}
-		defer chunkFile.Close()
-
-		// Write encrypted data to chunk file
-		_, err = chunkFile.Write(eData)
-		if err != nil {
+		// Store chunk in cache batch
+		if err := batch.Put(eHash, eData); err != nil {
 			return nil, err
 		}
 
-		// Reset buffer
-		chunkData.Reset()
-		count++
+		// Update previous hash
+		pHash = eHash
 	}
 
-	return hashList, nil
+	// Write batch to cache
+	if err := batch.Write(); err != nil {
+		return nil, err
+	}
+
+	// Return the tail hash
+	return pHash, nil
 }

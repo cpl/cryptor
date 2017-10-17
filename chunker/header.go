@@ -3,34 +3,43 @@ package chunker
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/thee-engineer/cryptor/crypt"
 )
 
-// HeaderSize ...
-const HeaderSize = 68
+// HeaderSize defines the expected size of the header
+const HeaderSize = 100
 
 // ChunkHeader ...
 type ChunkHeader struct {
-	Hash []byte
-	Padd uint32
-	NKey []byte
+	NKey crypt.AESKey // Key for the next chunk
+	Next []byte       // Hash of the next chunk
+	Hash []byte       // Hash of the chunk content
+	Padd uint32       // Byte size of the padding
 }
 
-// NewChunkHeader ...
-func NewChunkHeader() (header *ChunkHeader) {
+// NewChunkHeader returns a new chunk header
+func NewChunkHeader() *ChunkHeader {
 	return &ChunkHeader{
+		NKey: crypt.NullKey,
+		Next: nil,
 		Hash: nil,
-		NKey: nil,
 		Padd: 0,
 	}
 }
 
-// Bytes ...
-func (header *ChunkHeader) Bytes() []byte {
+// Bytes returns the chunk header as a byte array. Data is distributed as
+// follows:
+//
+// | NKEY 32B | NEXT 32B | HASH 32B | PADD 4B |
+func (header ChunkHeader) Bytes() []byte {
 	buffer := new(bytes.Buffer)
 
-	buffer.Write(header.Hash) // 32
-	buffer.Write(header.NKey) // 32
+	buffer.Write(header.NKey.Bytes()) // 32
+	buffer.Write(header.Next)         // 32
+	buffer.Write(header.Hash)         // 32
 
+	// Convert uint32 to byte array
 	uintConv := make([]byte, 4)
 	binary.LittleEndian.PutUint32(uintConv, header.Padd)
 	buffer.Write(uintConv) // 4

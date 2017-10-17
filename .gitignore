@@ -10,6 +10,10 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# GO pprof
+prof.mem
+prof.cpu
+
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
@@ -17,3 +21,6 @@
 launch.json
 .vscode/
 **/.DS_Store
+build/
+dist/
+*.swp
