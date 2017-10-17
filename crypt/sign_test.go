@@ -100,11 +100,9 @@ func TestSignSharedSecret(t *testing.T) {
 		t.Error(err)
 	}
 
-	sec, err := key0.GenerateShared(&key1.PublicKey, 16, 16)
+	// TODO: Finish test
+	_, err = key0.GenerateShared(&key1.PublicKey, 16, 16)
 	if err != nil {
 		t.Error(err)
 	}
-
-	t.Log(len(key0.D.Bytes()))
-	t.Log(len(sec))
 }

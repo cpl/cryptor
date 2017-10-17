@@ -20,7 +20,7 @@ cover:
 	do \
 	if ls $$dir/*_test.go &> /dev/null; then \
 		cd $$dir; \
-		go test -coverprofile=coverage.out -v -race -parallel 4; \
+		go test -coverprofile=coverage.out -v -race -parallel 8; \
 		cat coverage.out | tail -n +2 >> ../build/report.out; \
 		rm coverage.out; \
 		cd ..; \

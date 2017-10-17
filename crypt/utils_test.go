@@ -23,5 +23,6 @@ func TestZeroBytes(t *testing.T) {
 		t.Error("zero bytes: failed to zero all bytes")
 	}
 
+	// Display all zeros (hopefully)
 	t.Log(testData)
 }

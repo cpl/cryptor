@@ -145,3 +145,33 @@ func (prv *PrivateKey) GenerateShared(pub *PublicKey, secLen, macLen int) (sec [
 func (pub *PublicKey) SecretLength() int {
 	return (pub.Curve.Params().BitSize + 7) / 8
 }
+
+func bytesToKey(k []byte, params *Param) (*PrivateKey, error) {
+	// Check for valid lenght key
+	if len(k) != params.KeyLength {
+		return nil, errors.New("ecdsa: invalid key bytes size")
+	}
+
+	// Compute ecdsa private public pair
+	curve := params.curve()
+	x, y := curve.ScalarBaseMult(k)
+	d := new(big.Int)
+	d.SetBytes(k)
+
+	return &PrivateKey{
+		PublicKey: PublicKey{
+			Curve:  curve,
+			X:      x,
+			Y:      y,
+			Params: params,
+		},
+		D: d,
+	}, nil
+}
+
+// Key256FromSecret generates a new PrivateKey by using
+// the shared secret obtain from prviateKey.GenerateShared(). The key will
+// use ECDSA 256 curve.
+func Key256FromSecret(sec []byte) (*PrivateKey, error) {
+	return bytesToKey(sec, ECDSA256Param)
+}
