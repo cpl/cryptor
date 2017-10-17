@@ -9,7 +9,7 @@ import (
 	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
-	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 func createTestCache() ([]byte, error) {
@@ -32,7 +32,7 @@ func createTestCache() ([]byte, error) {
 	}
 
 	// Chunk files and get tail hash
-	tail, err := c.Chunk(crypt.NullKey)
+	tail, err := c.Chunk(aes.NullKey)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func TestAssembler(t *testing.T) {
 
 	// Start assembling package
 	defer os.RemoveAll("untar")
-	err = asm.Assemble(crypt.NullKey, "untar")
+	err = asm.Assemble(aes.NullKey, "untar")
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,7 +95,7 @@ func TestFullChunkAssemble(t *testing.T) {
 	}
 
 	// Chunk with derived key
-	key := crypt.NewKeyFromPassword("testing")
+	key := aes.NewKeyFromPassword("testing")
 	tail, err := cnk.Chunk(key)
 	if err != nil {
 		t.Error(err)

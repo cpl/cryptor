@@ -5,6 +5,8 @@ import (
 
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 func TestChunk(t *testing.T) {
@@ -17,9 +19,9 @@ func TestChunk(t *testing.T) {
 
 	// Create the chunk header
 	chunkHeader := chunker.NewChunkHeader()
-	chunkHeader.Hash = crypt.SHA256Data(chunk.Content).Sum(nil) // Content hash
-	chunkHeader.Next = chunker.NullByteArray[:]                 // Tail hash
-	chunkHeader.NKey = crypt.NullKey                            // Tail key
+	chunkHeader.Hash = hashing.SHA256Digest(chunk.Content) // Content hash
+	chunkHeader.Next = chunker.NullByteArray[:]            // Tail hash
+	chunkHeader.NKey = aes.NullKey                         // Tail key
 
 	chunk.Header = chunkHeader
 

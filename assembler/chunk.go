@@ -6,7 +6,7 @@ import (
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
-	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 // EChunk ...
@@ -30,9 +30,9 @@ func GetEChunk(hash []byte, cache cachedb.Database) *EChunk {
 
 // Decrypt returns the decrypted content of the encrypted chunk as a
 // normal chunk containign a chunk header and content ([]byte).
-func (eC EChunk) Decrypt(key crypt.AESKey) (*chunker.Chunk, error) {
+func (eC EChunk) Decrypt(key aes.Key) (*chunker.Chunk, error) {
 	// Decrypt encrypted chunk data
-	data, err := crypt.Decrypt(key, eC.Data)
+	data, err := aes.Decrypt(key, eC.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func extractHeader(data []byte) *chunker.ChunkHeader {
 	padd := binary.LittleEndian.Uint32(data[96:100])
 
 	// Get next key from chunk header data
-	nKey := crypt.NewKeyFromBytes(data[:32])
+	nKey := aes.NewKeyFromBytes(data[:32])
 
 	return &chunker.ChunkHeader{
 		NKey: nKey,

@@ -3,7 +3,7 @@ package chunker
 import (
 	"bytes"
 
-	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 // NullByteArray is used for the last chunk header.Next
@@ -36,7 +36,7 @@ func (c Chunk) Bytes() []byte {
 
 // IsValid compares the header hash with the content hash
 func (c Chunk) IsValid() bool {
-	return bytes.Equal(c.Header.Hash, crypt.SHA256Data(c.Content).Sum(nil))
+	return bytes.Equal(c.Header.Hash, hashing.SHA256Digest(c.Content))
 }
 
 // IsLast checks if the next chunk hash is the NullByteArray

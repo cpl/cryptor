@@ -12,6 +12,7 @@ import (
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 // Arguments for chunker command
@@ -65,7 +66,7 @@ var chunkCLI = &cli.Command{
 		}
 
 		// Derive key from password and start chunking
-		hash, err := c.Chunk(crypt.NewKeyFromPassword(argv.Pass))
+		hash, err := c.Chunk(aes.NewKeyFromPassword(argv.Pass))
 		handleErr(err)
 
 		// Print the tail hash for the final chunk

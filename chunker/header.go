@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 // HeaderSize defines the expected size of the header
@@ -12,16 +12,16 @@ const HeaderSize = 100
 
 // ChunkHeader ...
 type ChunkHeader struct {
-	NKey crypt.AESKey // Key for the next chunk
-	Next []byte       // Hash of the next chunk
-	Hash []byte       // Hash of the chunk content
-	Padd uint32       // Byte size of the padding
+	NKey aes.Key // Key for the next chunk
+	Next []byte  // Hash of the next chunk
+	Hash []byte  // Hash of the chunk content
+	Padd uint32  // Byte size of the padding
 }
 
 // NewChunkHeader returns a new chunk header
 func NewChunkHeader() *ChunkHeader {
 	return &ChunkHeader{
-		NKey: crypt.NullKey,
+		NKey: aes.NullKey,
 		Next: nil,
 		Hash: nil,
 		Padd: 0,

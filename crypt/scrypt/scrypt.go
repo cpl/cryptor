@@ -10,7 +10,7 @@ const keySize = 32
 // Scrypt takes a password and salt and derives a 32 byte key.
 func Scrypt(password string, salt []byte) []byte {
 	// Derive 32 byte key.
-	key, err := scrypt.Key([]byte(password), salt, 1048576, 8, 1, keySize)
+	key, err := scrypt.Key([]byte(password), salt, 65536, 8, 1, keySize)
 	if err != nil {
 		panic(err)
 	}

@@ -8,6 +8,8 @@ import (
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 // Chunker takes a reader as input, a chunk size and the cache in which to
@@ -22,13 +24,16 @@ type Chunker struct {
 // If a non-null AES Key is given, the the tail chunk will be encrypted
 // using this key, allowing the user more control. If a null key is given
 // then a random AES Key will be used
-func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
+func (c Chunker) Chunk(tailKey aes.Key) (tailHash []byte, err error) {
 	// Make a chunk struct
 	chunk := NewChunk(c.Size)
 
+	// Memory zeroing
+	defer crypt.ZeroBytes(tailKey[:])
+
 	// Prepare previous hash and key
-	pKey := crypt.NullKey    // Previous key is empty (this is the first chunk)
-	pHash = make([]byte, 32) // Previous hash is empty
+	pKey := aes.NullKey         // Previous key is empty (first chunk)
+	tailHash = make([]byte, 32) // Previous hash is empty (at the end, tail)
 
 	// Prepare a batch for the cache, all chunks will be written at once
 	batch := c.Cache.NewBatch()
@@ -59,32 +64,35 @@ func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 		}
 
 		// Compute content hash for validity check
-		chunk.Header.Hash = crypt.SHA256Data(chunk.Content[:read]).Sum(nil)
+		chunk.Header.Hash = hashing.SHA256Digest(chunk.Content[:read])
 
 		// Store previous encryption key inside this chunk's header
 		chunk.Header.NKey = pKey
 
 		// Store previous encrypted chunk hash inside this chunk's header
-		chunk.Header.Next = pHash
+		chunk.Header.Next = tailHash
 
 		// Generatea a new encryption key for each chunk
 		// TODO: Find a better way of checking for last chunk
 		if read < int(c.Size) {
 			// Use tail key for the last chunk
-			pKey = tKey
+			pKey = tailKey
 		} else {
 			// Generate new random key
-			pKey = crypt.NewKey()
+			pKey = aes.NewKey()
 		}
 
 		// Encrypt chunk data
-		eData, err := crypt.Encrypt(pKey, chunk.Bytes())
+		eData, err := aes.Encrypt(pKey, chunk.Bytes())
 		if err != nil {
 			return nil, err
 		}
 
+		// Zero key from memory
+		crypt.ZeroBytes(chunk.Header.NKey[:])
+
 		// Hash encrypted content
-		eHash := crypt.SHA256Data(eData).Sum(nil)
+		eHash := hashing.SHA256Digest(eData)
 
 		// Store chunk in cache batch
 		if err := batch.Put(eHash, eData); err != nil {
@@ -92,7 +100,7 @@ func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 		}
 
 		// Update previous hash
-		pHash = eHash
+		tailHash = eHash
 	}
 
 	// Write batch to cache
@@ -101,5 +109,5 @@ func (c Chunker) Chunk(tKey crypt.AESKey) (pHash []byte, err error) {
 	}
 
 	// Return the tail hash
-	return pHash, nil
+	return tailHash, nil
 }

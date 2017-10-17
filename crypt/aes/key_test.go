@@ -1,6 +1,7 @@
 package aes_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/thee-engineer/cryptor/crypt"
@@ -76,5 +77,19 @@ func TestNewKeyFromStringError(t *testing.T) {
 	}
 	if key != aes.NullKey {
 		t.Error("aes key error: obtained invalid aes key from empty hex")
+	}
+}
+
+func TestKeyZeroing(t *testing.T) {
+	t.Parallel()
+
+	// Generate AES key
+	key := aes.NewKey()
+	// Zero aes key
+	crypt.ZeroBytes(key[:])
+
+	// Check that zeroing succeded
+	if !bytes.Equal(key.Bytes(), make([]byte, aes.KeySize)) {
+		t.Error("aes key: zeroing failed")
 	}
 }

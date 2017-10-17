@@ -10,6 +10,7 @@ import (
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 func TestEChunk(t *testing.T) {
@@ -39,14 +40,14 @@ func TestEChunk(t *testing.T) {
 		Cache:  cache,
 		Reader: &buffer,
 	}
-	chunkHash, err := chunker.Chunk(crypt.NullKey)
+	chunkHash, err := chunker.Chunk(aes.NullKey)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// Read encrypted chunk
 	eChunk := assembler.GetEChunk(chunkHash, cache)
-	dChunk, err := eChunk.Decrypt(crypt.NullKey)
+	dChunk, err := eChunk.Decrypt(aes.NullKey)
 	if err != nil {
 		t.Error(err)
 	}
