@@ -1,23 +1,26 @@
-package crypt_test
+package aes_test
 
 import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 func TestKey(t *testing.T) {
 	t.Parallel()
 
-	key := crypt.NewKey()
-	crypt.NewKeyFromBytes(key.Bytes())
-	crypt.NewKeyFromBytes(crypt.RandomData(crypt.AESKeySize))
-	crypt.NewKeyFromString(key.String())
-	crypt.NewKeyFromString("")
+	key := aes.NewKey()
+
+	aes.NewKeyFromBytes(key.Bytes())
+	aes.NewKeyFromBytes(crypt.RandomData(aes.KeySize))
+	aes.NewKeyFromString(key.String())
+	aes.NewKeyFromString("")
+
 	key.Encode()
 }
 
-func TestKeyFPassword(t *testing.T) {
+func TestKeyFromPassword(t *testing.T) {
 	t.Parallel()
 
 	// Test passwords
@@ -38,8 +41,40 @@ func TestKeyFPassword(t *testing.T) {
 
 	// Test all values
 	for index, test := range testValues {
-		if testResult[index] != string(crypt.NewKeyFromPassword(test).Encode()) {
-			t.Error("key error: wrong key derivation")
+		if testResult[index] != string(aes.NewKeyFromPassword(test).Encode()) {
+			t.Error("aes key error: wrong key derivation")
 		}
+	}
+}
+
+func TestNewKeyFromStringError(t *testing.T) {
+	t.Parallel()
+
+	// Test invalid string
+	_, err := aes.NewKeyFromString(string(crypt.RandomData(64)))
+	if err == nil {
+		t.Error("aes key error: invalid hex string used as key")
+	}
+
+	// Test large string
+	_, err = aes.NewKeyFromString(string(crypt.RandomData(100)))
+	if err == nil {
+		t.Error("aes key error: invalid hex string used as key")
+	}
+
+	// Test small string
+	_, err = aes.NewKeyFromString(string(crypt.RandomData(32)))
+	if err == nil {
+		t.Error("aes key error: invalid hex string used as key")
+	}
+
+	// Test string of white spaces
+	key, err := aes.NewKeyFromString(
+		"\n    \t     \n\n   \n \t        \n     \n\t\n     \t     \n      ")
+	if err != nil {
+		t.Error("aes key error: invalid hex string used as key")
+	}
+	if key != aes.NullKey {
+		t.Error("aes key error: obtained invalid aes key from empty hex")
 	}
 }
