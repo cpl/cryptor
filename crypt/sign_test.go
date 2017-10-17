@@ -42,4 +42,41 @@ func TestSignSmall(t *testing.T) {
 	}
 }
 
-// TODO: Test for errors and invalid cases
+func TestSignInvalid(t *testing.T) {
+	testData := crypt.RandomData(1024)
+
+	key0, err := crypt.GenerateKey256()
+	if err != nil {
+		t.Error(err)
+	}
+
+	key1, err := crypt.GenerateKey256()
+	if err != nil {
+		t.Error(err)
+	}
+
+	sign, err := key0.Sign(testData)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if key1.PublicKey.Verify(testData, sign) {
+		t.Error("sign error: verified invalid signature")
+	}
+
+	if key1.PublicKey.Verify(crypt.RandomData(1024), sign) {
+		t.Error("sign error: verified invalid signature")
+	}
+
+	if key1.PublicKey.Verify(testData, crypt.RandomData(64)) {
+		t.Error("sign error: verified invalid signature")
+	}
+
+	if key1.PublicKey.Verify(testData, crypt.RandomData(16)) {
+		t.Error("sign error: verified invalid signature")
+	}
+
+	if key1.PublicKey.Verify(testData, crypt.RandomData(100)) {
+		t.Error("sign error: verified invalid signature")
+	}
+}

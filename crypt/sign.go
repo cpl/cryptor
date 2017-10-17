@@ -8,12 +8,12 @@ import (
 
 // Sign signs a msg of any size by creating the SHA256 hash of the msg and
 // applying ECDSA 256 curve signature.
-func (p *PrivateKey) Sign(msg []byte) ([]byte, error) {
+func (prv *PrivateKey) Sign(msg []byte) ([]byte, error) {
 	// Hash message
 	hash := SHA256Data(msg)
 
 	// Go ECDSA key
-	ecdsaKey := p.Export()
+	ecdsaKey := prv.Export()
 
 	// Sign message
 	r, s, err := ecdsa.Sign(rand.Reader, ecdsaKey, hash.Sum(nil))
@@ -38,12 +38,18 @@ func (p *PrivateKey) Sign(msg []byte) ([]byte, error) {
 }
 
 // Verify checks an ECDSA signature. Returns true if valid, false if invalid.
-func (p *PublicKey) Verify(data, signature []byte) bool {
-	// Hash message
-	hash := SHA256Data(data).Sum(nil)
+func (pub *PublicKey) Verify(data, signature []byte) bool {
 
 	// Get curve byte size
-	curveSize := p.Export().Params().BitSize / 8
+	curveSize := pub.Export().Params().BitSize / 8
+
+	// Make sure signature has valid size
+	if len(signature) != curveSize*2 {
+		return false
+	}
+
+	// Hash message
+	hash := SHA256Data(data).Sum(nil)
 
 	// Convert bytes back into big ints
 	r, s := new(big.Int), new(big.Int)
@@ -51,5 +57,5 @@ func (p *PublicKey) Verify(data, signature []byte) bool {
 	s.SetBytes(signature[curveSize:])
 
 	// Use Go's ecdsa to verify signature
-	return ecdsa.Verify(p.Export(), hash[:], r, s)
+	return ecdsa.Verify(pub.Export(), hash[:], r, s)
 }
