@@ -41,6 +41,7 @@ func (pub *PublicKey) Export() *ecdsa.PublicKey {
 type Param struct {
 	Hash      func() hash.Hash
 	hType     crypto.Hash
+	curve     func() elliptic.Curve
 	Cipher    func([]byte) (cipher.Block, error)
 	BlockSize int
 	KeyLength int
@@ -51,6 +52,7 @@ var (
 	ECDSA521Param = &Param{
 		Hash:      sha3.New512,   // Using 512 sha3 function
 		hType:     crypto.SHA512, // Using 512 sha3
+		curve:     elliptic.P521, // Use P521 curve
 		Cipher:    aes.NewCipher, // Asymetric cipher block
 		BlockSize: aes.BlockSize, // Asymetric cipher block size
 		KeyLength: 32}            // Length of the asymetric key
@@ -59,6 +61,7 @@ var (
 	ECDSA256Param = &Param{
 		Hash:      sha256.New,
 		hType:     crypto.SHA256,
+		curve:     elliptic.P256,
 		Cipher:    aes.NewCipher,
 		BlockSize: aes.BlockSize,
 		KeyLength: 32,
@@ -84,7 +87,8 @@ func (prv *PrivateKey) Export() *ecdsa.PrivateKey {
 	return &ecdsa.PrivateKey{PublicKey: *ecdsaPublicKey, D: prv.D}
 }
 
-func generateKey(curve elliptic.Curve) (*PrivateKey, error) {
+func generateKey(params *Param) (*PrivateKey, error) {
+	curve := params.curve()
 	pb, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		return nil, err
@@ -95,6 +99,7 @@ func generateKey(curve elliptic.Curve) (*PrivateKey, error) {
 	prv.PublicKey.Y = y
 	prv.PublicKey.Curve = curve
 	prv.D = new(big.Int).SetBytes(pb)
+	prv.Params = params
 
 	return prv, nil
 }
@@ -102,13 +107,13 @@ func generateKey(curve elliptic.Curve) (*PrivateKey, error) {
 // GenerateKey256 generates a new Private/Public key pair using P256 Curve
 // which implements P-256 (see).
 func GenerateKey256() (*PrivateKey, error) {
-	return generateKey(elliptic.P256())
+	return generateKey(ECDSA256Param)
 }
 
 // GenerateKey521 generates a new Private/Public key pair using P521 Curve
 // which implements P-521 (see FIPS 186-3, section D.2.5).
 func GenerateKey521() (*PrivateKey, error) {
-	return generateKey(elliptic.P521())
+	return generateKey(ECDSA521Param)
 }
 
 // GenerateShared creates a new shared secret of given lenght.
