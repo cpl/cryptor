@@ -11,3 +11,10 @@ func RandomData(size uint) []byte {
 	io.ReadFull(rand.Reader, data)
 	return data
 }
+
+// ZeroBytes takes a byte array and replaces each byte with 0
+func ZeroBytes(data []byte) {
+	for index := range data {
+		data[index] = 0
+	}
+}
