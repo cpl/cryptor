@@ -22,7 +22,7 @@ cover:
 	done; \
 	cd $$CRYPTORROOT;
 	@gocovmerge $(shell find . -name coverage.out -type f) > build/report.out
-	@rm $(shell find . -name coverage.out -type f);
+	@rm -f $(shell find . -name coverage.out -type f);
 
 view:
 	@go tool cover -html=build/report.out
