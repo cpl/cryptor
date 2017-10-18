@@ -7,6 +7,7 @@ import (
 	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 // Arguments for assembler command
@@ -52,7 +53,7 @@ var assembleCLI = &cli.Command{
 		}
 
 		// Start assembly
-		err = a.Assemble(crypt.NewKeyFromPassword(argv.Pass), argv.Out)
+		err = a.Assemble(aes.NewKeyFromPassword(argv.Pass), argv.Out)
 		handleErr(err)
 
 		return nil

@@ -5,9 +5,11 @@ package assembler
 import (
 	"bytes"
 
+	"github.com/thee-engineer/cryptor/crypt"
+
 	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/cachedb"
-	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 // Assembler contains the tail chunk hash in bytes and the cache containing
@@ -32,9 +34,12 @@ func (a *Assembler) GetChunk(hash []byte) (*EChunk, error) {
 // process extracts the next chunk's data from the current header. If a chunk
 // is not found during the assembly process, a network request will be sent
 // to the known peers, asking for the missing chunk.
-func (a *Assembler) Assemble(key crypt.AESKey, destination string) error {
+func (a *Assembler) Assemble(key aes.Key, destination string) error {
 	var cBuffer bytes.Buffer // Chunk buffer, content (no header)
 	var aBuffer bytes.Buffer // Assembly buffer, final package
+
+	// Memory zeroing
+	defer crypt.ZeroBytes(key[:])
 
 	// Request chunk from cache
 	eChunk, err := a.GetChunk(a.Tail)

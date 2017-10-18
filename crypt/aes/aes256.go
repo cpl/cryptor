@@ -1,6 +1,6 @@
-// Package crypt contains functions and structs that help with encryption,
-// hash computation, encoding/decoding and generating random data.
-package crypt
+// Package aes contains functions and structs that help with encryption. It
+// implements AES256 with 32 byte keys, 12B random nonce and GCM block.
+package aes
 
 import (
 	"crypto/aes"
@@ -10,8 +10,9 @@ import (
 	"io"
 )
 
-// Encrypt a msg using AES256 Key and 12B random nonce
-func Encrypt(key AESKey, msg []byte) ([]byte, error) {
+// Encrypt a msg using AES256 Key and 12B random nonce. The nonce is attached
+// to the head of the encrypted msg. GCM block is used.
+func Encrypt(key Key, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -34,8 +35,8 @@ func Encrypt(key AESKey, msg []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, msg, nil), nil
 }
 
-// Decrypt msg encrypted with AES256 Key
-func Decrypt(key AESKey, msg []byte) ([]byte, error) {
+// Decrypt a msg encrypted with AES256 Key.
+func Decrypt(key Key, msg []byte) ([]byte, error) {
 	// Generate Cipher block
 	cipherBlock, err := aes.NewCipher(key[:])
 	if err != nil {

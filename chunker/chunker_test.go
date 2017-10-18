@@ -9,6 +9,7 @@ import (
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 func TestChunker(t *testing.T) {
@@ -39,21 +40,7 @@ func TestChunker(t *testing.T) {
 	}
 
 	// Start chunking the data
-	if _, err := chunker.Chunk(crypt.NullKey); err != nil {
+	if _, err := chunker.Chunk(aes.NullKey); err != nil {
 		t.Error(err)
 	}
-
-	// // Get chunks file info
-	// chunks, err := ioutil.ReadDir(tmpDir)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// // Validate chunk sizes
-	// for _, chunk := range chunks {
-	// 	if int(chunk.Size()) != 1152 {
-	// 		t.Errorf("Invalid chunk size, got %d expected %d",
-	// 			chunk.Size(), 1152)
-	// 	}
-	// }
 }
