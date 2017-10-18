@@ -14,18 +14,15 @@ profile-mem:
 
 cover:
 	@mkdir -p build
-	@echo "mode: set" > build/report.out
-
-	@for dir in $$(ls); \
-	do \
-	if ls $$dir/*_test.go &> /dev/null; then \
-		cd $$dir; \
+	@CRYPTORROOT=`pwd`;
+	@for pkg in `go list ./...`; do \
+		cd $$GOPATH/src;\
+		cd $$pkg; \
 		go test -coverprofile=coverage.out -v -race -parallel 8; \
-		cat coverage.out | tail -n +2 >> ../build/report.out; \
-		rm coverage.out; \
-		cd ..; \
-	fi \
-	done;
+	done; \
+	cd $$CRYPTORROOT;
+	@gocovmerge $(shell find . -name coverage.out -type f) > build/report.out
+	@rm $(shell find . -name coverage.out -type f);
 
 view:
 	@go tool cover -html=build/report.out
