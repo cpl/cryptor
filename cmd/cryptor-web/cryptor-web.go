@@ -5,15 +5,11 @@ import (
 	"net/http"
 )
 
-type Page struct {
-	Content template.Template
-}
-
 func main() {
 	templates := template.Must(template.ParseGlob("templates/*.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		templates.ExecuteTemplate(w, "default.html", "")
+		templates.ExecuteTemplate(w, "base.html", "")
 	})
 
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("templates/css"))))
