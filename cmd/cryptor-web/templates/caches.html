@@ -1,260 +1,120 @@
-<!DOCTYPE html>
-<html>
-<title>cryptor dashboard</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="css/w3.css">
-<link rel="stylesheet" href="font-awesome/css/font-awesome.css">
-<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
-<style>
-  html,
-  body,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5 {
-    font-family: "Courier", sans-serif
-  }
-</style>
+<header class="w3-container" style="padding-top:22px">
+  <h5>
+    <b>
+      <i class="fa fa-dashboard"></i> Stats</b>
+  </h5>
+</header>
 
-<body class="w3-light-grey">
-
-  <!-- Top container -->
-  <div class="w3-bar w3-top w3-black w3-large" style="z-index:4">
-    <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();">
-      <i class="fa fa-bars"></i> Menu</button>
-    <span class="w3-bar-item w3-right">cryptor dashboard</span>
+<div class="w3-row-padding w3-margin-bottom">
+  <div class="w3-quarter">
+    <div class="w3-container w3-red w3-padding-16">
+      <div class="w3-left">
+        <i class="fa fa-database w3-xxxlarge"></i>
+      </div>
+      <div class="w3-right">
+        <h3>3</h3>
+      </div>
+      <div class="w3-clear"></div>
+      <h4>Caches</h4>
+    </div>
   </div>
-
-  <!-- Sidebar/menu -->
-  <nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar">
-    <br>
-
-    <!-- stats -->
-    <div class="w3-bar-block">
-      <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu">
-        <i class="fa fa-remove fa-fw"></i> Close Menu</a>
-    </div>
-
-    <div class="w3-container">
-      <h5>Dashboard</h5>
-    </div>
-    <div class="w3-bar-block">
-      <a href="#" class="w3-bar-item w3-button w3-padding">
-        <i class="fa fa-eye fa-fw"></i> Overview</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding">
-        <i class="fa fa-database  fa-fw"></i> Caches</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding">
-        <i class="fa fa-users fa-fw"></i> Peers</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding">
-        <i class="fa fa-cog fa-fw"></i> Settings</a>
-      <br>
-      <br>
-    </div>
-
-    <div class="w3-container">
-      <h5>Actions</h5>
-    </div>
-    <div class="w3-bar-block">
-      <a href="#" class="w3-bar-item w3-button w3-padding">
-        <i class="fa fa-archive fa-fw"></i> Create package</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding">
-        <i class="fa fa-paper-plane  fa-fw"></i> Request package</a>
-    </div>
-  </nav>
-
-  <!-- Overlay effect when opening sidebar on small screens -->
-  <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu"
-    id="myOverlay"></div>
-
-  <!-- !PAGE CONTENT! -->
-  <div class="w3-main" style="margin-left:300px;margin-top:43px;">
-
-    <header class="w3-container" style="padding-top:22px">
-      <h5>
-        <b>
-          <i class="fa fa-dashboard"></i> Stats</b>
-      </h5>
-    </header>
-
-    <div class="w3-row-padding w3-margin-bottom">
-      <div class="w3-quarter">
-        <div class="w3-container w3-red w3-padding-16">
-          <div class="w3-left">
-            <i class="fa fa-database w3-xxxlarge"></i>
-          </div>
-          <div class="w3-right">
-            <h3>3</h3>
-          </div>
-          <div class="w3-clear"></div>
-          <h4>Caches</h4>
-        </div>
+  <div class="w3-quarter">
+    <div class="w3-container w3-blue w3-padding-16">
+      <div class="w3-left">
+        <i class="fa fa-cubes w3-xxxlarge"></i>
       </div>
-      <div class="w3-quarter">
-        <div class="w3-container w3-blue w3-padding-16">
-          <div class="w3-left">
-            <i class="fa fa-cubes w3-xxxlarge"></i>
-          </div>
-          <div class="w3-right">
-            <h3>308</h3>
-          </div>
-          <div class="w3-clear"></div>
-          <h4>Chunks</h4>
-        </div>
+      <div class="w3-right">
+        <h3>308</h3>
       </div>
-      <div class="w3-quarter">
-        <div class="w3-container w3-teal w3-padding-16">
-          <div class="w3-left">
-            <i class="fa fa-th w3-xxxlarge"></i>
-          </div>
-          <div class="w3-right">
-            <h3>10 MB</h3>
-          </div>
-          <div class="w3-clear"></div>
-          <h4>Current size</h4>
-        </div>
-      </div>
-      <div class="w3-quarter">
-        <div class="w3-container w3-orange w3-text-white w3-padding-16">
-          <div class="w3-left">
-            <i class="fa fa-th w3-xxxlarge"></i>
-          </div>
-          <div class="w3-right">
-            <h3>20 MB</h3>
-          </div>
-          <div class="w3-clear"></div>
-          <h4>Max size</h4>
-        </div>
-      </div>
+      <div class="w3-clear"></div>
+      <h4>Chunks</h4>
     </div>
+  </div>
+  <div class="w3-quarter">
+    <div class="w3-container w3-teal w3-padding-16">
+      <div class="w3-left">
+        <i class="fa fa-th w3-xxxlarge"></i>
+      </div>
+      <div class="w3-right">
+        <h3>10 MB</h3>
+      </div>
+      <div class="w3-clear"></div>
+      <h4>Current size</h4>
+    </div>
+  </div>
+  <div class="w3-quarter">
+    <div class="w3-container w3-orange w3-text-white w3-padding-16">
+      <div class="w3-left">
+        <i class="fa fa-th w3-xxxlarge"></i>
+      </div>
+      <div class="w3-right">
+        <h3>20 MB</h3>
+      </div>
+      <div class="w3-clear"></div>
+      <h4>Max size</h4>
+    </div>
+  </div>
+</div>
 
-    <hr>
+<hr>
 
-    <div class="w3-container">
-      <h5>
-        <b>
-          <i class="fa fa-dashboard"></i> Storage </b>
-      </h5>
-      <p> 24.8 MB / 130 MB</p>
+<div class="w3-container">
+  <h5>
+    <b>
+      <i class="fa fa-dashboard"></i> Storage </b>
+  </h5>
+  <p> {{.TotalSize}} / {{.TotalMaxSize}}</p>
+  <div class="w3-grey">
+    <div class="w3-container w3-center w3-padding w3-green" style="width:{{.TotalPercent}}%">{{.TotalPercent}}%</div>
+  </div>
+</div>
+
+<hr>
+
+<div class="w3-container">
+  <h5>
+    <b>
+      <i class="fa fa-dashboard"></i> Individual caches </b>
+  </h5>
+
+  <ul class="w3-ul w3-card-4 w3-white">
+    {{ if .Caches}} {{range .Caches}}
+
+    <li class="w3-padding-16">
+      <!-- CACHE LOCATION -->
+      <span class="w3-xlarge">{{.Path}}</span>
+      <!-- CACHE SIZE -->
+      <p>{{.Size}} / {{.MaxSize}}</p>
       <div class="w3-grey">
-        <div class="w3-container w3-center w3-padding w3-green" style="width:19%">19%</div>
+        <!-- CACHE COLOR (blue < 10%, green < 70%, orange <90%, red <= 100) -->
+        <div class="w3-container w3-center w3-padding w3-red" style="width:{{.Percent}}%"> {{.Percent}}% </div>
       </div>
-    </div>
+      <br>
+      <!-- Move cache -->
+      <a href="#" class="w3-bar-item w3-button">
+        <i class="fa fa-folder"></i>
+      </a>
+      <!-- Display chunks in cache -->
+      <a href="#" class="w3-bar-item w3-button">
+        <i class="fa fa-cubes"></i>
+      </a>
+      <!-- Clone cache -->
+      <a href="#" class="w3-bar-item w3-button">
+        <i class="fa fa-code-fork"></i>
+      </a>
+      <!-- Change settings -->
+      <a href="#" class="w3-bar-item w3-button">
+        <i class="fa fa-cog"></i>
+      </a>
+      <!-- Delete cache -->
+      <a href="#" class="w3-bar-item w3-button">
+        <i class="fa fa-trash"></i>
+      </a>
+      <br>
+    </li>
 
-    <hr>
+    {{end}}
+  </ul>
+</div>
 
-    <div class="w3-container">
-      <h5>
-        <b>
-          <i class="fa fa-dashboard"></i> Individual caches </b>
-      </h5>
-      <ul class="w3-ul w3-card-4 w3-white">
-        <li class="w3-padding-16">
-          <span class="w3-xlarge">~/.cryptor</span>
-          <p>0.8 MB / 100 MB</p>
-          <div class="w3-grey">
-            <div class="w3-container w3-center w3-padding w3-blue" style="width:8%"> 8%</div>
-          </div>
-          <br>
-          <a href="#" class="w3-bar-item w3-button">
-            <i class="fa fa-folder"></i>
-          </a>
-          <a href="#" class="w3-bar-item w3-button">
-            <i class="fa fa-cubes"></i>
-          </a>
-          <a href="#" class="w3-bar-item w3-button">
-            <i class="fa fa-code-fork"></i>
-          </a>
-          <a href="#" class="w3-bar-item w3-button">
-            <i class="fa fa-cog"></i>
-          </a>
-          <a href="#" class="w3-bar-item w3-button">
-            <i class="fa fa-trash"></i>
-          </a>
-          <br>
-        </li>
-        <li class="w3-padding-16">
-          <span class="w3-xlarge">/tmp/cryptor452b36fg375</span>
-          <p>4 MB / 10 MB</p>          
-          <div class="w3-grey">
-            <div class="w3-container w3-center w3-padding w3-green" style="width:40%">40%</div>
-          </div>
-          <br>
-          <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-folder"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-cubes"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-code-fork"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-cog"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-trash"></i>
-            </a>
-          <br>
-        </li>
-        <li class="w3-padding-16">
-          <span class="w3-xlarge">/tmp/cryptor5557hbi2001</span>
-          <p>20 MB / 20 MB</p>                    
-          <div class="w3-grey">
-            <div class="w3-container w3-center w3-padding w3-red" style="width:100%">100%</div>
-          </div>
-          <br>
-          <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-folder"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-cubes"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-code-fork"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-cog"></i>
-            </a>
-            <a href="#" class="w3-bar-item w3-button">
-              <i class="fa fa-trash"></i>
-            </a>
-          <br>
-        </li>
-      </ul>
-    </div>
-
-    <hr>
-
-    <!-- End page content -->
-  </div>
-
-  <script>
-    // Get the Sidebar
-    var mySidebar = document.getElementById("mySidebar");
-
-    // Get the DIV with overlay effect
-    var overlayBg = document.getElementById("myOverlay");
-
-    // Toggle between showing and hiding the sidebar, and add overlay effect
-    function w3_open() {
-      if (mySidebar.style.display === 'block') {
-        mySidebar.style.display = 'none';
-        overlayBg.style.display = "none";
-      } else {
-        mySidebar.style.display = 'block';
-        overlayBg.style.display = "block";
-      }
-    }
-
-    // Close the sidebar with the close button
-    function w3_close() {
-      mySidebar.style.display = "none";
-      overlayBg.style.display = "none";
-    }
-  </script>
-
-</body>
-
-</html>
+<hr>

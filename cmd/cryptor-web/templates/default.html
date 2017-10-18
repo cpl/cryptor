@@ -1,22 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <title>cryptor dashboard</title>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="css/w3.css">
-<link rel="stylesheet" href="font-awesome/css/font-awesome.css">
-<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
-<style>
-    html,
-    body,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5 {
-        font-family: "Courier", sans-serif
-    }
-</style>
+
+<link rel="stylesheet" href="/css/w3.css">
+<link rel="stylesheet" href="/css/font-awesome/css/font-awesome.css">
+<link rel="stylesheet" href="/css/font-awesome/css/font-awesome.min.css">
 
 <body class="w3-light-grey">
 
@@ -27,8 +19,7 @@
         <span class="w3-bar-item w3-right">cryptor dashboard</span>
     </div>
 
-    <!-- INCLUDE SIDEBAR HERE -->
-
+    {{template "sidebar.html"}}
 
     <!-- Overlay effect when opening sidebar on small screens -->
     <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu"
@@ -36,37 +27,10 @@
 
     <!-- !PAGE CONTENT! -->
     <div class="w3-main" style="margin-left:300px;margin-top:43px;">
-
-        <!-- INCLUDE PAGE CONTENT HERE -->
-
-
-        <!-- End page content -->
+        {{.Content}}
     </div>
 
-    <script>
-        // Get the Sidebar
-        var mySidebar = document.getElementById("mySidebar");
-
-        // Get the DIV with overlay effect
-        var overlayBg = document.getElementById("myOverlay");
-
-        // Toggle between showing and hiding the sidebar, and add overlay effect
-        function w3_open() {
-            if (mySidebar.style.display === 'block') {
-                mySidebar.style.display = 'none';
-                overlayBg.style.display = "none";
-            } else {
-                mySidebar.style.display = 'block';
-                overlayBg.style.display = "block";
-            }
-        }
-
-        // Close the sidebar with the close button
-        function w3_close() {
-            mySidebar.style.display = "none";
-            overlayBg.style.display = "none";
-        }
-    </script>
+    {{template "scripts.html"}}
 
 </body>
 

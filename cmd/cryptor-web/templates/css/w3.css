@@ -207,4 +207,14 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .w3-border-yellow,.w3-hover-border-yellow:hover{border-color:#ffeb3b!important}
 .w3-border-white,.w3-hover-border-white:hover{border-color:#fff!important}
 .w3-border-black,.w3-hover-border-black:hover{border-color:#000!important}
-.w3-border-grey,.w3-hover-border-grey:hover,.w3-border-gray,.w3-hover-border-gray:hover{border-color:#bbb!important}
+.w3-border-grey,.w3-hover-
+
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: "Courier", sans-serif
+}
