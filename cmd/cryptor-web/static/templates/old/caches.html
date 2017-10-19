@@ -1,60 +1,8 @@
 <header class="w3-container" style="padding-top:22px">
-  <h5>
-    <b>
-      <i class="fa fa-dashboard"></i> Stats</b>
-  </h5>
+  {{template "head.html" .Header}}
 </header>
 
-<div class="w3-row-padding w3-margin-bottom">
-  <div class="w3-quarter">
-    <div class="w3-container w3-red w3-padding-16">
-      <div class="w3-left">
-        <i class="fa fa-database w3-xxxlarge"></i>
-      </div>
-      <div class="w3-right">
-        <h3>{{.CacheCount}}</h3>
-      </div>
-      <div class="w3-clear"></div>
-      <h4>Caches</h4>
-    </div>
-  </div>
-  <div class="w3-quarter">
-    <div class="w3-container w3-blue w3-padding-16">
-      <div class="w3-left">
-        <i class="fa fa-cubes w3-xxxlarge"></i>
-      </div>
-      <div class="w3-right">
-        <h3>{{.TotalChunkCount}}</h3>
-      </div>
-      <div class="w3-clear"></div>
-      <h4>Chunks</h4>
-    </div>
-  </div>
-  <div class="w3-quarter">
-    <div class="w3-container w3-teal w3-padding-16">
-      <div class="w3-left">
-        <i class="fa fa-th w3-xxxlarge"></i>
-      </div>
-      <div class="w3-right">
-        <h3>{{.TotalSize}}</h3>
-      </div>
-      <div class="w3-clear"></div>
-      <h4>Current size</h4>
-    </div>
-  </div>
-  <div class="w3-quarter">
-    <div class="w3-container w3-orange w3-text-white w3-padding-16">
-      <div class="w3-left">
-        <i class="fa fa-th w3-xxxlarge"></i>
-      </div>
-      <div class="w3-right">
-        <h3>{{.TotalMaxSize}}</h3>
-      </div>
-      <div class="w3-clear"></div>
-      <h4>Max size</h4>
-    </div>
-  </div>
-</div>
+  {{template "block.html" .Blocks}}
 
 <hr>
 
