@@ -65,7 +65,7 @@
   </h5>
   <p> {{.TotalSize}} / {{.TotalMaxSize}}</p>
   <div class="w3-grey">
-    <div class="w3-container w3-center w3-padding w3-green" style="width:{{.TotalPercent}}%">{{.TotalPercent}}%</div>
+    <div class="w3-container w3-center w3-padding w3-blue" style="width:{{.TotalPercent}}%">{{.TotalPercent}}%</div>
   </div>
 </div>
 
@@ -86,8 +86,8 @@
       <!-- CACHE SIZE -->
       <p>{{.Size}} / {{.MaxSize}}</p>
       <div class="w3-grey">
-        <!-- CACHE COLOR (blue < 10%, green < 70%, orange <90%, red <= 100) -->
-        <div class="w3-container w3-center w3-padding w3-red" style="width:{{.Percent}}%"> {{.Percent}}% </div>
+        <!-- CACHE COLOR (blue < 20%, green < 60%, orange <80%, red <= 100) -->
+        <div class="w3-container w3-center w3-padding w3-orange"   style="width:{{.Percent}}%"> {{.Percent}}% </div>
       </div>
       <br>
       <!-- Move cache -->
@@ -112,8 +112,7 @@
       </a>
       <br>
     </li>
-    {{end}}
-    {{else}} {{end}}
+    {{end}} {{else}} {{end}}
   </ul>
 </div>
 
