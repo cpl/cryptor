@@ -28,7 +28,7 @@
   </div>
   <div class="w3-bar-block">
     {{range $sub := $section.SubSections}}
-    <a href="/{{$sub.Link}}" class="w3-bar-item w3-button w3-padding">
+    <a href="/{{$sub.Link}}" class="w3-bar-item w3-button w3-padding {{if .Active}} w3-blue {{end}}">
       <i class="fa fa-{{$sub.Icon}} fa-fw"></i> {{$sub.Name}} </a>
     {{end}}
     <br>

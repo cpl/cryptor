@@ -24,7 +24,17 @@
     id="myOverlay"></div>
 
   <div class="w3-main" style="margin-left:300px;margin-top:43px;">
-    <!-- Page content -->
+
+    {{with .Header}}
+    <header class="w3-container" style="padding-top:22px">
+      <h5>
+        <b>
+          <i class="fa fa-{{.Icon}}"></i> {{.Title}}</b>
+      </h5>
+    </header>
+    {{end}}
+
+    {{template "blocks" .}}
   </div>
 
   {{block "scripts" .}} {{end}}
