@@ -40,8 +40,8 @@ update:
 build:
 	go build -o build/cryptor -v -x cmd/cryptor-cli/*.go
 
-install:
-	go build -i -o $$GOBIN/cryptor -v -x cmd/cryptor-cli/*.go
+install-cli:
+	go build -i -o $$GOBIN/cryptor-cli -v -x cmd/cryptor-cli/*.go
 
 test-cli:
 	@make build && \
@@ -57,4 +57,4 @@ container:
 	@docker run -p $(PORT):2000/udp -td cryptor; \
 
 bench:
-	@go test -bench=. ./crypt
+	@go test -bench=. ./...

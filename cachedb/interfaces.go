@@ -32,3 +32,14 @@ type Iterator interface {
 	Seek([]byte) bool // Set the iteratorto the key[]byte param
 	Release()         // Release the iterator from use
 }
+
+// DBManager provides operations on top of the cryptor cache
+type DBManager interface {
+	Size() int  // Returns the size (in bytes) of the current cache
+	Count() int // Return the total count of chunks
+
+	Add([]byte) error           // Add a new chunk to the cache
+	Has(string) bool            // Check if cache has chunk
+	Get(string) ([]byte, error) // Get a chunk from the cache
+	Del(string) error           // Remove a chunk
+}
