@@ -12,7 +12,7 @@ var staticSidebar = sidebar{
 				Name:   "Overview",
 				Icon:   "eye",
 				Link:   "overview",
-				Active: true},
+				Active: false},
 			subsection{
 				Name:   "Caches",
 				Icon:   "database",
@@ -44,7 +44,7 @@ var staticSidebar = sidebar{
 	},
 }
 
-var staticBlocks = []block{
+var cachesBlocks = []block{
 	block{
 		Name:  "Caches",
 		Value: "3",
@@ -68,5 +68,58 @@ var staticBlocks = []block{
 		Value: "145 MB",
 		Color: "blue",
 		Icon:  "th-large",
+	},
+}
+
+var overviewBlocks = []block{
+	// Row 0
+	block{
+		Name:  "Caches",
+		Value: "3",
+		Color: "teal",
+		Icon:  "database",
+	},
+	block{
+		Name:  "Chunks",
+		Value: "482",
+		Color: "red",
+		Icon:  "cubes",
+	},
+	block{
+		Name:  "Size",
+		Value: "1055 MB",
+		Color: "green",
+		Icon:  "th",
+	},
+	block{
+		Name:  "Free",
+		Value: "145 MB",
+		Color: "red",
+		Icon:  "th-large",
+	},
+	// Row 1
+	block{
+		Name:  "Peers",
+		Value: "20",
+		Color: "teal",
+		Icon:  "users",
+	},
+	block{
+		Name:  "UP",
+		Value: "2.5 GB",
+		Color: "blue",
+		Icon:  "upload",
+	},
+	block{
+		Name:  "DOWN",
+		Value: "1.2 GB",
+		Color: "grey",
+		Icon:  "download",
+	},
+	block{
+		Name:  "Active Requests",
+		Value: "2",
+		Color: "blue",
+		Icon:  "tasks",
 	},
 }
