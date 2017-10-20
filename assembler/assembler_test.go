@@ -7,14 +7,15 @@ import (
 
 	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/assembler"
-	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
+
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 func createTestCache() ([]byte, error) {
 	// Create cache
-	cache, err := cachedb.NewLDBCache("data", 0, 0)
+	cache, err := ldbcache.NewLDBCache("data", 0, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +52,7 @@ func TestAssembler(t *testing.T) {
 	defer os.RemoveAll("data")
 
 	// Open cache
-	cache, err := cachedb.NewLDBCache("data", 0, 0)
+	cache, err := ldbcache.NewLDBCache("data", 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -81,7 +82,7 @@ func TestFullChunkAssemble(t *testing.T) {
 	}
 
 	// Create cache for chunks
-	cache, err := cachedb.NewLDBCache("/tmp/asmcnktest", 16, 16)
+	cache, err := ldbcache.NewLDBCache("/tmp/asmcnktest", 16, 16)
 	if err != nil {
 		t.Error(err)
 	}

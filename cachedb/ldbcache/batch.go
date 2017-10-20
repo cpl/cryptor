@@ -1,7 +1,8 @@
-package cachedb
+package ldbcache
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/thee-engineer/cryptor/cachedb"
 )
 
 // LDBBatch is a LevelDB batch interface
@@ -12,7 +13,7 @@ type LDBBatch struct {
 }
 
 // NewBatch returns a new Batch for a LevelDB cache
-func (db *LDBCache) NewBatch() Batch {
+func (db *LDBCache) NewBatch() cachedb.Batch {
 	return &LDBBatch{
 		db:    db.db,
 		batch: new(leveldb.Batch),

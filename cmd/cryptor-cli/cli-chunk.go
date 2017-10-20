@@ -10,6 +10,7 @@ import (
 
 	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
@@ -45,7 +46,7 @@ var chunkCLI = &cli.Command{
 		}
 
 		// Open the cache
-		cache, err := cachedb.NewLDBCache(cachePath, 16, 16)
+		cache, err := ldbcache.NewLDBCache(cachePath, 16, 16)
 		handleErr(err)
 
 		// List chunks and exit

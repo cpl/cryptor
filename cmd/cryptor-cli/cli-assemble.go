@@ -6,6 +6,7 @@ import (
 	"github.com/mkideal/cli"
 	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
@@ -39,7 +40,7 @@ var assembleCLI = &cli.Command{
 		}
 
 		// Open the default cache
-		cache, err := cachedb.NewLDBCache(cachePath, 16, 16)
+		cache, err := ldbcache.NewLDBCache(cachePath, 16, 16)
 		handleErr(err)
 
 		// Decode tail hash

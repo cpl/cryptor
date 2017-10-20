@@ -1,4 +1,4 @@
-package cachedb_test
+package ldbcache_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
@@ -22,7 +23,7 @@ func createTestEnv() (string, cachedb.Database, error) {
 
 	// Create test db
 	// Use 0 cache and 0 handlers, should default to min
-	cdb, err := cachedb.NewLDBCache(tmpDir, 0, 0)
+	cdb, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
 	if err != nil {
 		return "", nil, err
 	}

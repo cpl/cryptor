@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/crypt"
 
 	"github.com/mkideal/cli"
@@ -54,7 +55,7 @@ var newCacheCLI = &cli.Command{
 
 		// Create cache
 		cachePath := handleCache(argv.Cache)
-		cache, err := cachedb.NewLDBCache(cachePath, 0, 0)
+		cache, err := ldbcache.NewLDBCache(cachePath, 0, 0)
 		handleErr(err)
 		defer cache.Close()
 
@@ -80,7 +81,7 @@ var listCacheCLI = &cli.Command{
 		}
 
 		// Open (or create)
-		cache, err := cachedb.NewLDBCache(cachePath, 0, 0)
+		cache, err := ldbcache.NewLDBCache(cachePath, 0, 0)
 		handleErr(err)
 		defer cache.Close()
 

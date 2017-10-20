@@ -1,9 +1,10 @@
-package cachedb
+package ldbcache
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"github.com/thee-engineer/cryptor/cachedb"
 )
 
 // LDBCache is a LevelDB database used as cache
@@ -19,7 +20,7 @@ const (
 
 // NewLDBCache creates a new LevelDB cache at the given path using a
 // number of caches and handles (with a minimum). Returns a Database interface.
-func NewLDBCache(file string, cache, handles int) (Database, error) {
+func NewLDBCache(file string, cache, handles int) (cachedb.Database, error) {
 	// Check for minimum caches and handles
 	if cache < minCache {
 		cache = minCache
@@ -81,6 +82,6 @@ func (cdb *LDBCache) Del(key []byte) error {
 }
 
 // NewIterator return a new LevelDB iterator
-func (cdb *LDBCache) NewIterator() Iterator {
+func (cdb *LDBCache) NewIterator() cachedb.Iterator {
 	return cdb.db.NewIterator(nil, nil)
 }

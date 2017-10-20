@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/assembler"
-	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
@@ -24,7 +24,7 @@ func TestEChunk(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Create temp cache
-	cache, err := cachedb.NewLDBCache(tmpDir, 0, 0)
+	cache, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
