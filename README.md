@@ -15,7 +15,7 @@
 
 P2P communication uses Elliptic Curve key exchange in order to generate a new symetric AES256 block cipher, used in sending requests between peers.
 
-The initial idea came from [Dragos A. Radu](https://github.com/dragosthealex) and provided a prototype implementation in Python.
+The initial idea came from [Dragos A. Radu](https://github.com/dragosthealex) & [Daniel Hodgson](https://github.com/DanielHodgson) and provided a prototype implementation in Python.
 
 ## Architecture
 // TODO: provide diagram
