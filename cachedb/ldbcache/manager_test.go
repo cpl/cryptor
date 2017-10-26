@@ -51,6 +51,9 @@ func TestLDBManager(t *testing.T) {
 		MinChunkSize:  5,
 		MaxChunkCount: 10,
 	}
+	if !cachedb.ValidateConfig(conf) {
+		t.Error(cachedb.ErrInvalidConfig)
+	}
 
 	// Create manager with config and cache
 	man := ldbcache.NewManager(conf, db)
@@ -140,6 +143,9 @@ func TestLDBCacheMultiAdd(t *testing.T) {
 		MaxChunkSize:  1024,
 		MinChunkSize:  5,
 		MaxChunkCount: 10,
+	}
+	if !cachedb.ValidateConfig(conf) {
+		t.Error(cachedb.ErrInvalidConfig)
 	}
 
 	// New manager
@@ -263,4 +269,78 @@ func TestLDBLimitsCount(t *testing.T) {
 	if err := man.Add(crypt.RandomData(10)); err == nil {
 		t.Error("man: added to full cache (chunks)")
 	}
+}
+
+func TestLDBManagerDynamic(t *testing.T) {
+	t.Parallel()
+
+	// Create new cache
+	db, err := ldbcache.NewLDBCache(testPath+"dyn", 0, 0)
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+	defer os.RemoveAll(testPath + "dyn")
+
+	conf := cachedb.ManagerConfig{
+		MaxCacheSize:  1000,
+		MaxChunkSize:  90,
+		MinChunkSize:  5,
+		MaxChunkCount: 20,
+	}
+	if !cachedb.ValidateConfig(conf) {
+		t.Error(cachedb.ErrInvalidConfig)
+	}
+
+	// Create manager with config and cache
+	man := ldbcache.NewManager(conf, db)
+
+	testInt("count", 0, man.Count(), t)
+	testInt("size", 0, man.Size(), t)
+
+	// Add max chunks "chunks"
+	for count := 0; count < conf.MaxChunkCount; count++ {
+		if err := man.Add(crypt.RandomData(10)); err != nil {
+			t.Error(err)
+		}
+	}
+
+	testInt("count", conf.MaxChunkCount, man.Count(), t)
+	testInt("size", conf.MaxChunkCount*10, man.Size(), t)
+
+	// Get hashes
+	iter := db.NewIterator()
+	hashes := make([]string, conf.MaxChunkCount)
+	count := 0
+	for iter.Next() {
+		hashes[count] = crypt.EncodeString(iter.Key())
+		count++
+	}
+
+	// Remove each hash
+	for index, hash := range hashes {
+		if err := man.Del(hash); err != nil {
+			t.Error(err)
+		}
+
+		testInt("count", conf.MaxChunkCount-(index+1), man.Count(), t)
+		testInt("size", (conf.MaxChunkCount-(index+1))*10, man.Size(), t)
+	}
+
+	testInt("count", 0, man.Count(), t)
+	testInt("size", 0, man.Size(), t)
+
+	if err := man.Del("aabbcc"); err == nil {
+		t.Error("man: deleted from empty cache")
+	}
+
+	// Add half the max chunks
+	for count := 0; count < conf.MaxChunkCount/2; count++ {
+		if err := man.Add(crypt.RandomData(10)); err != nil {
+			t.Error(err)
+		}
+	}
+
+	testInt("count", conf.MaxChunkCount/2, man.Count(), t)
+	testInt("size", (conf.MaxChunkCount/2)*10, man.Size(), t)
 }

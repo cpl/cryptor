@@ -139,6 +139,13 @@ func (man *LDBManager) Get(hex string) ([]byte, error) {
 
 // Del ...
 func (man *LDBManager) Del(hex string) error {
+	if man.CurrentChunkCount == 0 {
+		man.updateCount()
+	}
+	if man.CurrentChunkCount == 0 {
+		return errors.New("man: cache is empty")
+	}
+
 	// Decode key, also validate key
 	key, err := crypt.DecodeString(hex)
 	if err != nil {
