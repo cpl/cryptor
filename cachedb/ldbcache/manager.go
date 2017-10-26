@@ -145,10 +145,19 @@ func (man *LDBManager) Del(hex string) error {
 		return err
 	}
 
-	// Check that key exists
-	if !man.Has(hex) {
-		return errors.New("man: no entry with key")
+	data, err := man.Get(hex)
+	if err != nil {
+		return errors.New("man: failed to find entry with key")
 	}
 
-	return man.DB.Del(key)
+	// Remove data
+	if err := man.DB.Del(key); err != nil {
+		return err
+	}
+
+	// Update count and size
+	man.CurrentChunkCount--
+	man.CurrentCacheSize -= len(data)
+
+	return nil
 }

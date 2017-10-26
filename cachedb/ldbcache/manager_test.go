@@ -7,6 +7,7 @@ import (
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
+	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
@@ -165,37 +166,101 @@ func TestLDBCacheMultiAdd(t *testing.T) {
 	testInt("size", expectedSize, man.Size(), t)
 }
 
-func TestLDBLimits(t *testing.T) {
+func TestLDBLimitsSize(t *testing.T) {
 	t.Parallel()
 
 	// Create new cache
-	db, err := ldbcache.NewLDBCache(testPath+"lim", 0, 0)
+	db, err := ldbcache.NewLDBCache(testPath+"lims", 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
 	defer db.Close()
-	defer os.RemoveAll(testPath + "lim")
+	defer os.RemoveAll(testPath + "lims")
 
 	// Prepare manager config
 	conf := cachedb.ManagerConfig{
 		MaxCacheSize:  100,
-		MaxChunkSize:  10,
+		MaxChunkSize:  90,
 		MinChunkSize:  5,
 		MaxChunkCount: 5,
+	}
+	if !cachedb.ValidateConfig(conf) {
+		t.Error(cachedb.ErrInvalidConfig)
 	}
 
 	// Create manager with config and cache
 	man := ldbcache.NewManager(conf, db)
 
 	// Test chunk size limits
-	if err := man.Add([]byte("a")); err == nil {
+	if err := man.Add(crypt.RandomData(1)); err == nil {
 		t.Error("man: added chunk too small")
 	}
-	if err := man.Add([]byte("abcdefghijklmnopq")); err == nil {
+	if err := man.Add(crypt.RandomData(91)); err == nil {
 		t.Error("man: added chunk too big")
 	}
 
 	// Test size and count
 	testInt("count", 0, man.Count(), t)
 	testInt("size", 0, man.Size(), t)
+
+	// Add max chunk size
+	if err := man.Add(crypt.RandomData(90)); err != nil {
+		t.Error(err)
+	}
+	// Add min chunk size
+	if err := man.Add(crypt.RandomData(5)); err != nil {
+		t.Error(err)
+	}
+
+	// Try to exceed max cache size
+	if err := man.Add(crypt.RandomData(10)); err == nil {
+		t.Error("man: added chunk too big, breaks max cache size")
+	}
+
+	// Fill cache size to max
+	if err := man.Add(crypt.RandomData(5)); err != nil {
+		t.Error(err)
+	}
+
+	// Try to exceed max cache size, with min chunk size
+	if err := man.Add(crypt.RandomData(5)); err == nil {
+		t.Error("man: added to full cache")
+	}
+}
+
+func TestLDBLimitsCount(t *testing.T) {
+	t.Parallel()
+
+	// Create new cache
+	db, err := ldbcache.NewLDBCache(testPath+"limc", 0, 0)
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+	defer os.RemoveAll(testPath + "limc")
+
+	// Prepare manager config
+	conf := cachedb.ManagerConfig{
+		MaxCacheSize:  100,
+		MaxChunkSize:  90,
+		MinChunkSize:  5,
+		MaxChunkCount: 5,
+	}
+	if !cachedb.ValidateConfig(conf) {
+		t.Error(cachedb.ErrInvalidConfig)
+	}
+
+	// Create manager with config and cache
+	man := ldbcache.NewManager(conf, db)
+
+	// Add 10 "chunks"
+	for count := 0; count < conf.MaxChunkCount; count++ {
+		if err := man.Add(crypt.RandomData(10)); err != nil {
+			t.Error(err)
+		}
+	}
+
+	if err := man.Add(crypt.RandomData(10)); err == nil {
+		t.Error("man: added to full cache (chunks)")
+	}
 }
