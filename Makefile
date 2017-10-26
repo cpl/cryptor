@@ -21,8 +21,8 @@ cover:
 		go test -coverprofile=coverage.out -v -race -parallel 8; \
 	done; \
 	cd $$CRYPTORROOT;
-	@gocovmerge $(shell find . -name coverage.out -type f) > build/report.out
-	@rm -f $(shell find . -name coverage.out -type f);
+	gocovmerge $(shell find . -name coverage.out -type f) > build/report.out
+	rm -f $(shell find . -name coverage.out -type f);
 
 view:
 	@go tool cover -html=build/report.out
