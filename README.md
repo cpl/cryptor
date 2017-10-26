@@ -15,22 +15,32 @@
 
 P2P communication uses Elliptic Curve key exchange in order to generate a new symetric AES256 block cipher, used in sending requests between peers.
 
-The initial idea came from [Dragos A. Radu](https://github.com/dragosthealex) & [Daniel Hodgson](https://github.com/DanielHodgson) and provided a prototype implementation in Python.
-
-## Architecture
-// TODO: provide diagram
+The initial idea came from [Dragos A. Radu](https://github.com/dragosthealex) & [Daniel Hodgson](https://github.com/DanielHodgson) who provided a prototype implementation in Python.
 
 ## Install
 In order to install the latest version of `cryptor` you will need to have [Go 1.5](https://golang.org/dl/ "download go") or higher installed. To check if you have Go installed and which verions, just run `go version` in your terminal.
-
-```
-# This will download the cryptor source files inside your $GOPATH/src/...
-go get github.com/thee-engineer/cryptor
-```
 
 ```
 # In order to install the CLI tool, use the following:
 go install github.com/thee-engineer/cryptor/cmd/cryptor-cli
 ```
 
-Now you can run `cryptor-cli --help` to see usage information.
+```
+# In order to install the WEB tool, use the following:
+# WIP, NOT AVAILABLE
+go install github.com/thee-engineer/cryptor/cmd/cryptor-web
+```
+
+Now you can run `cryptor-cli --help` to see usage information  or `cryptor-web`
+to open the dashboard in your web browser.
+
+```
+# This will download the cryptor source files inside your $GOPATH/src/...
+go get github.com/thee-engineer/cryptor
+
+# Now you can build it yourself, you can use the Makefile or go build, up to you
+cd $GOPATH/src/thee-engineer/cryptor
+
+# This will put a binary of cryptor inside build/
+make build
+```
