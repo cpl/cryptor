@@ -57,9 +57,9 @@ func (cdb *LDBCache) Path() string {
 }
 
 // DB returns the LevelDB DB as defined in syndtr/goleveldb/leveldb
-func (cdb *LDBCache) DB() *leveldb.DB {
-	return cdb.db
-}
+// func (cdb *LDBCache) DB() *leveldb.DB {
+// 	return cdb.db
+// }
 
 // Put stores the key/value pair in the DB
 func (cdb *LDBCache) Put(key, value []byte) error {

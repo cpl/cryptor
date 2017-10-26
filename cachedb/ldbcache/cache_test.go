@@ -57,7 +57,7 @@ func TestCDBBasic(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if status != true {
+	if !status {
 		t.Error("key error: expected key not found")
 	}
 
@@ -66,7 +66,7 @@ func TestCDBBasic(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if status != false {
+	if status {
 		t.Error("key error: found unexpected key")
 	}
 
@@ -80,7 +80,7 @@ func TestCDBBasic(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if status != false {
+	if status {
 		t.Error("key error: found deleted key")
 	}
 }
@@ -205,4 +205,76 @@ func TestCDBIterator(t *testing.T) {
 	}
 
 	iter.Release()
+}
+
+func TestCDBErrors(t *testing.T) {
+	t.Parallel()
+
+	// Create test env
+	dbPath, cdb, err := createTestEnv()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cdb.Close()
+	defer os.RemoveAll(dbPath)
+
+	// Get (non existing)
+	data, err := cdb.Get([]byte("hello"))
+	if err == nil {
+		t.Error(err)
+	}
+	if data != nil {
+		t.Error("ldb: got invalid data")
+	}
+
+	// Has (non existing)
+	status, err := cdb.Has([]byte("hello"))
+	if err != nil {
+		t.Error(err)
+	}
+	if status {
+		t.Error("ldb: found invalid key/value")
+	}
+
+	// Del (non existing)
+	if err := cdb.Del([]byte("hello")); err != nil {
+		t.Error(err)
+	}
+
+	// Put value
+	if err := cdb.Put([]byte("hello"), []byte("world")); err != nil {
+		t.Error(err)
+	}
+
+	// Del (existing)
+	if err := cdb.Del([]byte("hello")); err != nil {
+		t.Error(err)
+	}
+
+	// Get (non existing after delete)
+	data, err = cdb.Get([]byte("hello"))
+	if err == nil {
+		t.Error(err)
+	}
+	if data != nil {
+		if len(data) != 0 {
+			t.Error("ldb: got invalid data")
+		}
+	}
+
+	// Has (non existing after delete)
+	status, err = cdb.Has([]byte("hello"))
+	if err != nil {
+		t.Error(err)
+	}
+	if status {
+		t.Error("ldb: found invalid key/value")
+	}
+
+	cdb.Close()
+
+	// Put value
+	if err := cdb.Put([]byte("hello"), []byte("world")); err == nil {
+		t.Error("ldb: wrote to closed database")
+	}
 }

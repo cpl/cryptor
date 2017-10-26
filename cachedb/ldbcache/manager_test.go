@@ -1,6 +1,7 @@
 package ldbcache_test
 
 import (
+	"bytes"
 	"os"
 	"testing"
 
@@ -27,12 +28,22 @@ var validTestData = []string{
 func TestLDBManager(t *testing.T) {
 	t.Parallel()
 
+	testData := []byte("hello world")
+	testInvalidHashes := []string{
+		"",
+		"aabbcc",
+		"INVALID",
+		"InVaLiiD",
+	}
+
+	// Create new cache
 	db, err := ldbcache.NewLDBCache(testPath+"d", 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
 	defer os.RemoveAll(testPath + "d")
 
+	// Prepare manager config
 	conf := cachedb.ManagerConfig{
 		MaxCacheSize:  5120,
 		MaxChunkSize:  1024,
@@ -40,30 +51,89 @@ func TestLDBManager(t *testing.T) {
 		MaxChunkCount: 10,
 	}
 
+	// Create manager with config and cache
 	man := ldbcache.NewManager(conf, db)
 	testInt("count", 0, man.Count(), t)
 	testInt("size", 0, man.Size(), t)
 
-	if err := man.Add([]byte("hello world")); err != nil {
+	// Add data
+	testHash := hashing.SHA256HexDigest(testData)
+	if err := man.Add(testData); err != nil {
 		t.Error(err)
 	}
+
+	// Test Has
+	if status := man.Has(testHash); !status {
+		t.Error("man: failed to find entry")
+	}
+
+	// Get data from cache
+	value, err := man.Get(testHash)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Compare data with data from cache
+	if !bytes.Equal(value, testData) {
+		t.Error("man: data mismatch")
+	}
+
+	// Test size and count
 	testInt("count", 1, man.Count(), t)
 	testInt("size", 11, man.Size(), t)
 
-	if err := man.Del(hashing.SHA256HexDigest([]byte("hello world"))); err != nil {
+	// Delete entry
+	if err := man.Del(testHash); err != nil {
 		t.Error(err)
+	}
+
+	// Test Has (with no data)
+	if status := man.Has(testHash); status {
+		t.Error("man: found deleted entry")
+	}
+
+	// Get data from cache (with no data)
+	value, err = man.Get(testHash)
+	if err == nil {
+		t.Error("man: got deleted entry")
+	}
+	if value != nil {
+		t.Error("man: got non nil data")
+	}
+
+	for _, hash := range testInvalidHashes {
+		// Invalid key as arg for Has
+		if status := man.Has(hash); status {
+			t.Error("man: found invalid key")
+		}
+
+		// Invalid key as arg for Del
+		if err := man.Del(hash); err == nil {
+			t.Errorf("man: deleted invalid entry, %s", hash)
+		}
+
+		// Invalid key as arg for Get
+		value, err = man.Get(hash)
+		if err == nil {
+			t.Error("man: got invalid entry")
+		}
+		if value != nil {
+			t.Error("man: got invalid data")
+		}
 	}
 }
 
 func TestLDBCacheMultiAdd(t *testing.T) {
 	t.Parallel()
 
+	// Create cache
 	db, err := ldbcache.NewLDBCache(testPath+"md", 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
 	defer os.RemoveAll(testPath + "md")
 
+	// Manager config
 	conf := cachedb.ManagerConfig{
 		MaxCacheSize:  5120,
 		MaxChunkSize:  1024,
@@ -71,11 +141,14 @@ func TestLDBCacheMultiAdd(t *testing.T) {
 		MaxChunkCount: 10,
 	}
 
+	// New manager
 	man := ldbcache.NewManager(conf, db)
 
+	// Expected test results
 	expectedSize := 0
 	expectedCount := len(validTestData)
 
+	// Add data to cache using manager
 	for _, testString := range validTestData {
 		data := []byte(testString)
 
@@ -87,6 +160,42 @@ func TestLDBCacheMultiAdd(t *testing.T) {
 		expectedSize += len(data)
 	}
 
+	// Compare results
 	testInt("count", expectedCount, man.Count(), t)
 	testInt("size", expectedSize, man.Size(), t)
+}
+
+func TestLDBLimits(t *testing.T) {
+	t.Parallel()
+
+	// Create new cache
+	db, err := ldbcache.NewLDBCache(testPath+"lim", 0, 0)
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+	defer os.RemoveAll(testPath + "lim")
+
+	// Prepare manager config
+	conf := cachedb.ManagerConfig{
+		MaxCacheSize:  100,
+		MaxChunkSize:  10,
+		MinChunkSize:  5,
+		MaxChunkCount: 5,
+	}
+
+	// Create manager with config and cache
+	man := ldbcache.NewManager(conf, db)
+
+	// Test chunk size limits
+	if err := man.Add([]byte("a")); err == nil {
+		t.Error("man: added chunk too small")
+	}
+	if err := man.Add([]byte("abcdefghijklmnopq")); err == nil {
+		t.Error("man: added chunk too big")
+	}
+
+	// Test size and count
+	testInt("count", 0, man.Count(), t)
+	testInt("size", 0, man.Size(), t)
 }

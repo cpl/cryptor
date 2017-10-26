@@ -3,11 +3,9 @@ package ldbcache
 import (
 	"errors"
 
-	"github.com/thee-engineer/cryptor/crypt"
-
-	"github.com/thee-engineer/cryptor/crypt/hashing"
-
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 // LDBManager ...
@@ -18,6 +16,10 @@ type LDBManager struct {
 
 // NewManager ...
 func NewManager(config cachedb.ManagerConfig, db cachedb.Database) cachedb.DBManager {
+	if !cachedb.ValidateConfig(config) {
+		panic(cachedb.ErrInvalidConfig)
+	}
+
 	return &LDBManager{config, db}
 }
 
@@ -106,19 +108,46 @@ func (man *LDBManager) Add(data []byte) error {
 
 // Has ...
 func (man *LDBManager) Has(hex string) bool {
-	return false
+	key, err := crypt.DecodeString(hex)
+	if err != nil {
+		return false
+	}
+
+	has, err := man.DB.Has(key)
+	if err != nil {
+		return false
+	}
+
+	return has
 }
 
 // Get ...
 func (man *LDBManager) Get(hex string) ([]byte, error) {
-	return nil, nil
+	// Decode key, also validate key
+	key, err := crypt.DecodeString(hex)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that key exists
+	if !man.Has(hex) {
+		return nil, errors.New("man: no entry with key")
+	}
+
+	return man.DB.Get(key)
 }
 
 // Del ...
 func (man *LDBManager) Del(hex string) error {
+	// Decode key, also validate key
 	key, err := crypt.DecodeString(hex)
 	if err != nil {
 		return err
+	}
+
+	// Check that key exists
+	if !man.Has(hex) {
+		return errors.New("man: no entry with key")
 	}
 
 	return man.DB.Del(key)

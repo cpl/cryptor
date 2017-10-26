@@ -1,6 +1,7 @@
 package ldbcache_test
 
 import (
+	"math/rand"
 	"os"
 	"testing"
 
@@ -12,6 +13,9 @@ import (
 const dataSize = 500000
 
 func BenchmarkLDBWriteMin(b *testing.B) {
+
+	rand.Seed(1)
+
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 0, 0)
 	if err != nil {
 		b.Error(err)
@@ -32,6 +36,9 @@ func BenchmarkLDBWriteMin(b *testing.B) {
 }
 
 func BenchmarkLDBWrite2048(b *testing.B) {
+
+	rand.Seed(1)
+
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 2048, 0)
 	if err != nil {
 		b.Error(err)
@@ -52,6 +59,9 @@ func BenchmarkLDBWrite2048(b *testing.B) {
 }
 
 func BenchmarkLDBWriteSingle(b *testing.B) {
+
+	rand.Seed(1)
+
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 0, 0)
 	if err != nil {
 		b.Error(err)
@@ -71,6 +81,9 @@ func BenchmarkLDBWriteSingle(b *testing.B) {
 }
 
 func BenchmarkLDBReadSingle(b *testing.B) {
+
+	rand.Seed(1)
+
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 0, 0)
 	if err != nil {
 		b.Error(err)
