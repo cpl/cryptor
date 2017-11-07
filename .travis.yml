@@ -13,6 +13,7 @@ before_install:
   - go get -v ./...
 
 script:
+  - make test
   - make cover
   - cp build/report.out coverage.txt
   - make clean
