@@ -15,6 +15,7 @@ before_install:
 script:
   - make cover
   - cp build/report.out coverage.txt
+  - make clean
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
