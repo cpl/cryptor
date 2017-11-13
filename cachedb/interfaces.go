@@ -33,8 +33,8 @@ type Iterator interface {
 	Release()         // Release the iterator from use
 }
 
-// DBManager provides operations on top of the cryptor cache
-type DBManager interface {
+// Manager provides operations on top of the cryptor cache
+type Manager interface {
 	Size() int  // Returns the size (in bytes) of the current cache
 	Count() int // Return the total count of chunks
 

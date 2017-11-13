@@ -8,27 +8,52 @@ import (
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
-// LDBManager ...
-type LDBManager struct {
+// Manager ...
+type Manager struct {
 	cachedb.ManagerConfig
 	DB cachedb.Database
 }
 
 // NewManager ...
-func NewManager(config cachedb.ManagerConfig, db cachedb.Database) cachedb.DBManager {
+func NewManager(config cachedb.ManagerConfig, db cachedb.Database) cachedb.Manager {
 	if !cachedb.ValidateConfig(config) {
 		panic(cachedb.ErrInvalidConfig)
 	}
 
-	return &LDBManager{config, db}
+	ldbMan := &Manager{config, db}
+	ldbMan.update()
+
+	return ldbMan
 }
 
-func (man *LDBManager) update() {
-	man.updateCount()
-	man.updateSize()
+func (man *Manager) update() {
+	// Open DB iterator
+	iter := man.DB.NewIterator()
+	defer iter.Release()
+
+	// Count total chunk size and count
+	var size int
+	var count int
+
+	for iter.Next() {
+		count++
+		size += len(iter.Value())
+	}
+
+	// Check for exceding limits
+	if count > man.MaxChunkCount {
+		panic(errors.New("ldb man: chunk count excedes max count"))
+	}
+	if size > man.MaxCacheSize {
+		panic(errors.New("ldb man: cache size excedes max size"))
+	}
+
+	// Update size
+	man.CurrentCacheSize = size
+	man.CurrentChunkCount = count
 }
 
-func (man *LDBManager) updateCount() {
+func (man *Manager) updateCount() {
 	// Open DB iterator
 	iter := man.DB.NewIterator()
 
@@ -47,37 +72,18 @@ func (man *LDBManager) updateCount() {
 	man.CurrentChunkCount = count
 }
 
-func (man *LDBManager) updateSize() {
-	// Open DB iterator
-	iter := man.DB.NewIterator()
-
-	// Count individual chunk size
-	var size int
-	for iter.Next() {
-		size += len(iter.Value())
-	}
-
-	// Check for exceding limit
-	if size > man.MaxCacheSize {
-		panic(errors.New("ldb man: cache size excedes max size"))
-	}
-
-	// Update size
-	man.CurrentCacheSize = size
-}
-
 // Count ...
-func (man *LDBManager) Count() int {
+func (man *Manager) Count() int {
 	return man.CurrentChunkCount
 }
 
 // Size ...
-func (man *LDBManager) Size() int {
+func (man *Manager) Size() int {
 	return man.CurrentCacheSize
 }
 
 // Add ...
-func (man *LDBManager) Add(data []byte) error {
+func (man *Manager) Add(data []byte) error {
 	// Ensure chunk count is within limits
 	if man.CurrentChunkCount >= man.MaxChunkCount {
 		return errors.New("ldb man: chunk limit reached")
@@ -107,7 +113,7 @@ func (man *LDBManager) Add(data []byte) error {
 }
 
 // Has ...
-func (man *LDBManager) Has(hex string) bool {
+func (man *Manager) Has(hex string) bool {
 	key, err := crypt.DecodeString(hex)
 	if err != nil {
 		return false
@@ -122,7 +128,7 @@ func (man *LDBManager) Has(hex string) bool {
 }
 
 // Get ...
-func (man *LDBManager) Get(hex string) ([]byte, error) {
+func (man *Manager) Get(hex string) ([]byte, error) {
 	// Decode key, also validate key
 	key, err := crypt.DecodeString(hex)
 	if err != nil {
@@ -138,7 +144,7 @@ func (man *LDBManager) Get(hex string) ([]byte, error) {
 }
 
 // Del ...
-func (man *LDBManager) Del(hex string) error {
+func (man *Manager) Del(hex string) error {
 	if man.CurrentChunkCount == 0 {
 		man.updateCount()
 	}
