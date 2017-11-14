@@ -19,7 +19,7 @@ type Database interface {
 // Database.
 type Batch interface {
 	Put(key, value []byte) error // Store key/value pair instruction
-	Del(key []byte) error        // Delete value with key insturction
+	Del(key []byte) error        // Delete value with key instruction
 	Write() error                // Write all instructions in the Batch
 }
 

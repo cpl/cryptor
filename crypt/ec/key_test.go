@@ -49,7 +49,7 @@ func TestECDSACompare(t *testing.T) {
 	// Clone one of the keys
 	key0Clone := ec.Import(key0.Export())
 
-	// Check for equal keys on diffrent keys
+	// Check for equal keys on different keys
 	if key0.IsEqual(key1) || key1.IsEqual(key0) {
 		t.Error("ecdsa: unexpected key equality")
 	}
@@ -64,7 +64,7 @@ func TestECDSACompare(t *testing.T) {
 		t.Error("ecdsa: failed to find public equal keys")
 	}
 
-	// Compare two diffrent public keys
+	// Compare two different public keys
 	if key0.PublicKey.IsEqual(&key1.PublicKey) {
 		t.Error("ecdsa: unexpected public key equality")
 	}

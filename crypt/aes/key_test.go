@@ -88,7 +88,7 @@ func TestKeyZeroing(t *testing.T) {
 	// Zero aes key
 	crypt.ZeroBytes(key[:])
 
-	// Check that zeroing succeded
+	// Check that zeroing succeeded
 	if !bytes.Equal(key.Bytes(), make([]byte, aes.KeySize)) {
 		t.Error("aes key: zeroing failed")
 	}

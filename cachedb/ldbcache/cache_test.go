@@ -200,7 +200,7 @@ func TestCDBIterator(t *testing.T) {
 		count++
 	}
 	if count != len(testData)-1 {
-		t.Errorf("iter error: invalid iterator lenght; got %d; expected %d;",
+		t.Errorf("iter error: invalid iterator length; got %d; expected %d;",
 			count, len(testData)-1)
 	}
 
