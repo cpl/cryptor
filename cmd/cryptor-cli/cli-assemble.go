@@ -48,10 +48,7 @@ var assembleCLI = &cli.Command{
 		handleErr(err)
 
 		// Prepare assembler
-		a := &assembler.Assembler{
-			Tail:  tailHash,
-			Cache: cache,
-		}
+		a := assembler.NewDefaultAssembler(tailHash, cache)
 
 		// Start assembly
 		err = a.Assemble(aes.NewKeyFromPassword(argv.Pass), argv.Out)

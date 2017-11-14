@@ -54,10 +54,7 @@ func TestAssembler(t *testing.T) {
 	defer cache.Close()
 
 	// Create assembler
-	asm := &assembler.Assembler{
-		Tail:  tail,
-		Cache: cache,
-	}
+	asm := assembler.NewDefaultAssembler(tail, cache)
 
 	// Start assembling package
 	defer os.RemoveAll("untar")
@@ -94,10 +91,7 @@ func TestFullChunkAssemble(t *testing.T) {
 	}
 
 	// Create assembler
-	asm := &assembler.Assembler{
-		Tail:  tail,
-		Cache: cache,
-	}
+	asm := assembler.NewDefaultAssembler(tail, cache)
 
 	// Assemble package
 	defer os.RemoveAll("/tmp/asm")
