@@ -12,24 +12,28 @@ import (
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
-// Chunker takes a reader as input, a chunk size and the cache in which to
+// DefaultChunker takes a reader as input, a chunk size and the cache in which to
 // store any resulting chunks.
-type Chunker struct {
-	Size   uint32
-	Cache  cachedb.Database
-	Reader io.Reader
+type DefaultChunker struct {
+	ChunkSize uint32
+	Cache     cachedb.Database
+	Reader    io.Reader
+}
+
+// NewDefaultChunker ...
+func NewDefaultChunker(Reader io.Reader, ChunkSize uint32, Cache cachedb.Database) Chunker {
+	return &DefaultChunker{ChunkSize: ChunkSize, Cache: Cache, Reader: Reader}
 }
 
 // Chunk starts chunking all data from the Chunker reader into the cache.
 // If a non-null AES Key is given, the the tail chunk will be encrypted
 // using this key, allowing the user more control. If a null key is given
-// then a random AES Key will be used
-func (c Chunker) Chunk(tailKey aes.Key) (tailHash []byte, err error) {
+// then a random AES Key will be used.
+// TODO: Rnadomize chunk order (read all data first, count it, shuffle it,
+// padd data if needed, encrypt each chunk as normal)
+func (c DefaultChunker) Chunk(tailKey aes.Key) (tailHash []byte, err error) {
 	// Make a chunk struct
-	chunk := NewChunk(c.Size)
-
-	// Memory zeroing
-	defer crypt.ZeroBytes(tailKey[:])
+	chunk := NewChunk(c.ChunkSize)
 
 	// Prepare previous hash and key
 	pKey := aes.NullKey         // Previous key is empty (first chunk)
@@ -37,6 +41,11 @@ func (c Chunker) Chunk(tailKey aes.Key) (tailHash []byte, err error) {
 
 	// Prepare a batch for the cache, all chunks will be written at once
 	batch := c.Cache.NewBatch()
+
+	// Zero memory of tail key, previous key and tail hash after chunking
+	defer crypt.ZeroBytes(tailKey[:])
+	defer crypt.ZeroBytes(pKey[:])
+	defer crypt.ZeroBytes(tailHash[:])
 
 	for {
 		// Read archive content into chunks
@@ -53,11 +62,11 @@ func (c Chunker) Chunk(tailKey aes.Key) (tailHash []byte, err error) {
 		}
 
 		// Add random padding if needed
-		if read < int(c.Size) {
+		if read < int(c.ChunkSize) {
 			chunk.Content = append(
 				chunk.Content[:read],
-				crypt.RandomData(uint(c.Size)-uint(read))...)
-			chunk.Header.Padd = c.Size - uint32(read)
+				crypt.RandomData(uint(c.ChunkSize)-uint(read))...)
+			chunk.Header.Padd = c.ChunkSize - uint32(read)
 		} else {
 			// No padding needed
 			chunk.Header.Padd = 0
@@ -74,7 +83,7 @@ func (c Chunker) Chunk(tailKey aes.Key) (tailHash []byte, err error) {
 
 		// Generatea a new encryption key for each chunk
 		// TODO: Find a better way of checking for last chunk
-		if read < int(c.Size) {
+		if read < int(c.ChunkSize) {
 			// Use tail key for the last chunk
 			pKey = tailKey
 		} else {

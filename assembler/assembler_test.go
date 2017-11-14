@@ -8,7 +8,6 @@ import (
 	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
-
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
@@ -26,11 +25,7 @@ func createTestCache() ([]byte, error) {
 	archive.TarGz("chunk.go", &buffer)
 
 	// Create chunker
-	c := &chunker.Chunker{
-		Size:   16,
-		Cache:  cache,
-		Reader: &buffer,
-	}
+	c := chunker.NewDefaultChunker(&buffer, 16, cache)
 
 	// Chunk files and get tail hash
 	tail, err := c.Chunk(aes.NullKey)
@@ -89,11 +84,7 @@ func TestFullChunkAssemble(t *testing.T) {
 	defer os.RemoveAll("/tmp/asmcnktest")
 
 	// Create chunker
-	cnk := &chunker.Chunker{
-		Size:   1000000,
-		Cache:  cache,
-		Reader: &buffer,
-	}
+	cnk := chunker.NewDefaultChunker(&buffer, 1000000, cache)
 
 	// Chunk with derived key
 	key := aes.NewKeyFromPassword("testing")

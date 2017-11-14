@@ -60,11 +60,7 @@ var chunkCLI = &cli.Command{
 		handleErr(err)
 
 		// Create chunker
-		c := &chunker.Chunker{
-			Size:   uint32(argv.Size),
-			Cache:  cache,
-			Reader: &buffer,
-		}
+		c := chunker.NewDefaultChunker(&buffer, uint32(argv.Size), cache)
 
 		// Derive key from password and start chunking
 		hash, err := c.Chunk(aes.NewKeyFromPassword(argv.Pass))

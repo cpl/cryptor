@@ -35,12 +35,9 @@ func TestEChunk(t *testing.T) {
 	buffer.Write(data)
 
 	// Create chunker
-	chunker := &chunker.Chunker{
-		Size:   1024,
-		Cache:  cache,
-		Reader: &buffer,
-	}
-	chunkHash, err := chunker.Chunk(aes.NullKey)
+	c := chunker.NewDefaultChunker(&buffer, 1024, cache)
+
+	chunkHash, err := c.Chunk(aes.NullKey)
 	if err != nil {
 		t.Error(err)
 	}
