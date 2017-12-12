@@ -77,3 +77,26 @@ func TestCryptoErrors(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestEncryptDecryptNullKey(t *testing.T) {
+	t.Parallel()
+	// Random data
+	data := crypt.RandomData(100)
+
+	// Encrypt
+	eData, err := aes.Encrypt(aes.NullKey, data)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Decrypt
+	dData, err := aes.Decrypt(aes.NullKey, eData)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Compare
+	if !bytes.Equal(data, dData) {
+		t.Error("data mismatch: initial msg and encrypted->decrypted msg")
+	}
+}

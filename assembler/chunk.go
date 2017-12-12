@@ -51,7 +51,6 @@ func extractHeader(data []byte) *chunker.ChunkHeader {
 
 	// Convert byte array to uint32
 	padd := binary.LittleEndian.Uint32(data[96:100])
-
 	// Get next key from chunk header data
 	nKey := aes.NewKeyFromBytes(data[:32])
 

@@ -34,8 +34,6 @@ func createTestCache() ([]byte, error) {
 }
 
 func TestAssembler(t *testing.T) {
-	t.Parallel()
-
 	// Create test cache
 	tail, err := createTestCache()
 	if err != nil {

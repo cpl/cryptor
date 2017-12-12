@@ -15,7 +15,7 @@ func Compress(data []byte) (out bytes.Buffer, err error) {
 	// Write data to output buffer
 	_, err = gzipWriter.Write(data)
 	if err != nil {
-		panic(err)
+		return out, err
 	}
 
 	return out, nil
@@ -29,7 +29,7 @@ func Decompress(data bytes.Buffer) ([]byte, error) {
 	// Create gzip reader
 	gzipReader, err := gzip.NewReader(&data)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	defer gzipReader.Close()
 
