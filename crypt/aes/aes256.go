@@ -14,20 +14,16 @@ import (
 // to the head of the encrypted msg. GCM block is used.
 func Encrypt(key Key, msg []byte) ([]byte, error) {
 	// Generate Cipher block
-	cipherBlock, err := aes.NewCipher(key[:])
-	if err != nil {
-		return nil, err
-	}
+	// This cannot return an error because type key (size 32) is used
+	cipherBlock, _ := aes.NewCipher(key[:])
 
 	// Generate GCM
-	gcm, err := cipher.NewGCM(cipherBlock)
-	if err != nil {
-		return nil, err
-	}
+	// This cannot return an error because the cipherBlock will always be valid
+	gcm, _ := cipher.NewGCM(cipherBlock)
 
 	// Generate nonce
 	nonce := make([]byte, gcm.NonceSize())
-	_, err = io.ReadFull(rand.Reader, nonce)
+	_, err := io.ReadFull(rand.Reader, nonce)
 	if err != nil {
 		return nil, err
 	}
@@ -38,16 +34,12 @@ func Encrypt(key Key, msg []byte) ([]byte, error) {
 // Decrypt a msg encrypted with AES256 Key.
 func Decrypt(key Key, msg []byte) ([]byte, error) {
 	// Generate Cipher block
-	cipherBlock, err := aes.NewCipher(key[:])
-	if err != nil {
-		return nil, err
-	}
+	// This cannot return an error because type key (size 32) is used
+	cipherBlock, _ := aes.NewCipher(key[:])
 
 	// Generate GCM
-	gcm, err := cipher.NewGCM(cipherBlock)
-	if err != nil {
-		panic(err.Error())
-	}
+	// This cannot return an error because the cipherBlock will always be valid
+	gcm, _ := cipher.NewGCM(cipherBlock)
 
 	// Check for nonce existence in ciphertext
 	if len(msg) < gcm.NonceSize() {

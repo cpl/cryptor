@@ -24,7 +24,7 @@ func TestUnTarEmptyInput(t *testing.T) {
 }
 
 func TestUnTarWrongInput(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	var buffer bytes.Buffer
 
@@ -71,7 +71,7 @@ func TestUnTarNoOutputFile(t *testing.T) {
 }
 
 func TestUnTarNoOutputDir(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	var buffer bytes.Buffer
 

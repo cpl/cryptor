@@ -1,6 +1,7 @@
 package cachedb
 
 import (
+	"os"
 	"os/user"
 	"path"
 )
@@ -18,9 +19,11 @@ func GetCryptorDir() string {
 
 // GetUserHomePath returns the current user's home dir abs path
 func GetUserHomePath() string {
-	usr, err := user.Current()
-	if err != nil {
-		panic(err)
+	if home := os.Getenv("HOME"); home != "" {
+		return home
 	}
-	return usr.HomeDir
+	if usr, err := user.Current(); err == nil {
+		return usr.HomeDir
+	}
+	return ""
 }

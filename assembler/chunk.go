@@ -10,29 +10,25 @@ import (
 )
 
 // EChunk ...
-type EChunk struct {
-	Data []byte
-}
+type EChunk []byte
 
 // GetEChunk returns the chunk with matching hash key from the given cache.
-func GetEChunk(hash []byte, cache cachedb.Database) *EChunk {
+func GetEChunk(hash []byte, cache cachedb.Database) EChunk {
 
 	// Get data from cache
-	data, err := cache.Get(hash)
+	eChunk, err := cache.Get(hash)
 	if err != nil {
 		panic(err)
 	}
 
-	return &EChunk{
-		Data: data,
-	}
+	return eChunk
 }
 
 // Decrypt returns the decrypted content of the encrypted chunk as a
 // normal chunk containign a chunk header and content ([]byte).
-func (eC EChunk) Decrypt(key aes.Key) (*chunker.Chunk, error) {
+func (eChunk EChunk) Decrypt(key aes.Key) (*chunker.Chunk, error) {
 	// Decrypt encrypted chunk data
-	data, err := aes.Decrypt(key, eC.Data)
+	data, err := aes.Decrypt(key, eChunk)
 	if err != nil {
 		return nil, err
 	}

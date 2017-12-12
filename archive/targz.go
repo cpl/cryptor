@@ -9,11 +9,8 @@ import (
 // and creates a .tar.gz archive which is written on the given io.Writer.
 func TarGz(source string, out io.Writer) error {
 	gzipWriter := gzip.NewWriter(out)
-	if err := tarArchive(source, gzipWriter); err != nil {
-		return err
-	}
 	defer gzipWriter.Close()
-	return nil
+	return tarArchive(source, gzipWriter)
 }
 
 // UnTarGz takes io.Reader as input which should contain the .tar.gz archive
@@ -21,9 +18,11 @@ func TarGz(source string, out io.Writer) error {
 func UnTarGz(destination string, in io.Reader) error {
 	// Create gzip reader
 	gzipReader, err := gzip.NewReader(in)
+
 	if err != nil {
 		return err
 	}
 	defer gzipReader.Close()
+
 	return tarExtract(destination, gzipReader)
 }

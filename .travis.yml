@@ -1,5 +1,14 @@
 language: go
 
+os:
+  - linux
+  - osx
+
+matrix:
+  allow_failures:
+    - os: osx
+    - go: 1.10beta1
+
 go:
   - 1.5
   - 1.6
@@ -7,6 +16,7 @@ go:
   - 1.8
   - 1.9
   - 1.9.x
+  - 1.10beta1
 
 before_install:
   - go get github.com/wadey/gocovmerge

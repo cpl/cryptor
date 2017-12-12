@@ -32,7 +32,7 @@ test:
 	@for pkg in `go list ./...`; do \
 		cd $$GOPATH/src;\
 		cd $$pkg; \
-		go test -coverprofile=coverage.out -v -race -parallel 8; \
+		go test -coverprofile=coverage.out -v -race -parallel 8 | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
 	done; \
 	cd $$CRYPTORROOT;
 
