@@ -12,7 +12,7 @@ import (
 // listens both UDP (Peer discovery and requests) and TCP (Chunk sharing and
 // handshakes).
 type Node struct {
-	config NodeConfig // Static configuration generated at node creation
+	config *NodeConfig // Static configuration generated at node creation
 
 	lock      sync.Mutex // Protects the running state
 	running   bool       // Node state
@@ -29,6 +29,7 @@ type Node struct {
 	errc chan error    // Channel for transmiting errors
 
 	addp chan *Peer    // Add peer request channel
+	remp chan *Peer    // Rem peer request channel
 	pops chan peerFunc // Peer count and peer list operations
 	popd chan struct{} // Peer operation done
 
@@ -45,12 +46,16 @@ type peerFunc func(map[string]*Peer)
 // NewNode returns a Node attached to the given IP:PORT pair, and controlled
 // using the given quit channel. This is more for testing and debugging than
 // actual production.
-func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
+func NewNode(ip string, tcp, udp int, quit chan struct{}, config *NodeConfig) *Node {
 	// Create node configuration
-	config := NodeConfig{
-		IP:  net.ParseIP(ip),
-		TCP: tcp,
-		UDP: udp,
+	if config == nil {
+		log.Println("warn: node config is nil, not recommended")
+		config = &NodeConfig{
+			IP:           net.ParseIP(ip),
+			TCP:          tcp,
+			UDP:          udp,
+			TrustedPeers: make([]*Peer, 0),
+		}
 	}
 
 	return &Node{
@@ -60,6 +65,7 @@ func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
 		quit:        quit,
 		disc:        make(chan struct{}),
 		addp:        make(chan *Peer),
+		remp:        make(chan *Peer),
 		errc:        make(chan error),
 		pops:        make(chan peerFunc),
 		popd:        make(chan struct{}),
@@ -69,9 +75,16 @@ func NewNode(ip string, tcp, udp int, quit chan struct{}) *Node {
 	}
 }
 
+func (n *Node) passTrustedPeers() {
+	for _, peer := range n.config.TrustedPeers {
+		n.AddPeer(peer)
+	}
+}
+
 // Start begins the listening process for the Node on the network and all
 // operations/requests handling.
 func (n *Node) Start() {
+	// Check for already running
 	n.lock.Lock()
 	if n.running {
 		n.errc <- errors.New("node: already running")
@@ -80,38 +93,35 @@ func (n *Node) Start() {
 	n.running = true
 	n.lock.Unlock()
 
+	// Node initialization
+	go n.passTrustedPeers()
+
 	for {
 		select {
 		case err := <-n.errc:
-			log.Println("err:", err) // DEBUG
+			log.Println("err:", n.tcpAddr.String(), "|", err) // DEBUG
 		case <-n.quit:
 			n.running = false
 			return
 		case peer := <-n.addp:
 			n.peers[peer.tcpAddr.String()] = peer
+		case peer := <-n.remp:
+			delete(n.peers, peer.tcpAddr.String())
 		case operation := <-n.pops:
 			operation(n.peers)
 			n.popd <- struct{}{}
-			// DEBUG
-			// n.udpOutgoing <- UDPPacket{
-			// 	data: []byte("ok\n"),
-			// 	addr: packet.addr}
 		}
 	}
 }
 
 // Listen currently in a drafting stage.
 func (n *Node) Listen() {
+	// Check for already listening
 	n.lock.Lock()
-	// if !n.running {
-	// 	return
-	// }
-
 	if n.listening {
 		n.errc <- errors.New("node: already listening")
 		return
 	}
-
 	n.listening = true
 	n.lock.Unlock()
 

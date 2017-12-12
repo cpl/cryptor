@@ -26,6 +26,13 @@ func (n *Node) AddPeer(peer *Peer) {
 	}
 }
 
+// RemovePeer sends a signal to the node to remove a peer
+func (n *Node) RemovePeer(peer *Peer) {
+	select {
+	case n.remp <- peer:
+	}
+}
+
 // Peers returns a list of all peers related to this Node.
 func (n *Node) Peers() []*Peer {
 	var peerList []*Peer

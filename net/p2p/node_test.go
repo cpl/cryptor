@@ -9,7 +9,7 @@ import (
 
 func TestNodeStop(t *testing.T) {
 	qc := make(chan struct{})
-	node := p2p.NewNode("127.0.0.1", 2002, 9002, qc)
+	node := p2p.NewNode("127.0.0.1", 2002, 9002, qc, nil)
 	go node.Stop() // Stop before starting
 
 	go node.Start()
@@ -21,7 +21,7 @@ func TestNodeStop(t *testing.T) {
 func TestNodeStart(t *testing.T) {
 	qc := make(chan struct{})
 
-	node := p2p.NewNode("127.0.0.1", 2001, 9001, qc)
+	node := p2p.NewNode("127.0.0.1", 2001, 9001, qc, nil)
 
 	go node.Start()
 
@@ -33,8 +33,8 @@ func TestNodeStart(t *testing.T) {
 func TestNodeConnection(t *testing.T) {
 	qc := make(chan struct{})
 
-	n0 := p2p.NewNode("127.0.0.1", 2010, 9010, qc)
-	n1 := p2p.NewNode("127.0.0.1", 2011, 9011, qc)
+	n0 := p2p.NewNode("127.0.0.1", 2010, 9010, qc, nil)
+	n1 := p2p.NewNode("127.0.0.1", 2011, 9011, qc, nil)
 
 	n0.Send(p2p.NewUDPPacket([]byte("hello world"), n0.UDPAddr()))
 	n0.Send(p2p.NewUDPPacket([]byte("hello world node1"), n1.UDPAddr()))
@@ -62,8 +62,8 @@ func TestNodeConnection(t *testing.T) {
 func TestSamePort(t *testing.T) {
 	qc := make(chan struct{})
 
-	n0 := p2p.NewNode("127.0.0.1", 2020, 9020, qc)
-	n1 := p2p.NewNode("127.0.0.1", 2020, 9020, qc)
+	n0 := p2p.NewNode("127.0.0.1", 2020, 9020, qc, nil)
+	n1 := p2p.NewNode("127.0.0.1", 2020, 9020, qc, nil)
 
 	time.Sleep(time.Second)
 
@@ -85,7 +85,7 @@ func TestSamePort(t *testing.T) {
 
 func TestNodeMutex(t *testing.T) {
 	qc := make(chan struct{})
-	n0 := p2p.NewNode("127.0.0.1", 2030, 9030, qc)
+	n0 := p2p.NewNode("127.0.0.1", 2030, 9030, qc, nil)
 
 	n0.Stop()
 	go n0.Stop()
@@ -121,7 +121,7 @@ func TestNodeMutex(t *testing.T) {
 
 func TestNodeDisconnect(t *testing.T) {
 	qc := make(chan struct{})
-	n0 := p2p.NewNode("127.0.0.1", 2040, 9040, qc)
+	n0 := p2p.NewNode("127.0.0.1", 2040, 9040, qc, nil)
 
 	go n0.Start()
 
@@ -140,7 +140,7 @@ func TestNodeDisconnect(t *testing.T) {
 
 func TestNodeDisconnectStrange(t *testing.T) {
 	qc := make(chan struct{})
-	n0 := p2p.NewNode("127.0.0.1", 2050, 9050, qc)
+	n0 := p2p.NewNode("127.0.0.1", 2050, 9050, qc, nil)
 
 	go n0.Listen()
 	go n0.Start()
