@@ -25,11 +25,6 @@ func tarArchive(source string, out io.Writer) error {
 				return err
 			}
 
-			// Ignore root directory
-			// if source == file {
-			// 	return nil
-			// }
-
 			// Check for symlinks and handle it
 			var link string
 			if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {

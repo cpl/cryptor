@@ -32,11 +32,8 @@ func TestChunker(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Create chunker
-	chunker := chunker.NewDefaultChunker(&buffer, 1024, cache)
-
-	// Start chunking the data
-	if _, err := chunker.Chunk(aes.NullKey); err != nil {
+	// Start chunking data
+	if _, err := chunker.ChunkFrom(&buffer, 1024, cache, aes.NullKey); err != nil {
 		t.Error(err)
 	}
 }

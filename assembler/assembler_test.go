@@ -24,11 +24,8 @@ func createTestCache() ([]byte, error) {
 	var buffer bytes.Buffer
 	archive.TarGz("chunk.go", &buffer)
 
-	// Create chunker
-	c := chunker.NewDefaultChunker(&buffer, 16, cache)
-
 	// Chunk files and get tail hash
-	tail, err := c.Chunk(aes.NullKey)
+	tail, err := chunker.ChunkFrom(&buffer, 16, cache, aes.NullKey)
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +77,9 @@ func TestFullChunkAssemble(t *testing.T) {
 	}
 	defer os.RemoveAll("/tmp/asmcnktest")
 
-	// Create chunker
-	cnk := chunker.NewDefaultChunker(&buffer, 1000000, cache)
-
 	// Chunk with derived key
 	key := aes.NewKeyFromPassword("testing")
-	tail, err := cnk.Chunk(key)
+	tail, err := chunker.ChunkFrom(&buffer, 1000000, cache, key)
 	if err != nil {
 		t.Error(err)
 	}

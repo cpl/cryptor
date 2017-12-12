@@ -25,15 +25,13 @@ func NewDefaultAssembler(tail []byte, cache cachedb.Database) Assembler {
 	}
 }
 
-// GetChunk returns an encrypted chunk from the attached cache.
-func (a *DefaultAssembler) GetChunk(hash []byte) (*EChunk, error) {
-	data, err := a.Cache.Get(hash)
+// getChunk returns an encrypted chunk from the attached cache.
+func (a *DefaultAssembler) getChunk(hash []byte) (EChunk, error) {
+	eChunk, err := a.Cache.Get(hash)
 	if err != nil {
 		return nil, err
 	}
-	return &EChunk{
-		Data: data,
-	}, nil
+	return eChunk, nil
 }
 
 // Assemble starts decrypting the tail chunk with the given AES Key. The
@@ -48,7 +46,7 @@ func (a *DefaultAssembler) Assemble(key aes.Key, destination string) error {
 	defer crypt.ZeroBytes(key[:])
 
 	// Request chunk from cache
-	eChunk, err := a.GetChunk(a.Tail)
+	eChunk, err := a.getChunk(a.Tail)
 	if err != nil {
 		return err
 	}
@@ -65,10 +63,11 @@ func (a *DefaultAssembler) Assemble(key aes.Key, destination string) error {
 	// Process chunks until a final chunk is passed
 	for !chunk.IsLast() {
 		// Get the next chunk by using the header.Next hash
-		eChunk, err = a.GetChunk(chunk.Header.Next)
+		eChunk, err = a.getChunk(chunk.Header.Next)
 		if err != nil {
 			return err
 		}
+
 		// Decrypt the next chunk
 		chunk, err = eChunk.Decrypt(chunk.Header.NKey)
 		if err != nil {

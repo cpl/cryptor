@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	"github.com/thee-engineer/cryptor/crypt"
+
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
@@ -45,4 +47,10 @@ func (header ChunkHeader) Bytes() []byte {
 	buffer.Write(uintConv) // 4
 
 	return buffer.Bytes()
+}
+
+// Zero writes all header data with 0
+func (header ChunkHeader) Zero() {
+	crypt.ZeroBytes(header.Hash[:], header.Next[:], header.NKey[:])
+	header.Padd = 0
 }

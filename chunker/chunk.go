@@ -3,6 +3,7 @@ package chunker
 import (
 	"bytes"
 
+	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
@@ -42,4 +43,10 @@ func (c Chunk) IsValid() bool {
 // IsLast checks if the next chunk hash is the NullByteArray
 func (c Chunk) IsLast() bool {
 	return bytes.Equal(c.Header.Next, NullByteArray[:])
+}
+
+// Zero writes all the chunk content with 0 and the chunk header data
+func (c Chunk) Zero() {
+	crypt.ZeroBytes(c.Content)
+	c.Header.Zero()
 }
