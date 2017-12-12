@@ -1,6 +1,7 @@
 package cachedb_test
 
 import (
+	"os"
 	"path"
 	"testing"
 
@@ -9,6 +10,18 @@ import (
 
 func TestPaths(t *testing.T) {
 	t.Parallel()
+
+	// Test home path
+	envHome := os.Getenv("HOME")
+	os.Setenv("HOME", "")
+	if os.Getenv("HOME") != "" {
+		t.Fail()
+	}
+	usrHome := cachedb.GetUserHomePath()
+	if usrHome != envHome {
+		t.Fail()
+	}
+	os.Setenv("HOME", envHome)
 
 	// Test that paths works
 	absRoot := cachedb.GetCryptorDir()
