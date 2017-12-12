@@ -174,6 +174,9 @@ func (n *Node) send() {
 			n.errc <- err
 			continue
 		}
+		log.Println(
+			"| sending |", string(packet.data),
+			"| to |", packet.addr.String())
 	}
 }
 
