@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/thee-engineer/cryptor/p2p"
+	"github.com/thee-engineer/cryptor/net/p2p"
 )
 
 func TestNodeStop(t *testing.T) {
