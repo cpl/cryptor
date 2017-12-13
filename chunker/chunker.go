@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/thee-engineer/cryptor/cachedb"
-
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
@@ -22,28 +21,24 @@ import (
 // If a non-null AES Key is given, the the tail chunk will be encrypted
 // using this key, allowing the user more control. If a null key is given
 // then a random AES Key will be used.
-// TODO: Randomize chunk order (read all data first, count it, shuffle it,
-// padd data if needed, encrypt each chunk as normal)
-func ChunkFrom(Reader io.Reader, Size uint32, Cache cachedb.Database, tailKey aes.Key) (tailHash []byte, err error) {
+func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Database, tailKey aes.Key) (nextHash []byte, err error) {
 	// Make a chunk struct
-	chunk := NewChunk(Size)
+	chunk := NewChunk(size)
 
-	// Prepare previous hash and key
-	pKey := aes.NullKey         // Previous key is empty (first chunk)
-	tailHash = make([]byte, 32) // Previous hash is empty (at the end, tail)
+	nextKey := aes.NullKey      // Next key is empty (first chunk)
+	nextHash = make([]byte, 32) // Next hash is empty (at the end, tail)
 
 	// Prepare a batch for the cache, all chunks will be written at once
-	// TODO: Option to disable batch writing (performance, security tradeoff)
-	batch := Cache.NewBatch()
+	batch := cache.NewBatch()
 
-	// Zero memory of tail key, previous key and tail hash after chunking
-	defer crypt.ZeroBytes(tailKey[:], pKey[:], tailHash[:])
+	// Zero memory of tail key, next key and tail hash after chunking
+	defer crypt.ZeroBytes(tailKey[:], nextKey[:], nextHash[:])
 	// Zero memory of the chunk struct
 	defer chunk.Zero()
 
 	for {
 		// Read archive content into chunks
-		read, err := Reader.Read(chunk.Content)
+		read, err := reader.Read(chunk.Content)
 
 		// Check for EOF
 		if read == 0 || err == io.EOF {
@@ -55,38 +50,22 @@ func ChunkFrom(Reader io.Reader, Size uint32, Cache cachedb.Database, tailKey ae
 			return nil, err
 		}
 
-		// Add random padding if needed
-		if read < int(Size) {
-			chunk.Content = append(
-				chunk.Content[:read],
-				crypt.RandomData(uint(Size)-uint(read))...)
-			chunk.Header.Padd = Size - uint32(read)
-		} else {
-			// No padding needed
-			chunk.Header.Padd = 0
-		}
-
-		// Compute content hash for validity check
-		chunk.Header.Hash = hashing.SHA256Digest(chunk.Content[:read])
-
-		// Store previous encryption key inside this chunk's header
-		chunk.Header.NKey = pKey
-
-		// Store previous encrypted chunk hash inside this chunk's header
-		chunk.Header.Next = tailHash
+		// Set the header (key, hash, next)
+		chunk.setHeader(nextKey, nextHash, read)
+		// Setup padding of chunk and update header
+		chunk.padd(read)
 
 		// Generatea a new encryption key for each chunk
-		// TODO: Find a better way of checking for last chunk
-		if read < int(Size) {
+		if read < int(size) {
 			// Use tail key for the last chunk
-			pKey = tailKey
+			nextKey = tailKey
 		} else {
 			// Generate new random key
-			pKey = aes.NewKey()
+			nextKey = aes.NewKey()
 		}
 
 		// Encrypt chunk data
-		eData, err := aes.Encrypt(pKey, chunk.Bytes())
+		encryptedData, err := aes.Encrypt(nextKey, chunk.Bytes())
 		if err != nil {
 			return nil, err
 		}
@@ -95,15 +74,15 @@ func ChunkFrom(Reader io.Reader, Size uint32, Cache cachedb.Database, tailKey ae
 		crypt.ZeroBytes(chunk.Header.NKey[:])
 
 		// Hash encrypted content
-		eHash := hashing.SHA256Digest(eData)
+		eHash := hashing.SHA256Digest(encryptedData)
 
 		// Store chunk in cache batch
-		if err := batch.Put(eHash, eData); err != nil {
+		if err := batch.Put(eHash, encryptedData); err != nil {
 			return nil, err
 		}
 
 		// Update previous hash
-		tailHash = eHash
+		nextHash = eHash
 	}
 
 	// Write batch to cache
@@ -112,5 +91,14 @@ func ChunkFrom(Reader io.Reader, Size uint32, Cache cachedb.Database, tailKey ae
 	}
 
 	// Return the tail hash
-	return tailHash, nil
+	return nextHash, nil
 }
+
+// func randomizePackageOrder(reader io.Reader) ([][]byte, error) {
+// 	// Read all the package data
+// 	packageContent, err := ioutil.ReadAll(reader)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return nil, nil
+// }
