@@ -21,15 +21,20 @@ import (
 // If a non-null AES Key is given, the the tail chunk will be encrypted
 // using this key, allowing the user more control. If a null key is given
 // then a random AES Key will be used.
-func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Database, tailKey aes.Key) (nextHash []byte, err error) {
+func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Manager, tailKey aes.Key) (nextHash []byte, err error) {
 	// Make a chunk struct
 	chunk := NewChunk(size)
 
 	nextKey := aes.NullKey      // Next key is empty (first chunk)
 	nextHash = make([]byte, 32) // Next hash is empty (at the end, tail)
 
+	// FIXME: Implement cache batching in manager for chunking
+	// eg: a full package might fit, but encrypted chunks of the package
+	// might not fit in the cache. Adding one chunk at a time would work...
+	// but? what then? expanding the cache? no.
+
 	// Prepare a batch for the cache, all chunks will be written at once
-	batch := cache.NewBatch()
+	// batch := cache.NewBatch()
 
 	// Zero memory of tail key, next key and tail hash after chunking
 	defer crypt.ZeroBytes(tailKey[:], nextKey[:], nextHash[:])
@@ -77,7 +82,7 @@ func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Database, tailKey ae
 		eHash := hashing.SHA256Digest(encryptedData)
 
 		// Store chunk in cache batch
-		if err := batch.Put(eHash, encryptedData); err != nil {
+		if err := cache.Add(encryptedData); err != nil {
 			return nil, err
 		}
 
@@ -86,9 +91,9 @@ func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Database, tailKey ae
 	}
 
 	// Write batch to cache
-	if err := batch.Write(); err != nil {
-		return nil, err
-	}
+	// if err := batch.Write(); err != nil {
+	// 	return nil, err
+	// }
 
 	// Return the tail hash
 	return nextHash, nil

@@ -6,6 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/cachedb"
+
 	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
@@ -19,16 +21,17 @@ func TestEChunk(t *testing.T) {
 
 	// Create temporary dir for test
 	tmpDir, err := ioutil.TempDir("/tmp", "assembler")
+	defer os.RemoveAll(tmpDir)
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.RemoveAll(tmpDir)
 
 	// Create temp cache
-	cache, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
+	db, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
+	cache := ldbcache.NewManager(cachedb.DefaultManagerConfig, db)
 
 	// Test data
 	var buffer bytes.Buffer
@@ -42,7 +45,7 @@ func TestEChunk(t *testing.T) {
 	}
 
 	// Read encrypted chunk
-	eChunk := assembler.GetEChunk(chunkHash, cache)
+	eChunk := assembler.GetEChunk(chunkHash, db)
 	dChunk, err := eChunk.Decrypt(aes.NullKey)
 	if err != nil {
 		t.Error(err)
