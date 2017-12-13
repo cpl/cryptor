@@ -36,11 +36,11 @@ func TestCDBBasic(t *testing.T) {
 
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
+	defer os.RemoveAll(dbPath)
 	if err != nil {
 		t.Error(err)
 	}
 	defer cdb.Close()
-	defer os.RemoveAll(dbPath)
 
 	// Check db path
 	if cdb.Path() != dbPath {
@@ -90,11 +90,11 @@ func TestCDBSameKeyPut(t *testing.T) {
 
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
+	defer os.RemoveAll(dbPath)
 	if err != nil {
 		t.Error(err)
 	}
 	defer cdb.Close()
-	defer os.RemoveAll(dbPath)
 
 	// Put count entries with the same keys and random data
 	for count := 0; count < 5; count++ {
@@ -110,11 +110,11 @@ func TestCDBAdvanced(t *testing.T) {
 
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
+	defer os.RemoveAll(dbPath)
 	if err != nil {
 		t.Error(err)
 	}
 	defer cdb.Close()
-	defer os.RemoveAll(dbPath)
 
 	// Put
 	for _, data := range testData {
@@ -176,11 +176,11 @@ func TestCDBIterator(t *testing.T) {
 
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
+	defer os.RemoveAll(dbPath)
 	if err != nil {
 		t.Error(err)
 	}
 	defer cdb.Close()
-	defer os.RemoveAll(dbPath)
 
 	// Put test data in cache
 	for _, data := range testData {
@@ -212,11 +212,11 @@ func TestCDBErrors(t *testing.T) {
 
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
+	defer os.RemoveAll(dbPath)
 	if err != nil {
 		t.Error(err)
 	}
 	defer cdb.Close()
-	defer os.RemoveAll(dbPath)
 
 	// Get (non existing)
 	data, err := cdb.Get([]byte("hello"))

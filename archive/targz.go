@@ -23,6 +23,5 @@ func UnTarGz(destination string, in io.Reader) error {
 		return err
 	}
 	defer gzipReader.Close()
-
 	return tarExtract(destination, gzipReader)
 }

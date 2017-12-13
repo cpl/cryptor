@@ -39,10 +39,10 @@ func TestLDBManager(t *testing.T) {
 
 	// Create new cache
 	db, err := ldbcache.NewLDBCache(testPath+"d", 0, 0)
+	defer os.RemoveAll(testPath + "d")
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.RemoveAll(testPath + "d")
 
 	// Prepare manager config
 	conf := cachedb.ManagerConfig{
@@ -132,10 +132,10 @@ func TestLDBCacheMultiAdd(t *testing.T) {
 
 	// Create cache
 	db, err := ldbcache.NewLDBCache(testPath+"md", 0, 0)
+	defer os.RemoveAll(testPath + "md")
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.RemoveAll(testPath + "md")
 
 	// Manager config
 	conf := cachedb.ManagerConfig{
@@ -177,11 +177,11 @@ func TestLDBLimitsSize(t *testing.T) {
 
 	// Create new cache
 	db, err := ldbcache.NewLDBCache(testPath+"lims", 0, 0)
+	defer os.RemoveAll(testPath + "lims")
 	if err != nil {
 		t.Error(err)
 	}
 	defer db.Close()
-	defer os.RemoveAll(testPath + "lims")
 
 	// Prepare manager config
 	conf := cachedb.ManagerConfig{
@@ -239,11 +239,11 @@ func TestLDBLimitsCount(t *testing.T) {
 
 	// Create new cache
 	db, err := ldbcache.NewLDBCache(testPath+"limc", 0, 0)
+	defer os.RemoveAll(testPath + "limc")
 	if err != nil {
 		t.Error(err)
 	}
 	defer db.Close()
-	defer os.RemoveAll(testPath + "limc")
 
 	// Prepare manager config
 	conf := cachedb.ManagerConfig{
@@ -276,11 +276,11 @@ func TestLDBManagerDynamic(t *testing.T) {
 
 	// Create new cache
 	db, err := ldbcache.NewLDBCache(testPath+"dyn", 0, 0)
+	defer os.RemoveAll(testPath + "dyn")
 	if err != nil {
 		t.Error(err)
 	}
 	defer db.Close()
-	defer os.RemoveAll(testPath + "dyn")
 
 	conf := cachedb.ManagerConfig{
 		MaxCacheSize:  1000,

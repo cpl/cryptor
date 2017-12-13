@@ -17,10 +17,10 @@ func BenchmarkLDBWriteMin(b *testing.B) {
 	rand.Seed(1)
 
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 0, 0)
+	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 	if err != nil {
 		b.Error(err)
 	}
-	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 
 	b.ResetTimer()
 
@@ -40,10 +40,10 @@ func BenchmarkLDBWrite2048(b *testing.B) {
 	rand.Seed(1)
 
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 2048, 0)
+	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 	if err != nil {
 		b.Error(err)
 	}
-	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 
 	b.ResetTimer()
 
@@ -63,10 +63,10 @@ func BenchmarkLDBWriteSingle(b *testing.B) {
 	rand.Seed(1)
 
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 0, 0)
+	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 	if err != nil {
 		b.Error(err)
 	}
-	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 
 	key := []byte("test")
 	data := crypt.RandomData(dataSize)
@@ -85,10 +85,10 @@ func BenchmarkLDBReadSingle(b *testing.B) {
 	rand.Seed(1)
 
 	cache, err := ldbcache.NewLDBCache("/tmp/cryptor_ldb_bench", 0, 0)
+	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 	if err != nil {
 		b.Error(err)
 	}
-	defer os.RemoveAll("/tmp/cryptor_ldb_bench")
 
 	key := []byte("test")
 	data := crypt.RandomData(dataSize)
