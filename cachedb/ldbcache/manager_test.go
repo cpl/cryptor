@@ -361,3 +361,93 @@ func TestLDBManagerDynamic(t *testing.T) {
 	testInt("count", conf.MaxChunkCount/2, newMan.Count(), t)
 	testInt("size", (conf.MaxChunkCount/2)*10, newMan.Size(), t)
 }
+
+func TestLDBManagerDel(t *testing.T) {
+	t.Parallel()
+
+	// Create new cache
+	db, err := ldbcache.NewLDBCache(testPath+"del", 0, 0)
+	defer os.RemoveAll(testPath + "del")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	conf := cachedb.ManagerConfig{
+		MaxCacheSize:  1000,
+		MaxChunkSize:  90,
+		MinChunkSize:  5,
+		MaxChunkCount: 20,
+	}
+	if !cachedb.ValidateConfig(conf) {
+		t.Error(cachedb.ErrInvalidConfig)
+	}
+
+	// Create manager with config and cache
+	man := ldbcache.NewManager(conf, db)
+
+	testInt("count", 0, man.Count(), t)
+	testInt("size", 0, man.Size(), t)
+
+	if err := man.Add(crypt.RandomData(20)); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := man.Del("somerandomstringthatwillnotwork"); err == nil {
+		t.Errorf("man: deleted non valid hash")
+	}
+
+	if err := man.Del(hashing.SHA256HexDigest([]byte{10, 20, 30})); err == nil {
+		t.Errorf("man: deleted non existing hash")
+	}
+}
+
+func TestLDBClosed(t *testing.T) {
+	t.Parallel()
+
+	// Create new cache
+	db, err := ldbcache.NewLDBCache(testPath+"closed", 0, 0)
+	defer os.RemoveAll(testPath + "closed")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	conf := cachedb.ManagerConfig{
+		MaxCacheSize:  1000,
+		MaxChunkSize:  90,
+		MinChunkSize:  5,
+		MaxChunkCount: 20,
+	}
+	if !cachedb.ValidateConfig(conf) {
+		t.Error(cachedb.ErrInvalidConfig)
+	}
+
+	// Create manager with config and cache
+	man := ldbcache.NewManager(conf, db)
+
+	testInt("count", 0, man.Count(), t)
+	testInt("size", 0, man.Size(), t)
+
+	data := crypt.RandomData(20)
+	if err := man.Add(data); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := man.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	dataHash := hashing.SHA256HexDigest(data)
+	if has := man.Has(dataHash); has {
+		t.Errorf("man: got true Has() from closed db")
+	}
+
+	if err := man.Del(dataHash); err == nil {
+		t.Errorf("man: deleted from closed db")
+	}
+
+	if err := man.Add(crypt.RandomData(20)); err == nil {
+		t.Errorf("man: added to closed db")
+	}
+}
