@@ -343,4 +343,21 @@ func TestLDBManagerDynamic(t *testing.T) {
 
 	testInt("count", conf.MaxChunkCount/2, man.Count(), t)
 	testInt("size", (conf.MaxChunkCount/2)*10, man.Size(), t)
+
+	man.Close()
+
+	// Load existing cache
+	newDB, err := ldbcache.NewLDBCache(testPath+"dyn", 0, 0)
+	defer os.RemoveAll(testPath + "dyn")
+	if err != nil {
+		t.Error(err)
+	}
+	defer newDB.Close()
+
+	// New manager on top of existing cache
+	newMan := ldbcache.NewManager(conf, newDB)
+
+	// Check for matching previous counts
+	testInt("count", conf.MaxChunkCount/2, newMan.Count(), t)
+	testInt("size", (conf.MaxChunkCount/2)*10, newMan.Size(), t)
 }
