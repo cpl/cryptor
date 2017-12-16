@@ -28,11 +28,6 @@ func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Manager, tailKey aes
 	nextKey := aes.NullKey      // Next key is empty (first chunk)
 	nextHash = make([]byte, 32) // Next hash is empty (at the end, tail)
 
-	// FIXME: Implement cache batching in manager for chunking
-	// eg: a full package might fit, but encrypted chunks of the package
-	// might not fit in the cache. Adding one chunk at a time would work...
-	// but? what then? expanding the cache? no.
-
 	// Prepare a batch for the cache, all chunks will be written at once
 	// batch := cache.NewBatch()
 
