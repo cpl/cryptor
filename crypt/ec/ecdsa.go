@@ -26,10 +26,17 @@ func GenerateKey() (*PrivateKey, error) {
 	}
 	defer crypt.ZeroBytes(pb)
 
+	// Allocate memory for PrivateKey
 	prv := new(PrivateKey)
+
+	// Allocate public key values
 	prv.PublicKey.X = x
 	prv.PublicKey.Y = y
+
+	// Assign ec function
 	prv.PublicKey.Curve = ellipticCurveFunc
+
+	// Set private key bytes
 	prv.D = new(big.Int).SetBytes(pb)
 
 	return prv, nil
