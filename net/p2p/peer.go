@@ -8,6 +8,8 @@ import (
 type Peer struct {
 	udpAddr *net.UDPAddr
 	tcpAddr *net.TCPAddr
+
+	// TODO: Research best practice for peer public/private keys
 }
 
 // NewPeer creates a peer object given an IP:PORT pair. This is for testing and
