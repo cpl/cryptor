@@ -139,6 +139,7 @@ func (n *Node) Listen() {
 			n.listening = false
 			return
 		case packet := <-n.udpIncoming:
+			go parsePacket(&packet)
 			// DEBUG
 			log.Println(
 				"| packet from |", packet.addr.String(),

@@ -18,3 +18,8 @@ func NewUDPPacket(data []byte, addr *net.UDPAddr) UDPPacket {
 		addr: addr,
 	}
 }
+
+// parsePacket takes a packet and determines the right protocol to apply
+func parsePacket(packet *UDPPacket) {
+	return
+}
