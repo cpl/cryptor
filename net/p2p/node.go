@@ -40,9 +40,6 @@ type Node struct {
 	udpOutgoing chan UDPPacket // Outgoing UDP channel
 }
 
-// Function for peer list and peer count
-type peerFunc func(map[string]*Peer)
-
 // NewNode returns a Node attached to the given IP:PORT pair, and controlled
 // using the given quit channel. This is more for testing and debugging than
 // actual production.
