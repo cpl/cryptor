@@ -1,5 +1,6 @@
 package cryptor
 
+/*
 import (
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt/aes"
@@ -35,3 +36,4 @@ type APIInterface interface {
 type DefaultAPI struct {
 	Caches map[string]cachedb.Database
 }
+*/
