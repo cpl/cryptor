@@ -6,11 +6,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/cachedb"
+
 	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 func TestEChunk(t *testing.T) {
@@ -18,16 +21,17 @@ func TestEChunk(t *testing.T) {
 
 	// Create temporary dir for test
 	tmpDir, err := ioutil.TempDir("/tmp", "assembler")
+	defer os.RemoveAll(tmpDir)
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.RemoveAll(tmpDir)
 
 	// Create temp cache
-	cache, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
+	db, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
+	cache := ldbcache.NewManager(cachedb.DefaultManagerConfig, db)
 
 	// Test data
 	var buffer bytes.Buffer
@@ -41,7 +45,7 @@ func TestEChunk(t *testing.T) {
 	}
 
 	// Read encrypted chunk
-	eChunk := assembler.GetEChunk(chunkHash, cache)
+	eChunk := assembler.GetEChunk(chunkHash, db)
 	dChunk, err := eChunk.Decrypt(aes.NullKey)
 	if err != nil {
 		t.Error(err)
@@ -49,6 +53,8 @@ func TestEChunk(t *testing.T) {
 
 	// Invalid hash
 	if !dChunk.IsValid() {
+		t.Log(crypt.EncodeString(dChunk.Header.Hash))
+		t.Log(crypt.EncodeString(hashing.SHA256Digest(dChunk.Content)))
 		t.Error("chunk: is not valid")
 	}
 
@@ -59,6 +65,8 @@ func TestEChunk(t *testing.T) {
 
 	// Compare initial data with data after encryption, storage and decryption
 	if !bytes.Equal(dChunk.Content, data) {
+		t.Log("init", data)
+		t.Log("decr", dChunk.Content)
 		t.Error("data mismatch: initial package data and assembled chunks")
 	}
 }

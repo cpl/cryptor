@@ -46,7 +46,7 @@ func (prv *PrivateKey) Export() *ecdsa.PrivateKey {
 }
 
 func comparePrivate(prv0, prv1 *PrivateKey) bool {
-	if prv0.D != prv1.D {
+	if prv0.D.Cmp(prv1.D) != 0 {
 		return false
 	}
 
@@ -54,7 +54,7 @@ func comparePrivate(prv0, prv1 *PrivateKey) bool {
 }
 
 func comparePublic(pub0, pub1 *PublicKey) bool {
-	if pub0.X != pub1.X || pub0.Y != pub1.Y {
+	if pub0.X.Cmp(pub1.X) != 0 || pub0.Y.Cmp(pub1.Y) != 0 {
 		return false
 	}
 

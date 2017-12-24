@@ -6,7 +6,6 @@ import (
 	"golang.org/x/crypto/scrypt"
 )
 
-const keySize = 32
 const n = 65536
 const r = 8
 const p = 1

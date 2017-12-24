@@ -42,4 +42,6 @@ type Manager interface {
 	Has(string) bool            // Check if cache has chunk
 	Get(string) ([]byte, error) // Get a chunk from the cache
 	Del(string) error           // Remove a chunk
+
+	Close() error // Closes the underlaying cache
 }

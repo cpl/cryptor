@@ -2,13 +2,21 @@ package p2p
 
 import (
 	"net"
+
+	"github.com/thee-engineer/cryptor/crypt/ec"
 )
 
 // Peer represents a foreign node connected to the local node.
 type Peer struct {
 	udpAddr *net.UDPAddr
 	tcpAddr *net.TCPAddr
+
+	pubAddr ec.PublicKey
+	keyPair ec.PrivateKey
 }
+
+// Function for peer list and peer count
+type peerFunc func(map[string]*Peer)
 
 // NewPeer creates a peer object given an IP:PORT pair. This is for testing and
 // debugging purposes. Not to be used in production.

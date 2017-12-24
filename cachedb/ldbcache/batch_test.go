@@ -12,11 +12,11 @@ func TestLDBatch(t *testing.T) {
 	// Prepare test environment
 	var testData = []string{"", "world", "1409", "\x00cd16\x00", ""}
 	dbPath, cache, err := createTestEnv()
+	defer os.RemoveAll(dbPath)
 	if err != nil {
 		t.Error(err)
 	}
 	defer cache.Close()
-	defer os.RemoveAll(dbPath)
 
 	// Create batch and start putting
 	batch := cache.NewBatch()

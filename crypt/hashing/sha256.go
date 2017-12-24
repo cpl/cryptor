@@ -9,13 +9,12 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
+// TODO: Find a faster hash function (BLAKE2?)
+
 // SHA256 returns the SHA256 hash of the given data.
 func SHA256(data []byte) hash.Hash {
 	h := sha256.New()
-	if _, err := h.Write(data); err != nil {
-		panic(err)
-	}
-
+	h.Write(data)
 	return h
 }
 

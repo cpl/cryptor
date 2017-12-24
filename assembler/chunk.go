@@ -34,7 +34,10 @@ func (eChunk EChunk) Decrypt(key aes.Key) (*chunker.Chunk, error) {
 	}
 
 	// Extract header from decrypted data
-	header := extractHeader(data)
+	header, err := extractHeader(data)
+	if err != nil {
+		return nil, err
+	}
 
 	// Return the chunk
 	return &chunker.Chunk{
@@ -43,15 +46,14 @@ func (eChunk EChunk) Decrypt(key aes.Key) (*chunker.Chunk, error) {
 	}, nil
 }
 
-func extractHeader(data []byte) *chunker.ChunkHeader {
+func extractHeader(data []byte) (*chunker.ChunkHeader, error) {
 	// Check that given data is valid
 	if len(data) < chunker.HeaderSize {
-		panic(errors.New("Given chunk is too small"))
+		return nil, errors.New("chunk extract header err | chunk is too small")
 	}
 
 	// Convert byte array to uint32
 	padd := binary.LittleEndian.Uint32(data[96:100])
-
 	// Get next key from chunk header data
 	nKey := aes.NewKeyFromBytes(data[:32])
 
@@ -60,5 +62,5 @@ func extractHeader(data []byte) *chunker.ChunkHeader {
 		Next: data[32:64],
 		Hash: data[64:96],
 		Padd: padd,
-	}
+	}, nil
 }

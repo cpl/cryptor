@@ -58,10 +58,10 @@ func tarArchive(source string, out io.Writer) error {
 
 			// Open file for reading
 			f, err := os.Open(file)
-			defer f.Close()
 			if err != nil {
 				return err
 			}
+			defer f.Close()
 
 			// Copy file content to tar writer
 			if _, err := io.Copy(tarWriter, f); err != nil {

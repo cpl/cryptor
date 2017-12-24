@@ -174,3 +174,8 @@ func (man *Manager) Del(hex string) error {
 
 	return nil
 }
+
+// Close ...
+func (man *Manager) Close() error {
+	return man.DB.Close()
+}
