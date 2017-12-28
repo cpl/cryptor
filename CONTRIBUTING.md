@@ -27,11 +27,12 @@ little contribution helps.
     * Look over the [issues](https://github.com/thee-engineer/cryptor/issues)
     * Open new issues (respect the [issue template](https://github.com/thee-engineer/cryptor/blob/master/.github/ISSUE_TEMPLATE.md))
 4. Commit your changes & submit a [pull request](https://help.github.com/articles/about-pull-requests/)
-    * Before doing so, please run the test suite using `make cover`
+    * Before doing so, please run the test suite using `make test` and `make cover && make view`
     * If your request contains failed tests it will be ignored
     * Respect the [pull request template](https://github.com/thee-engineer/cryptor/blob/master/.github/PULL_REQUEST_TEMPLATE.md)
 
 ## Communication
+* [Telegram](https://t.me/joinchat/Gheirw6fIN_dDFwTAcwURA)
 * Slack (Upcoming)
 * IRC (Upcoming)
 * Gitter (Upcoming)
