@@ -7,10 +7,9 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
-
-	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
+	"github.com/thee-engineer/cryptor/chunker/assembler"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/hashing"

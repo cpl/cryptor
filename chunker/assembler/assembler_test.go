@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
-
-	"github.com/thee-engineer/cryptor/archive"
-	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
+	"github.com/thee-engineer/cryptor/chunker/archive"
+	"github.com/thee-engineer/cryptor/chunker/assembler"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
