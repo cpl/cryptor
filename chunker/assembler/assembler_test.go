@@ -15,7 +15,7 @@ import (
 
 func createTestCache() ([]byte, error) {
 	// Create cache
-	db, err := ldbcache.NewLDBCache("data", 0, 0)
+	db, err := ldbcache.New("data", 0, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func TestAssembler(t *testing.T) {
 	}
 
 	// Open cache
-	cache, err := ldbcache.NewLDBCache("data", 0, 0)
+	cache, err := ldbcache.New("data", 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,7 +71,7 @@ func TestFullChunkAssemble(t *testing.T) {
 	}
 
 	// Create cache for chunks
-	db, err := ldbcache.NewLDBCache("/tmp/asmcnktest", 16, 16)
+	db, err := ldbcache.New("/tmp/asmcnktest", 16, 16)
 	defer os.RemoveAll("/tmp/asmcnktest")
 	if err != nil {
 		t.Error(err)

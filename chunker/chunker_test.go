@@ -28,7 +28,7 @@ func TestChunker(t *testing.T) {
 	}
 
 	// Create cache for test
-	db, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
+	db, err := ldbcache.New(tmpDir, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}

@@ -26,7 +26,7 @@ func TestEChunk(t *testing.T) {
 	}
 
 	// Create temp cache
-	db, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
+	db, err := ldbcache.New(tmpDir, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
