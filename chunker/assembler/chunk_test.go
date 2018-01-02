@@ -69,3 +69,39 @@ func TestEChunk(t *testing.T) {
 		t.Error("data mismatch: initial package data and assembled chunks")
 	}
 }
+
+func TestInvalidBytesEChunk(t *testing.T) {
+	t.Parallel()
+
+	var encryptedChunk assembler.EChunk = crypt.RandomData(3000)
+	_, err := encryptedChunk.Decrypt(aes.NullKey)
+	if err == nil {
+		t.Error("echunk: decrypted invalid chunk")
+	}
+}
+
+func TestChunkHeaderExtractError(t *testing.T) {
+	t.Parallel()
+
+	// Create a chunk too small to be real
+	header := chunker.NewChunkHeader()
+	header.Hash = crypt.RandomData(10)
+	header.Next = crypt.RandomData(10)
+
+	chunk := chunker.NewChunk(0)
+	chunk.Header = header
+
+	var encryptedChunk assembler.EChunk
+
+	// Encrypt chunk
+	encryptedChunk, err := aes.Encrypt(aes.NullKey, chunk.Bytes())
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Attempt decryption with header extraction
+	_, err = encryptedChunk.Decrypt(aes.NullKey)
+	if err.Error() != "chunk extract header err | chunk is too small" {
+		t.Error("invalid chunk header decrypted with:", err)
+	}
+}
