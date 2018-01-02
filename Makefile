@@ -1,4 +1,4 @@
-.PHONY: cover view push update build
+.PHONY: cover view push update build test testf clean
 
 profile-cpu:
 	@cd $(PKG); \
@@ -27,6 +27,16 @@ update:
 	git pull
 
 test:
+	@mkdir -p build
+	@CRYPTORROOT=`pwd`;
+	@for pkg in `go list ./...`; do \
+		cd $$GOPATH/src;\
+		cd $$pkg; \
+		go test -coverprofile=coverage.out -v -race -parallel 8; \
+	done; \
+	cd $$CRYPTORROOT;
+
+testf:
 	@mkdir -p build
 	@CRYPTORROOT=`pwd`;
 	@for pkg in `go list ./...`; do \
