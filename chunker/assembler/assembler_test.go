@@ -79,7 +79,11 @@ func TestFullChunkAssemble(t *testing.T) {
 	cache := ldbcache.NewManager(cachedb.DefaultManagerConfig, db)
 
 	// Chunk with derived key
-	key := aes.NewKeyFromPassword("testing")
+	key, err := aes.NewKeyFromPassword("testing")
+	if err != nil {
+		t.Error(err)
+	}
+
 	tail, err := chunker.ChunkFrom(&buffer, 1000000, cache, key)
 	if err != nil {
 		t.Log("cache count:", cache.Count())
