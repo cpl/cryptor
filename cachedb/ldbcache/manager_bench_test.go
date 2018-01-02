@@ -15,7 +15,7 @@ func BenchmarkLDBManagerWrite(b *testing.B) {
 	rand.Seed(1)
 
 	// Create new cache
-	db, err := ldbcache.NewLDBCache("/tmp/cryptor_ldbman_bench", 0, 0)
+	db, err := ldbcache.New("/tmp/cryptor_ldbman_bench", 0, 0)
 	defer os.RemoveAll("/tmp/cryptor_ldbman_bench")
 	if err != nil {
 		b.Error(err)

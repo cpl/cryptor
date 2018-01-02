@@ -2,23 +2,19 @@ package aes
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"errors"
 	"io"
 	"strings"
 
 	"github.com/thee-engineer/cryptor/crypt"
-	"golang.org/x/crypto/pbkdf2"
+	"github.com/thee-engineer/cryptor/crypt/scrypt"
 )
 
-// KeySize used by AES256.
-const KeySize = 32
-
 // Key is a byte array of AES256 Key size.
-type Key [KeySize]byte
+type Key [crypt.KeySize]byte
 
 // NullKey key containing 32 of byte 0.
-var NullKey Key = [KeySize]byte{}
+var NullKey Key = [crypt.KeySize]byte{0}
 
 // NewKey returns a new random AES256 Key.
 func NewKey() (key Key) {
@@ -34,8 +30,9 @@ func NewKeyFromString(hex string) (key Key, err error) {
 	// If empty string is given as key, return null key
 	hex = strings.TrimSpace(hex)
 	if hex == "" {
-		return NullKey, nil
+		return NullKey, errors.New("aes key: invalid hex string, empty")
 	}
+
 	if len(hex) != 64 {
 		return NullKey, errors.New("aes key error: invalid hex string size")
 	}
@@ -46,21 +43,23 @@ func NewKeyFromString(hex string) (key Key, err error) {
 		return NullKey, err
 	}
 
-	copy(key[:], keyData)
-	return key, nil
+	return NewKeyFromBytes(keyData)
 }
 
 // NewKeyFromBytes takes a byte array and builds an AES256 Key
-func NewKeyFromBytes(data []byte) (key Key) {
+func NewKeyFromBytes(data []byte) (key Key, err error) {
+	if len(data) != crypt.KeySize {
+		return NullKey, errors.New("aes key: invalid []byte len for new key")
+	}
 	copy(key[:], data)
-	return key
+
+	return key, nil
 }
 
-// NewKeyFromPassword returns a valid key derived from a password string
-// It uses SHA256 and iterates 100000 times. No salt is used.
-func NewKeyFromPassword(password string) Key {
-	return NewKeyFromBytes(
-		pbkdf2.Key([]byte(password), nil, 100000, KeySize, sha256.New))
+// NewKeyFromPassword returns a valid key derived from a password string.
+// It uses scrypt with no salt.
+func NewKeyFromPassword(password string) (Key, error) {
+	return NewKeyFromBytes(scrypt.Scrypt(password, nil))
 }
 
 // Bytes returns the key as []byte array.
@@ -77,3 +76,8 @@ func (key Key) Encode() []byte {
 func (key Key) String() string {
 	return string(key.Encode())
 }
+
+// IsEqual compares two keys and returns true if the bytes match, false otherwise
+// func (key Key) IsEqual(other Key) bool {
+// 	return bytes.Equal(key.Bytes(), other.Bytes())
+// }

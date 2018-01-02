@@ -23,7 +23,7 @@ func createTestEnv() (string, cachedb.Database, error) {
 
 	// Create test db
 	// Use 0 cache and 0 handlers, should default to min
-	cdb, err := ldbcache.NewLDBCache(tmpDir, 0, 0)
+	cdb, err := ldbcache.New(tmpDir, 0, 0)
 	if err != nil {
 		return "", nil, err
 	}

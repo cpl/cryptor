@@ -6,17 +6,16 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
-
-	"github.com/thee-engineer/cryptor/archive"
-	"github.com/thee-engineer/cryptor/assembler"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
+	"github.com/thee-engineer/cryptor/chunker/archive"
+	"github.com/thee-engineer/cryptor/chunker/assembler"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
 func createTestCache() ([]byte, error) {
 	// Create cache
-	db, err := ldbcache.NewLDBCache("data", 0, 0)
+	db, err := ldbcache.New("data", 0, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +44,7 @@ func TestAssembler(t *testing.T) {
 	}
 
 	// Open cache
-	cache, err := ldbcache.NewLDBCache("data", 0, 0)
+	cache, err := ldbcache.New("data", 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -72,7 +71,7 @@ func TestFullChunkAssemble(t *testing.T) {
 	}
 
 	// Create cache for chunks
-	db, err := ldbcache.NewLDBCache("/tmp/asmcnktest", 16, 16)
+	db, err := ldbcache.New("/tmp/asmcnktest", 16, 16)
 	defer os.RemoveAll("/tmp/asmcnktest")
 	if err != nil {
 		t.Error(err)
@@ -80,7 +79,11 @@ func TestFullChunkAssemble(t *testing.T) {
 	cache := ldbcache.NewManager(cachedb.DefaultManagerConfig, db)
 
 	// Chunk with derived key
-	key := aes.NewKeyFromPassword("testing")
+	key, err := aes.NewKeyFromPassword("testing")
+	if err != nil {
+		t.Error(err)
+	}
+
 	tail, err := chunker.ChunkFrom(&buffer, 1000000, cache, key)
 	if err != nil {
 		t.Log("cache count:", cache.Count())

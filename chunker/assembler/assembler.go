@@ -5,8 +5,8 @@ package assembler
 import (
 	"bytes"
 
-	"github.com/thee-engineer/cryptor/archive"
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/chunker/archive"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )

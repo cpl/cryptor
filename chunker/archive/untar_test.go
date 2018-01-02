@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/thee-engineer/cryptor/archive"
+	"github.com/thee-engineer/cryptor/chunker/archive"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
