@@ -20,6 +20,7 @@ go:
   - 1.10beta1
 
 before_install:
+  - go get github.com/mattn/goveralls
   - go get github.com/wadey/gocovmerge
   - go get -v ./...
 
@@ -30,4 +31,5 @@ script:
   - make clean
 
 after_success:
+  - $GOPATH/bin/goveralls -coverprofile=build/report.out -service=travis-ci
   - bash <(curl -s https://codecov.io/bash)
