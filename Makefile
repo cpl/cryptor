@@ -13,8 +13,12 @@ profile-mem:
 cover:
 	gocovmerge $(shell find . -name coverage.out -type f) > build/report.out
 
-view:
+view: cover
 	@go tool cover -html=build/report.out
+
+update:
+	git fetch --all
+	git pull
 
 push:
 	@if [ -n "$$(git status --porcelain)" ]; then \
@@ -23,10 +27,7 @@ push:
 		git push; \
 	fi \
 
-update:
-	git pull
-
-test:
+test: clean
 	@mkdir -p build
 	@CRYPTORROOT=`pwd`;
 	@for pkg in `go list ./...`; do \
@@ -46,11 +47,7 @@ testf:
 	done; \
 	cd $$CRYPTORROOT;
 
-docker:
-	@docker build . -t cryptor
-
-container:
-	@docker run -p $(PORT):2000/udp -td cryptor; \
+testall: update clean testf cover bench
 
 bench:
 	@go test -bench=. ./...
