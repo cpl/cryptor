@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/thee-engineer/cryptor/common/math"
 	"github.com/thee-engineer/cryptor/crypt"
 )
 

@@ -13,8 +13,6 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
-const secretSize = 64
-
 var ellipticCurveFunc = elliptic.P256()
 
 // GenerateKey generates a new Private(+Public) ecdsa key pair using P256 Curve

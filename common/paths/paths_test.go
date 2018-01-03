@@ -1,11 +1,11 @@
-package cachedb_test
+package paths_test
 
 import (
 	"os"
 	"path"
 	"testing"
 
-	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/common/paths"
 )
 
 func TestPaths(t *testing.T) {
@@ -17,15 +17,15 @@ func TestPaths(t *testing.T) {
 	if os.Getenv("HOME") != "" {
 		t.Fail()
 	}
-	usrHome := cachedb.GetUserHomePath()
+	usrHome := paths.GetUserHomePath()
 	if usrHome != envHome {
 		t.Fail()
 	}
 	os.Setenv("HOME", envHome)
 
 	// Test that paths works
-	absRoot := cachedb.GetCryptorDir()
-	if absRoot != path.Join(cachedb.GetUserHomePath(), cachedb.CryptorDir) {
+	absRoot := paths.GetCryptorDir()
+	if absRoot != path.Join(paths.GetUserHomePath(), paths.CryptorDir) {
 		t.Error("path error: cryptor paths mismatch")
 	}
 }

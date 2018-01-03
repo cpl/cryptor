@@ -1,4 +1,4 @@
-package cachedb
+package paths
 
 import (
 	"os"
