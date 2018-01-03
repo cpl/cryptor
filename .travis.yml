@@ -25,11 +25,10 @@ before_install:
   - go get -v ./...
 
 script:
-  - make test
-  - make cover
+  - make testall
   - cp build/report.out coverage.txt
-  - make clean
 
 after_success:
   - $GOPATH/bin/goveralls -coverprofile=build/report.out -service=travis-ci
   - bash <(curl -s https://codecov.io/bash)
+  - make clean
