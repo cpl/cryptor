@@ -13,8 +13,6 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 )
 
-const secretSize = 64
-
 var ellipticCurveFunc = elliptic.P256()
 
 // GenerateKey generates a new Private(+Public) ecdsa key pair using P256 Curve
@@ -26,10 +24,17 @@ func GenerateKey() (*PrivateKey, error) {
 	}
 	defer crypt.ZeroBytes(pb)
 
+	// Allocate memory for PrivateKey
 	prv := new(PrivateKey)
+
+	// Allocate public key values
 	prv.PublicKey.X = x
 	prv.PublicKey.Y = y
+
+	// Assign ec function
 	prv.PublicKey.Curve = ellipticCurveFunc
+
+	// Set private key bytes
 	prv.D = new(big.Int).SetBytes(pb)
 
 	return prv, nil

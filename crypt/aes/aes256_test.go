@@ -45,7 +45,7 @@ func TestCryptoErrors(t *testing.T) {
 	key, err := aes.NewKeyFromString(
 		"0873eacc863d4748b237fd4d4c877926aa111092c14e19d9f5730479c7fb92a6")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	msg := []byte("Hello, World!")
@@ -75,5 +75,28 @@ func TestCryptoErrors(t *testing.T) {
 	_, err = aes.Decrypt(aes.NullKey, mMsg)
 	if err.Error() != "cipher: message authentication failed" {
 		t.Error(err)
+	}
+}
+
+func TestEncryptDecryptNullKey(t *testing.T) {
+	t.Parallel()
+	// Random data
+	data := crypt.RandomData(100)
+
+	// Encrypt
+	eData, err := aes.Encrypt(aes.NullKey, data)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Decrypt
+	dData, err := aes.Decrypt(aes.NullKey, eData)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Compare
+	if !bytes.Equal(data, dData) {
+		t.Error("data mismatch: initial msg and encrypted->decrypted msg")
 	}
 }

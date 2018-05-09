@@ -1,0 +1,39 @@
+{{ define "sidebar" }}
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar">
+  <br>
+
+  <!-- stats -->
+  <div class="w3-bar-block">
+    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu">
+      <i class="fa fa-remove fa-fw"></i> Close Menu</a>
+  </div>
+
+  <div class="w3-container w3-row">
+    <div class="w3-col s4">
+      <i class="fa fa-wifi w3-xxxlarge" style="color: #{{.Color}}"></i>
+    </div>
+    <div class="w3-col s8 w3-bar">
+      <span class="w3-left"> IP </span>
+      <span class="w3-right"> TCP </span>
+      <br>
+      <span class="w3-left"> {{.IP}} </span>
+      <span class="w3-right"> :{{.Port}} </span>
+    </div>
+  </div>
+
+  <hr> {{range $section := .Sections}}
+  <div class="w3-container">
+    <h5>{{$section.Name}}</h5>
+  </div>
+  <div class="w3-bar-block">
+    {{range $sub := $section.SubSections}}
+    <a href="/{{$sub.Link}}" class="w3-bar-item w3-button w3-padding {{if .Active}} w3-blue {{end}}">
+      <i class="fa fa-{{$sub.Icon}} fa-fw"></i> {{$sub.Name}} </a>
+    {{end}}
+    <br>
+    <br>
+  </div>
+  {{end}}
+</nav>
+{{end}}

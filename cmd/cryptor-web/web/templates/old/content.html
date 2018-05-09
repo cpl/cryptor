@@ -1,0 +1,63 @@
+<header class="w3-container" style="padding-top:22px">
+    {{template "head.html" .Header}}
+</header>
+
+{{template "block.html" .Blocks}}
+
+<hr>
+
+<div class="w3-container">
+    <h5>
+        <b>
+            <i class="fa fa-dashboard"></i> Storage </b>
+    </h5>
+    <p> {{.TotalSize}} / {{.TotalMaxSize}}</p>
+    <div class="w3-grey">
+        <div class="w3-container w3-center w3-padding w3-blue" style="width:{{.TotalPercent}}%">{{.TotalPercent}}%</div>
+    </div>
+</div>
+
+<hr>
+
+<div class="w3-container">
+    <h5>
+        <b>
+            <i class="fa fa-dashboard"></i> Individual caches </b>
+    </h5>
+
+    <ul class="w3-ul w3-card-4 w3-white">
+        {{ if .Caches}} {{range .Caches}}
+
+        <li class="w3-padding-16">
+            <!-- CACHE LOCATION -->
+            <span class="w3-xlarge">{{.Path}}</span>
+            <!-- CACHE SIZE -->
+            <p>{{.Size}} / {{.MaxSize}}</p>
+            <br>
+            <!-- Move cache -->
+            <a href="#" class="w3-bar-item w3-button">
+                <i class="fa fa-folder"></i>
+            </a>
+            <!-- Display chunks in cache -->
+            <a href="#" class="w3-bar-item w3-button">
+                <i class="fa fa-cubes"></i>
+            </a>
+            <!-- Clone cache -->
+            <a href="#" class="w3-bar-item w3-button">
+                <i class="fa fa-code-fork"></i>
+            </a>
+            <!-- Change settings -->
+            <a href="#" class="w3-bar-item w3-button">
+                <i class="fa fa-cog"></i>
+            </a>
+            <!-- Delete cache -->
+            <a href="#" class="w3-bar-item w3-button">
+                <i class="fa fa-trash"></i>
+            </a>
+            <br>
+        </li>
+        {{end}} {{else}} {{end}}
+    </ul>
+</div>
+
+<hr>

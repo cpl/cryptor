@@ -13,10 +13,30 @@ func TestKey(t *testing.T) {
 
 	key := aes.NewKey()
 
-	aes.NewKeyFromBytes(key.Bytes())
-	aes.NewKeyFromBytes(crypt.RandomData(aes.KeySize))
-	aes.NewKeyFromString(key.String())
-	aes.NewKeyFromString("")
+	_, err := aes.NewKeyFromBytes(key.Bytes())
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = aes.NewKeyFromBytes(crypt.RandomData(crypt.KeySize))
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = aes.NewKeyFromString(key.String())
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = aes.NewKeyFromString("")
+	if err == nil {
+		t.Error("aes key: created key from empty string")
+	}
+
+	_, err = aes.NewKeyFromBytes(crypt.RandomData(20))
+	if err == nil {
+		t.Error("aes key: create key from 20 bytes")
+	}
 
 	key.Encode()
 }
@@ -34,15 +54,23 @@ func TestKeyFromPassword(t *testing.T) {
 
 	// Expected test results for password key derivation
 	var testResult = []string{
-		"64a868d4b23af696d3734d0b814d04cdd1ac280128e97653a05f32b49c13a29a",
-		"65e4e5bf4cb95801ead6d6dfb3367bfcd3c7cfebd62efaee312f2b6d40ff4f5c",
-		"00c4ce73053141d6b53016dc02bc4efaa65f38ed457ed1f8b28eb65499b7f555",
-		"bae68a56d1acea882202bcc3fe8857235bb410df38c9ae28e7f2e44100f9aced",
-		"cd65b591e9d0c68359f344c9c693e75b51544aa4ba88b32d7555517c447427a2"}
+		"5537f231b6f9f0fcf5a03c5043ced5f2d8b8f69de6ae46f7de5f269b38f5161a",
+		"414885cd49145a4a6656ede93728f2a005899c9891c5c42839784903d7e99f6c",
+		"33c54d2ad9fbb0d9745a927b515d4872d52507e884256aa45b5d6a43f6197bfb",
+		"d4e55437bae6bed6a59ca25a9647d74ebf98772d6eafc88394baf3c0b790d973",
+		"d380bef98b6d843d767863021db1106d13f36fd54b34f4064ca9476bd3191c3a"}
 
 	// Test all values
 	for index, test := range testValues {
-		if testResult[index] != string(aes.NewKeyFromPassword(test).Encode()) {
+		key, err := aes.NewKeyFromPassword(test)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if testResult[index] != string(key.Encode()) {
+			t.Logf("expected: %s\n", testResult[index])
+			t.Logf("got: %s\n", key.String())
+
 			t.Error("aes key error: wrong key derivation")
 		}
 	}
@@ -72,9 +100,10 @@ func TestNewKeyFromStringError(t *testing.T) {
 	// Test string of white spaces
 	key, err := aes.NewKeyFromString(
 		"\n    \t     \n\n   \n \t        \n     \n\t\n     \t     \n      ")
-	if err != nil {
+	if err == nil {
 		t.Error("aes key error: invalid hex string used as key")
 	}
+
 	if key != aes.NullKey {
 		t.Error("aes key error: obtained invalid aes key from empty hex")
 	}
@@ -88,8 +117,8 @@ func TestKeyZeroing(t *testing.T) {
 	// Zero aes key
 	crypt.ZeroBytes(key[:])
 
-	// Check that zeroing succeded
-	if !bytes.Equal(key.Bytes(), make([]byte, aes.KeySize)) {
+	// Check that zeroing succeeded
+	if !bytes.Equal(key.Bytes(), make([]byte, crypt.KeySize)) {
 		t.Error("aes key: zeroing failed")
 	}
 }

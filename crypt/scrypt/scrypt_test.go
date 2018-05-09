@@ -39,3 +39,8 @@ func TestScryptAllRandom(t *testing.T) {
 		t.Error("scrypt: derived keys don't match")
 	}
 }
+
+func TestScryptErrors(t *testing.T) {
+	t.Parallel()
+
+}

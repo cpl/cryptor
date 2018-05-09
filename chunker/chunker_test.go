@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
@@ -21,26 +22,20 @@ func TestChunker(t *testing.T) {
 
 	// Create temporary dir for chunks
 	tmpDir, err := ioutil.TempDir("/tmp", "cryptor")
+	defer os.RemoveAll(tmpDir)
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.RemoveAll(tmpDir)
 
 	// Create cache for test
-	cache, err := cachedb.NewLDBCache(tmpDir, 0, 0)
+	db, err := ldbcache.New(tmpDir, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}
+	cache := ldbcache.NewManager(cachedb.DefaultManagerConfig, db)
 
-	// Create chunker
-	chunker := &chunker.Chunker{
-		Size:   1024,
-		Cache:  cache,
-		Reader: &buffer,
-	}
-
-	// Start chunking the data
-	if _, err := chunker.Chunk(aes.NullKey); err != nil {
+	// Start chunking data
+	if _, err := chunker.ChunkFrom(&buffer, 1024, cache, aes.NullKey); err != nil {
 		t.Error(err)
 	}
 }

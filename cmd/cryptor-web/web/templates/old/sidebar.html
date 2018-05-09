@@ -1,0 +1,56 @@
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar">
+  <br>
+
+  <!-- stats -->
+  <div class="w3-bar-block">
+    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu">
+      <i class="fa fa-remove fa-fw"></i> Close Menu</a>
+  </div>
+
+  <div class="w3-container w3-row">
+    <div class="w3-col s4">
+      <i class="fa fa-wifi w3-xxxlarge" style="color: #4CAF50"></i>
+    </div>
+    <div class="w3-col s8 w3-bar">
+      <span class="w3-left"> IP </span>
+      <span class="w3-right"> TCP </span>
+      <br>
+      <span class="w3-left"> {{.IP}} </span>
+      <span class="w3-right"> :{{.Port}} </span>
+    </div>
+  </div>
+
+
+  <hr>
+
+  <div class="w3-container">
+    <h5>Dashboard</h5>
+  </div>
+  <div class="w3-bar-block">
+    <a href="/overview" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-eye fa-fw"></i> Overview</a>
+    <a href="/caches" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-database  fa-fw"></i> Caches</a>
+    <a href="/peers" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-users fa-fw"></i> Peers</a>
+    <a href="/settings" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-cog fa-fw"></i> Settings</a>
+    <br>
+    <br>
+  </div>
+
+  <div class="w3-container">
+    <h5>Actions</h5>
+  </div>
+  <div class="w3-bar-block">
+    <a href="/create-pkg" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-archive fa-fw"></i> Create package</a>
+    <a href="/request-chunk" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-paper-plane  fa-fw"></i> Request chunk</a>
+    <a href="/decrypt-tail" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-unlock-alt  fa-fw "></i> Decrypt tail </a>
+    <a href="/new-cache" class="w3-bar-item w3-button w3-padding">
+      <i class="fa fa-database  fa-fw "></i> Create/Add cache </a>
+  </div>
+</nav>

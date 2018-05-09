@@ -24,3 +24,9 @@ launch.json
 build/
 dist/
 *.swp
+.idea/
+
+# Daemon
+cmd/cryptor-daemon/cryptor-daemon
+cmd/cryptor-daemon/pid
+cmd/cryptor-daemon/log

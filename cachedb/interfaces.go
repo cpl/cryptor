@@ -19,7 +19,7 @@ type Database interface {
 // Database.
 type Batch interface {
 	Put(key, value []byte) error // Store key/value pair instruction
-	Del(key []byte) error        // Delete value with key insturction
+	Del(key []byte) error        // Delete value with key instruction
 	Write() error                // Write all instructions in the Batch
 }
 
@@ -31,4 +31,17 @@ type Iterator interface {
 	Value() []byte    // Returns the value of the current item
 	Seek([]byte) bool // Set the iteratorto the key[]byte param
 	Release()         // Release the iterator from use
+}
+
+// Manager provides operations on top of the cryptor cache
+type Manager interface {
+	Size() int  // Returns the size (in bytes) of the current cache
+	Count() int // Return the total count of chunks
+
+	Add([]byte) error           // Add a new chunk to the cache
+	Has(string) bool            // Check if cache has chunk
+	Get(string) ([]byte, error) // Get a chunk from the cache
+	Del(string) error           // Remove a chunk
+
+	Close() error // Closes the underlaying cache
 }
