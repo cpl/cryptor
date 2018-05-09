@@ -1,4 +1,4 @@
-.PHONY: cover push update build test testf clean
+.PHONY: cover push update build test testf clean tool
 
 profile-cpu:
 	@cd $(PKG); \
@@ -9,6 +9,11 @@ profile-mem:
 	@cd $(PKG); \
 	go test -race -parallel 4 -memprofile prof.mem; \
 	go tool pprof $(PKG).test ./prof.mem; \
+
+tool:
+	@go build -o build/$(TARGET) tools/$(TARGET)/$(TARGET).go;
+	@chmod a+x build/$(TARGET);
+	@echo "DONE $(TARGET)";
 
 cover: test
 	@go tool cover -html=build/report.out
