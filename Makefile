@@ -1,4 +1,4 @@
-.PHONY: cover view push update build test testf clean
+.PHONY: cover push update build test testf clean
 
 profile-cpu:
 	@cd $(PKG); \
@@ -10,10 +10,7 @@ profile-mem:
 	go test -race -parallel 4 -memprofile prof.mem; \
 	go tool pprof $(PKG).test ./prof.mem; \
 
-cover:
-	gocovmerge $(shell find . -name coverage.out -type f) > build/report.out
-
-view: cover
+cover: test
 	@go tool cover -html=build/report.out
 
 update:
@@ -30,21 +27,13 @@ push:
 test: clean
 	@mkdir -p build
 	@CRYPTORROOT=`pwd`;
-	@for pkg in `go list ./...`; do \
-		cd $$GOPATH/src;\
-		cd $$pkg; \
-		go test -coverprofile=coverage.out -v -race -parallel 8; \
-	done; \
+	@go test -coverprofile=build/report.out -v -race -parallel 8 ./...; \
 	cd $$CRYPTORROOT;
 
-testf:
+testf: clean
 	@mkdir -p build
 	@CRYPTORROOT=`pwd`;
-	@for pkg in `go list ./...`; do \
-		cd $$GOPATH/src;\
-		cd $$pkg; \
-		go test -coverprofile=coverage.out -v -race -parallel 8 | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
-	done; \
+	@go test -coverprofile=build/report.out -v -race -parallel 8 ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
 	cd $$CRYPTORROOT;
 
 testall: update clean testf cover bench

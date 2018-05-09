@@ -46,7 +46,7 @@ func TestDecodeErrors(t *testing.T) {
 
 	// Attempt decode invalid data
 	if _, err := crypt.Decode([]byte{0, 1, 2, 3, 4}); err != nil {
-		if err.Error() != "encoding/hex: odd length hex string" {
+		if err == nil {
 			t.Error("encoding/hex: decoded invalid data")
 		}
 	}
