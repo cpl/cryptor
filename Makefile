@@ -44,7 +44,8 @@ testf: clean
 testall: update clean testf bench
 
 bench:
-	@go test -bench=. ./...
+	@go test -bench=. ./...;
+	cd $$CRYPTORROOT;
 
 clean:
 	@rm -f $(shell find . -name coverage.out -type f);
