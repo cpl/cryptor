@@ -32,14 +32,14 @@ push:
 test: clean
 	@mkdir -p build
 	@CRYPTORROOT=`pwd`;
+	@cd $$CRYPTORROOT;
 	@go test -coverprofile=build/report.out -v -race -parallel 8 ./...; \
-	cd $$CRYPTORROOT;
 
 testf: clean
-	@mkdir -p build
+	@mkdir -p build;
 	@CRYPTORROOT=`pwd`;
+	@cd $$CRYPTORROOT;
 	@go test -coverprofile=build/report.out -v -race -parallel 8 ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
-	cd $$CRYPTORROOT;
 
 testall: update clean testf bench
 
