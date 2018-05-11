@@ -7,146 +7,41 @@ import (
 	"github.com/thee-engineer/cryptor/net/p2p"
 )
 
-func TestNodeStop(t *testing.T) {
-	qc := make(chan struct{})
-	node := p2p.NewNode("127.0.0.1", 2002, 9002, qc, nil)
-	go node.Stop() // Stop before starting
+func TestNodeNotRunning(t *testing.T) {
+	node := p2p.NewNode("localhost", "2000", nil)
+	node.Disconnect()
+	node.Stop()
+	node.Connect()
+	node.Disconnect()
+	node.AddPeer(nil)
+	node.DelPeer(nil)
+	if node.CountPeers() != 0 {
+		t.Fail()
+	}
+	if node.Peers() != nil {
+		t.Fail()
+	}
+}
 
+func TestNodeRunning(t *testing.T) {
+	node := p2p.NewNode("localhost", "2000", nil)
 	go node.Start()
-	time.Sleep(time.Second)
-
-	go node.Stop()
-}
-
-func TestNodeStart(t *testing.T) {
-	qc := make(chan struct{})
-
-	node := p2p.NewNode("127.0.0.1", 2001, 9001, qc, nil)
-
-	go node.Start()
 
 	time.Sleep(time.Second)
+	node.Disconnect()
+	node.Start()
 
-	qc <- *new(struct{})
-}
+	if lenPeers := len(node.Peers()); lenPeers != 0 {
+		t.Errorf("lenPeers, expected 0, got %d", lenPeers)
+	}
 
-func TestNodeConnection(t *testing.T) {
-	qc := make(chan struct{})
+	if peerCount := node.CountPeers(); peerCount != 0 {
+		t.Errorf("peerCount, expected 0, got %d", peerCount)
+	}
 
-	n0 := p2p.NewNode("127.0.0.1", 2010, 9010, qc, nil)
-	n1 := p2p.NewNode("127.0.0.1", 2011, 9011, qc, nil)
-
-	n0.Send(p2p.NewUDPPacket([]byte("hello world"), n0.UDPAddr()))
-	n0.Send(p2p.NewUDPPacket([]byte("hello world node1"), n1.UDPAddr()))
-
-	time.Sleep(time.Second)
-
-	go n0.Start()
-	go n1.Start()
+	go node.Peers()
+	go node.CountPeers()
 
 	time.Sleep(time.Second)
-
-	go n0.Listen()
-	go n1.Listen()
-
-	time.Sleep(time.Second)
-
-	n0.Send(p2p.NewUDPPacket([]byte("hello world node1, 2"), n1.UDPAddr()))
-	n1.Send(p2p.NewUDPPacket([]byte("hi node0, sup?"), n0.UDPAddr()))
-
-	time.Sleep(time.Second)
-
-	qc <- *new(struct{})
-}
-
-func TestSamePort(t *testing.T) {
-	qc := make(chan struct{})
-
-	n0 := p2p.NewNode("127.0.0.1", 2020, 9020, qc, nil)
-	n1 := p2p.NewNode("127.0.0.1", 2020, 9020, qc, nil)
-
-	time.Sleep(time.Second)
-
-	go n0.Start()
-	go n1.Start()
-
-	time.Sleep(time.Second)
-
-	go n0.Listen()
-
-	time.Sleep(time.Second)
-
-	go n1.Listen()
-
-	time.Sleep(time.Second)
-
-	qc <- *new(struct{})
-}
-
-func TestNodeMutex(t *testing.T) {
-	qc := make(chan struct{})
-	n0 := p2p.NewNode("127.0.0.1", 2030, 9030, qc, nil)
-
-	n0.Stop()
-	go n0.Stop()
-	n0.Stop()
-
-	n0.Disconnect()
-	go n0.Disconnect()
-	n0.Disconnect()
-
-	time.Sleep(time.Second)
-
-	go n0.Start()
-	go n0.Start()
-
-	time.Sleep(time.Second)
-
-	go n0.Listen()
-	go n0.Listen()
-
-	time.Sleep(time.Second)
-
-	go n0.Listen()
-
-	time.Sleep(time.Second)
-
-	go n0.Disconnect()
-	go n0.Stop()
-
-	time.Sleep(time.Second)
-
-	qc <- *new(struct{})
-}
-
-func TestNodeDisconnect(t *testing.T) {
-	qc := make(chan struct{})
-	n0 := p2p.NewNode("127.0.0.1", 2040, 9040, qc, nil)
-
-	go n0.Start()
-
-	time.Sleep(time.Second)
-
-	go n0.Listen()
-
-	time.Sleep(time.Second)
-
-	go n0.Disconnect()
-
-	time.Sleep(time.Second)
-
-	go n0.Stop()
-}
-
-func TestNodeDisconnectStrange(t *testing.T) {
-	qc := make(chan struct{})
-	n0 := p2p.NewNode("127.0.0.1", 2050, 9050, qc, nil)
-
-	go n0.Listen()
-	go n0.Start()
-	go n0.Listen()
-	go n0.Stop()
-	go n0.Disconnect()
-
-	time.Sleep(2 * time.Second)
+	node.Stop()
 }

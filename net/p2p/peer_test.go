@@ -4,70 +4,71 @@ import (
 	"testing"
 	"time"
 
+	"github.com/thee-engineer/cryptor/crypt"
+
 	"github.com/thee-engineer/cryptor/net/p2p"
 )
 
-func assertPeerCount(real, expected int, t *testing.T) {
-	if real != expected {
-		t.Errorf("node: expceted %d got %d peer count", expected, real)
+func newTestPeer() *p2p.Peer {
+	return &p2p.Peer{
+		PublicKey: crypt.EncodeString(crypt.RandomData(32)),
+		Address:   "testAddress",
 	}
 }
 
-func TestNodePeers(t *testing.T) {
-	qc := make(chan struct{})
-
-	// Create node
-	node := p2p.NewNode("127.0.0.1", 2000, 9000, qc, nil)
+func TestPeerAdd(t *testing.T) {
+	node := p2p.NewNode("localhost", "2000", nil)
 	go node.Start()
 
-	time.Sleep(time.Second)
-
-	// Add 20 peers
-	for peerCount := 0; peerCount < 20; peerCount++ {
-		node.AddPeer(p2p.NewPeer("127.0.0.1", 2100+peerCount, 9100+peerCount))
+	if lenPeers := len(node.Peers()); lenPeers != 0 {
+		t.Errorf("lenPeers, expected 0, got %d", lenPeers)
 	}
 
-	// Count peers
-	assertPeerCount(node.PeerCount(), 20, t)
-	assertPeerCount(len(node.Peers()), 20, t)
-
-	for _, peer := range node.Peers() {
-		node.RemovePeer(peer)
+	if peerCount := node.CountPeers(); peerCount != 0 {
+		t.Errorf("peerCount, expected 0, got %d", peerCount)
 	}
 
-	assertPeerCount(node.PeerCount(), 0, t)
-	assertPeerCount(len(node.Peers()), 0, t)
-}
+	// Nomral peer add
+	node.AddPeer(newTestPeer())
+	node.AddPeer(newTestPeer())
+	node.AddPeer(newTestPeer())
+	node.AddPeer(newTestPeer())
 
-func TestNodeTrustedPeers(t *testing.T) {
-	qc := make(chan struct{})
-
-	// Create node config with 4 trusted peers
-	config := &p2p.NodeConfig{
-		TrustedPeers: []*p2p.Peer{
-			p2p.NewPeer("127.0.0.2", 2061, 9061),
-			p2p.NewPeer("127.0.0.3", 2062, 9062),
-			p2p.NewPeer("127.0.0.4", 2063, 9063),
-			p2p.NewPeer("127.0.0.5", 2064, 9064),
-		},
+	if lenPeers := len(node.Peers()); lenPeers != 4 {
+		t.Errorf("lenPeers, expected 4, got %d", lenPeers)
 	}
 
-	// Create node with node config
-	n0 := p2p.NewNode("127.0.0.1", 2060, 9060, qc, config)
-
-	time.Sleep(time.Second)
-
-	// Start node (peers should be assigned)
-	go n0.Start()
-
-	time.Sleep(time.Second)
-
-	// Check peer count
-	if n0.PeerCount() != 4 {
-		t.Fail()
+	if peerCount := node.CountPeers(); peerCount != 4 {
+		t.Errorf("peerCount, expected 4, got %d", peerCount)
 	}
 
+	// Peer that will be deleted
+	dp0 := newTestPeer()
+	dp1 := newTestPeer()
+
+	// Concurent peer add
+	go node.AddPeer(dp0)
+	go node.AddPeer(dp1)
+	go node.AddPeer(newTestPeer())
+	go node.AddPeer(newTestPeer())
 	time.Sleep(time.Second)
 
-	qc <- *new(struct{})
+	if lenPeers := len(node.Peers()); lenPeers != 8 {
+		t.Errorf("lenPeers, expected 8, got %d", lenPeers)
+	}
+
+	if peerCount := node.CountPeers(); peerCount != 8 {
+		t.Errorf("peerCount, expected 8, got %d", peerCount)
+	}
+
+	node.DelPeer(dp0)
+	node.DelPeer(dp1)
+
+	if lenPeers := len(node.Peers()); lenPeers != 6 {
+		t.Errorf("lenPeers, expected 8, got %d", lenPeers)
+	}
+
+	if peerCount := node.CountPeers(); peerCount != 6 {
+		t.Errorf("peerCount, expected 8, got %d", peerCount)
+	}
 }
