@@ -26,7 +26,7 @@ func Decode(keyData []byte) (*PrivateKey, error) {
 	prv := new(PrivateKey)
 	prv.PublicKey.Curve = ellipticCurveFunc
 
-	// Validate data lenght
+	// Validate data length
 	if 8*len(keyData) != prv.Params().BitSize {
 		return nil, fmt.Errorf(
 			"invalid length, need %d bits", prv.Params().BitSize)
