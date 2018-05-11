@@ -8,7 +8,7 @@ import (
 
 // Hash ...
 func Hash(data []byte) []byte {
-	h, err := blake2b.New512(nil)
+	h, err := blake2b.New256(nil)
 	if err != nil {
 		panic(err)
 	}
@@ -25,7 +25,7 @@ func Hash(data []byte) []byte {
 
 // Sum ...
 func Sum(data []byte) []byte {
-	h, err := blake2b.New512(nil)
+	h, err := blake2b.New256(nil)
 	if err != nil {
 		panic(err)
 	}
