@@ -51,7 +51,7 @@ func TestPeerAdd(t *testing.T) {
 	go node.AddPeer(dp1)
 	go node.AddPeer(newTestPeer())
 	go node.AddPeer(newTestPeer())
-	time.Sleep(time.Second)
+	time.Sleep(5 * time.Second)
 
 	if lenPeers := len(node.Peers()); lenPeers != 8 {
 		t.Errorf("lenPeers, expected 8, got %d", lenPeers)
