@@ -15,7 +15,7 @@ tool:
 	@chmod a+x build/$(TARGET);
 	@echo "DONE $(TARGET)";
 
-cover: test
+cover:
 	@go tool cover -html=build/report.out
 
 update:
@@ -33,13 +33,13 @@ test: clean
 	@mkdir -p build
 	@CRYPTORROOT=`pwd`;
 	@cd $$CRYPTORROOT;
-	@go test -coverprofile=build/report.out -v -race -parallel 8 ./...; \
+	@go test -coverprofile=build/report.out -v -count=1 -race -parallel 8 ./...; \
 
 testf: clean
 	@mkdir -p build;
 	@CRYPTORROOT=`pwd`;
 	@cd $$CRYPTORROOT;
-	@go test -coverprofile=build/report.out -v -race -parallel 8 ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
+	@go test -coverprofile=build/report.out -v -count=1 -race -parallel 8 ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
 
 testall: update clean testf bench
 
