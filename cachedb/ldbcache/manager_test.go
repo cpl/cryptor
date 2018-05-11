@@ -61,7 +61,7 @@ func TestLDBManager(t *testing.T) {
 	testInt("size", 0, man.Size(), t)
 
 	// Add data
-	testHash := hashing.SHA256HexDigest(testData)
+	testHash := crypt.EncodeString(hashing.Hash(testData))
 	if err := man.Add(testData); err != nil {
 		t.Error(err)
 	}
@@ -397,7 +397,9 @@ func TestLDBManagerDel(t *testing.T) {
 		t.Errorf("man: deleted non valid hash")
 	}
 
-	if err := man.Del(hashing.SHA256HexDigest([]byte{10, 20, 30})); err == nil {
+	if err := man.Del(crypt.EncodeString(hashing.Hash(
+		[]byte{10, 20, 30}))); err == nil {
+
 		t.Errorf("man: deleted non existing hash")
 	}
 }
@@ -438,7 +440,7 @@ func TestLDBClosed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	dataHash := hashing.SHA256HexDigest(data)
+	dataHash := crypt.EncodeString(hashing.Hash(data))
 	if has := man.Has(dataHash); has {
 		t.Errorf("man: got true Has() from closed db")
 	}

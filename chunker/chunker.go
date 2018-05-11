@@ -74,7 +74,7 @@ func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Manager, tailKey aes
 		crypt.ZeroBytes(chunk.Header.NKey[:])
 
 		// Hash encrypted content
-		eHash := hashing.SHA256Digest(encryptedData)
+		eHash := hashing.Hash(encryptedData)
 
 		// Store chunk in cache batch
 		if err := cache.Add(encryptedData); err != nil {

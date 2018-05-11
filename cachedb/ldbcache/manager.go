@@ -101,7 +101,7 @@ func (man *Manager) Add(data []byte) error {
 	}
 
 	// Compute hash as key and add chunk to cache
-	if err := man.DB.Put(hashing.SHA256Digest(data), data); err != nil {
+	if err := man.DB.Put(hashing.Hash(data), data); err != nil {
 		return err
 	}
 

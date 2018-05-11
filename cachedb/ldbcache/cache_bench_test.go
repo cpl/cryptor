@@ -27,7 +27,7 @@ func BenchmarkLDBWriteMin(b *testing.B) {
 	for count := 0; count < b.N; count++ {
 
 		data := crypt.RandomData(dataSize)
-		key := hashing.SHA256Digest(data)
+		key := hashing.Hash(data)
 
 		if err := cache.Put(key, data); err != nil {
 			b.Error(err)
@@ -50,7 +50,7 @@ func BenchmarkLDBWrite2048(b *testing.B) {
 	for count := 0; count < b.N; count++ {
 
 		data := crypt.RandomData(dataSize)
-		key := hashing.SHA256Digest(data)
+		key := hashing.Hash(data)
 
 		if err := cache.Put(key, data); err != nil {
 			b.Error(err)

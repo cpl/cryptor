@@ -53,7 +53,7 @@ func TestEChunk(t *testing.T) {
 	// Invalid hash
 	if !dChunk.IsValid() {
 		t.Log(crypt.EncodeString(dChunk.Header.Hash))
-		t.Log(crypt.EncodeString(hashing.SHA256Digest(dChunk.Content)))
+		t.Log(crypt.EncodeString(hashing.Hash(dChunk.Content)))
 		t.Error("chunk: is not valid")
 	}
 

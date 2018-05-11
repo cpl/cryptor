@@ -38,7 +38,7 @@ func (c Chunk) Bytes() []byte {
 
 // IsValid compares the header hash with the content hash
 func (c Chunk) IsValid() bool {
-	return bytes.Equal(c.Header.Hash, hashing.SHA256Digest(c.Content))
+	return bytes.Equal(c.Header.Hash, hashing.Hash(c.Content))
 }
 
 // IsLast checks if the next chunk hash is the NullByteArray
@@ -54,7 +54,7 @@ func (c Chunk) Zero() {
 
 func (c *Chunk) setHeader(nextKey aes.Key, nextHash []byte, read int) {
 	// Compute content hash for validity check
-	c.Header.Hash = hashing.SHA256Digest(c.Content[:read])
+	c.Header.Hash = hashing.Hash(c.Content[:read])
 
 	// Store previous encryption key inside this chunk's header
 	c.Header.NKey = nextKey

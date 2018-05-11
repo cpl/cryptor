@@ -19,9 +19,9 @@ func TestChunk(t *testing.T) {
 
 	// Create the chunk header
 	chunkHeader := chunker.NewChunkHeader()
-	chunkHeader.Hash = hashing.SHA256Digest(chunk.Content) // Content hash
-	chunkHeader.Next = chunker.NullByteArray[:]            // Tail hash
-	chunkHeader.NKey = aes.NullKey                         // Tail key
+	chunkHeader.Hash = hashing.Hash(chunk.Content) // Content hash
+	chunkHeader.Next = chunker.NullByteArray[:]    // Tail hash
+	chunkHeader.NKey = aes.NullKey                 // Tail key
 
 	chunk.Header = chunkHeader
 

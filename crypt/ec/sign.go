@@ -12,10 +12,10 @@ import (
 
 const signatureSize = 64
 
-// Sign takes a message, generates the SHA256 hash and signs it using the
+// Sign takes a message, generates the hash and signs it using the
 // ecdsa private key.
 func (prv *PrivateKey) Sign(msg []byte) ([]byte, error) {
-	r, s, err := ecdsa.Sign(rand.Reader, prv.Export(), hashing.SHA256Digest(msg))
+	r, s, err := ecdsa.Sign(rand.Reader, prv.Export(), hashing.Hash(msg))
 	if err != nil {
 		return nil, err
 	}
@@ -52,5 +52,5 @@ func (pub *PublicKey) Verify(msg, signature []byte) bool {
 	s.SetBytes(signature[signatureSize/2:])
 
 	// Use Go's ecdsa to verify signature
-	return ecdsa.Verify(pub.Export(), hashing.SHA256Digest(msg), r, s)
+	return ecdsa.Verify(pub.Export(), hashing.Hash(msg), r, s)
 }
