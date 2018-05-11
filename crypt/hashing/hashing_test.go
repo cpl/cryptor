@@ -30,3 +30,12 @@ func TestHashAndSum(t *testing.T) {
 		}
 	}
 }
+
+func TestHashLength(t *testing.T) {
+	t.Parallel()
+	hashLen := len(hashing.Hash(crypt.RandomData(1)))
+	if hashLen != crypt.DigestSize {
+		t.Fatalf("invalid hash size, expected %d got %d",
+			crypt.DigestSize, hashLen)
+	}
+}
