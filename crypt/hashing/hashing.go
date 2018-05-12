@@ -1,17 +1,24 @@
 package hashing
 
 import (
+	"hash"
 	"log"
 
 	"golang.org/x/crypto/blake2b"
 )
 
+// HashFunction ...
+func HashFunction() hash.Hash {
+	if h, err := blake2b.New256(nil); err != nil {
+		panic(err)
+	} else {
+		return h
+	}
+}
+
 // Hash ...
 func Hash(data []byte) []byte {
-	h, err := blake2b.New256(nil)
-	if err != nil {
-		panic(err)
-	}
+	h := HashFunction()
 	w, err := h.Write(data)
 	if err != nil {
 		panic(err)
@@ -25,10 +32,7 @@ func Hash(data []byte) []byte {
 
 // Sum ...
 func Sum(data []byte) []byte {
-	h, err := blake2b.New256(nil)
-	if err != nil {
-		panic(err)
-	}
+	h := HashFunction()
 	w, err := h.Write(data)
 	if err != nil {
 		panic(err)
