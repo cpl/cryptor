@@ -21,7 +21,8 @@ func TestECDSAKeysImportExport(t *testing.T) {
 	}
 
 	// Import Go ECDSA key as custom ec key
-	prv := ec.Import(ecdsaKey)
+	prv := new(ec.PrivateKey)
+	prv.Import(ecdsaKey)
 	pub := prv.PublicKey
 
 	// Export custom ec key back to Go ECDSA
@@ -49,7 +50,8 @@ func TestECDSACompare(t *testing.T) {
 		t.Error(err)
 	}
 	// Clone one of the keys
-	key0Clone := ec.Import(key0.Export())
+	key0Clone := new(ec.PrivateKey)
+	key0Clone.Import(key0.Export())
 
 	// Check for equal keys on different keys
 	if key0.IsEqual(key1) || key1.IsEqual(key0) {
@@ -89,8 +91,8 @@ func TestKeyEncoding(t *testing.T) {
 		t.Error("ec key | mismatch key encodings")
 	}
 
-	decodedKey, err := ec.Decode(outByte)
-	if err != nil {
+	decodedKey := new(ec.PrivateKey)
+	if err := decodedKey.Decode(outByte); err != nil {
 		t.Error(err)
 	}
 
@@ -100,8 +102,7 @@ func TestKeyEncoding(t *testing.T) {
 		t.Errorf("ec key | mismatch original with decoded key")
 	}
 
-	decodedKey, err = ec.DecodeString(outString)
-	if err != nil {
+	if err := decodedKey.DecodeString(outString); err != nil {
 		t.Error(err)
 	}
 
@@ -111,15 +112,41 @@ func TestKeyEncoding(t *testing.T) {
 		t.Errorf("ec key | mismatch original with decoded key")
 	}
 
-	if _, err := ec.Decode([]byte{10, 20, 30}); err == nil {
+	if err := decodedKey.Decode([]byte{10, 20, 30}); err == nil {
 		t.Error("ec key | decoded invalid []byte")
 	}
 
-	if _, err := ec.Decode(crypt.RandomData(65)); err == nil {
+	if err := decodedKey.Decode(crypt.RandomData(65)); err == nil {
 		t.Error("ec key | decoded invalid []byte")
 	}
 
-	if _, err := ec.DecodeString("testing"); err == nil {
+	if err := decodedKey.DecodeString("testing"); err == nil {
 		t.Error("ec key | decoded invalid string")
+	}
+}
+
+func TestPublicKeyEncoding(t *testing.T) {
+	prv, _ := ec.GenerateKey()
+	pub := &prv.PublicKey
+
+	if pub.EncodeString() != crypt.EncodeString(pub.Encode()) {
+		t.Errorf("ec key | hex encoding does not match")
+	}
+
+	npub := new(ec.PublicKey)
+	if err := npub.Decode(pub.Encode()); err != nil {
+		t.Error(err)
+	}
+
+	if !pub.IsEqual(npub) {
+		t.Errorf("ec key | keys do not match after encoding/decoding")
+	}
+
+	if err := npub.DecodeString(pub.EncodeString()); err != nil {
+		t.Error(err)
+	}
+
+	if !pub.IsEqual(npub) {
+		t.Errorf("ec key | keys do not match after encoding/decoding")
 	}
 }

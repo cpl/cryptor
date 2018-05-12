@@ -90,7 +90,8 @@ func TestECDSASecretGenerationError(t *testing.T) {
 	}
 
 	// Import the key
-	key0 := ec.Import(ecdsa521Key)
+	key0 := new(ec.PrivateKey)
+	key0.Import(ecdsa521Key)
 
 	// Create P256 ecdsa key
 	key1, err := ec.GenerateKey()
