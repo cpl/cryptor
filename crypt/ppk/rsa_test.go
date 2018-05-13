@@ -6,6 +6,7 @@ import (
 
 	"github.com/thee-engineer/cryptor/common/con"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/ppk"
 )
 
@@ -113,5 +114,38 @@ func TestSignatureErrors(t *testing.T) {
 	signature[0] += 1
 	if ppk.Verify(&key0.PublicKey, data, signature) {
 		t.Errorf("ppk verified bad signature")
+	}
+}
+
+func TestLargeEncrypt(t *testing.T) {
+	t.Parallel()
+
+	rsaKey := ppk.NewKey()
+	aesKey := aes.NewKey()
+	data := crypt.RandomData(con.MB)
+
+	eData, err := aes.Encrypt(aesKey, data)
+	if err != nil {
+		t.Error(err)
+	}
+	secretKey, err := ppk.Encrypt(&rsaKey.PublicKey, aesKey.Bytes())
+	if err != nil {
+		t.Error(err)
+	}
+	decryptedKeyBytes, err := ppk.Decrypt(rsaKey, secretKey)
+	if err != nil {
+		t.Error(err)
+	}
+	decryptedKey, err := aes.NewKeyFromBytes(decryptedKeyBytes)
+	if err != nil {
+		t.Error(err)
+	}
+	dData, err := aes.Decrypt(decryptedKey, eData)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !bytes.Equal(data, dData) {
+		t.Errorf("rsa aes failed, data mismatch")
 	}
 }
