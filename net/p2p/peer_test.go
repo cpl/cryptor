@@ -28,7 +28,7 @@ func TestPeerAdd(t *testing.T) {
 		t.Errorf("peerCount, expected 0, got %d", peerCount)
 	}
 
-	// Nomral peer add
+	// Normal peer add
 	node.AddPeer(newTestPeer())
 	node.AddPeer(newTestPeer())
 	node.AddPeer(newTestPeer())

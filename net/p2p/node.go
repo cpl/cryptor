@@ -32,7 +32,7 @@ type Node struct {
 	isRunning   bool
 	isConnected bool
 
-	peers map[string]*Peer // List of known peers
+	peers peerMap // List of known peers
 
 	incoming chan string // Incoming packets buffer
 	outgoing chan string // Outgoing packets buffer
@@ -65,7 +65,7 @@ func NewNode(addr, port string, config *NodeConfig) Node {
 		address: addr,
 		port:    port,
 
-		peers: make(map[string]*Peer),
+		peers: make(peerMap),
 
 		logChan: make(chan interface{}),
 		errChan: make(chan error),

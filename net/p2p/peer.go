@@ -6,7 +6,8 @@ type Peer struct {
 	Address   string
 }
 
-type peerFunc func(map[string]*Peer)
+type peerMap map[string]*Peer
+type peerFunc func(peerMap)
 
 // CountPeers ...
 func (n *Node) CountPeers() int {
@@ -17,7 +18,7 @@ func (n *Node) CountPeers() int {
 	var count int
 
 	select {
-	case n.peerOp <- func(peerList map[string]*Peer) {
+	case n.peerOp <- func(peerList peerMap) {
 		count = len(peerList)
 	}:
 		<-n.peerOpDone
@@ -35,7 +36,7 @@ func (n *Node) Peers() []*Peer {
 	var peerList []*Peer
 
 	select {
-	case n.peerOp <- func(peers map[string]*Peer) {
+	case n.peerOp <- func(peers peerMap) {
 		for _, peer := range peers {
 			peerList = append(peerList, peer)
 		}
@@ -53,7 +54,7 @@ func (n *Node) AddPeer(peer *Peer) {
 	}
 
 	select {
-	case n.peerOp <- func(peers map[string]*Peer) {
+	case n.peerOp <- func(peers peerMap) {
 		peers[peer.PublicKey] = peer
 	}:
 		<-n.peerOpDone
@@ -68,7 +69,7 @@ func (n *Node) DelPeer(peer *Peer) {
 	}
 
 	select {
-	case n.peerOp <- func(peers map[string]*Peer) {
+	case n.peerOp <- func(peers peerMap) {
 		delete(peers, peer.PublicKey)
 	}:
 		<-n.peerOpDone
