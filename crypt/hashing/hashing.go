@@ -1,11 +1,15 @@
 package hashing
 
 import (
+	"crypto"
 	"hash"
 	"log"
 
 	"golang.org/x/crypto/blake2b"
 )
+
+// CryptoHash ...
+const CryptoHash = crypto.BLAKE2b_256
 
 // HashFunction ...
 func HashFunction() hash.Hash {

@@ -60,6 +60,11 @@ func TestEncryptionErrors(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	nKey := rsa.NewKey()
+	_, err = rsa.Decrypt(nKey, eData)
+	if err.Error() != "crypto/rsa: decryption error" {
+		t.Error(err)
+	}
 
 	eData[0] += 1
 	_, err = rsa.Decrypt(key, eData)
