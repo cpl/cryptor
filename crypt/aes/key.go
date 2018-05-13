@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 	"github.com/thee-engineer/cryptor/crypt/scrypt"
 )
 
@@ -38,7 +39,7 @@ func NewKeyFromString(hex string) (key Key, err error) {
 	}
 
 	// Decode hex string and convert to bytes
-	keyData, err := crypt.Decode([]byte(hex))
+	keyData, err := b16.Decode([]byte(hex))
 	if err != nil {
 		return NullKey, err
 	}
@@ -69,7 +70,7 @@ func (key Key) Bytes() []byte {
 
 // Encode returns a hex encoded []byte array.
 func (key Key) Encode() []byte {
-	return crypt.Encode(key.Bytes())
+	return b16.Encode(key.Bytes())
 }
 
 // String returns a hex encoded string

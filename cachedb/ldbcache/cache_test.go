@@ -9,6 +9,7 @@ import (
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 )
 
 // Test data for all key/value pair tests
@@ -98,7 +99,7 @@ func TestCDBSameKeyPut(t *testing.T) {
 
 	// Put count entries with the same keys and random data
 	for count := 0; count < 5; count++ {
-		data := crypt.Encode(crypt.RandomData(10))
+		data := b16.Encode(crypt.RandomData(10))
 		cdb.Put([]byte("key"), data)
 	}
 

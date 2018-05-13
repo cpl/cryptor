@@ -12,6 +12,7 @@ import (
 	"github.com/thee-engineer/cryptor/chunker/assembler"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
@@ -52,8 +53,8 @@ func TestEChunk(t *testing.T) {
 
 	// Invalid hash
 	if !dChunk.IsValid() {
-		t.Log(crypt.EncodeString(dChunk.Header.Hash))
-		t.Log(crypt.EncodeString(hashing.Hash(dChunk.Content)))
+		t.Log(b16.EncodeString(dChunk.Header.Hash))
+		t.Log(b16.EncodeString(hashing.Hash(dChunk.Content)))
 		t.Error("chunk: is not valid")
 	}
 

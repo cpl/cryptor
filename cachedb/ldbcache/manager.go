@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/thee-engineer/cryptor/cachedb"
-	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
@@ -114,7 +114,7 @@ func (man *Manager) Add(data []byte) error {
 
 // Has ...
 func (man *Manager) Has(hex string) bool {
-	key, err := crypt.DecodeString(hex)
+	key, err := b16.DecodeString(hex)
 	if err != nil {
 		return false
 	}
@@ -130,7 +130,7 @@ func (man *Manager) Has(hex string) bool {
 // Get ...
 func (man *Manager) Get(hex string) ([]byte, error) {
 	// Decode key, also validate key
-	key, err := crypt.DecodeString(hex)
+	key, err := b16.DecodeString(hex)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (man *Manager) Del(hex string) error {
 	}
 
 	// Decode key, also validate key
-	key, err := crypt.DecodeString(hex)
+	key, err := b16.DecodeString(hex)
 	if err != nil {
 		return err
 	}

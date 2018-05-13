@@ -8,6 +8,7 @@ import (
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
@@ -61,7 +62,7 @@ func TestLDBManager(t *testing.T) {
 	testInt("size", 0, man.Size(), t)
 
 	// Add data
-	testHash := crypt.EncodeString(hashing.Hash(testData))
+	testHash := b16.EncodeString(hashing.Hash(testData))
 	if err := man.Add(testData); err != nil {
 		t.Error(err)
 	}
@@ -313,7 +314,7 @@ func TestLDBManagerDynamic(t *testing.T) {
 	hashes := make([]string, conf.MaxChunkCount)
 	count := 0
 	for iter.Next() {
-		hashes[count] = crypt.EncodeString(iter.Key())
+		hashes[count] = b16.EncodeString(iter.Key())
 		count++
 	}
 
@@ -397,7 +398,7 @@ func TestLDBManagerDel(t *testing.T) {
 		t.Errorf("man: deleted non valid hash")
 	}
 
-	if err := man.Del(crypt.EncodeString(hashing.Hash(
+	if err := man.Del(b16.EncodeString(hashing.Hash(
 		[]byte{10, 20, 30}))); err == nil {
 
 		t.Errorf("man: deleted non existing hash")
@@ -440,7 +441,7 @@ func TestLDBClosed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	dataHash := crypt.EncodeString(hashing.Hash(data))
+	dataHash := b16.EncodeString(hashing.Hash(data))
 	if has := man.Has(dataHash); has {
 		t.Errorf("man: got true Has() from closed db")
 	}
