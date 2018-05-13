@@ -1,4 +1,4 @@
-package rsa
+package ppk
 
 import (
 	"crypto/rand"
@@ -21,10 +21,12 @@ func Verify(key *rsa.PublicKey, msg, sig []byte) bool {
 
 // Encrypt ...
 func Encrypt(key *rsa.PublicKey, msg []byte) ([]byte, error) {
-	return rsa.EncryptOAEP(hashing.HashFunction(), rand.Reader, key, msg, nil)
+	return rsa.EncryptOAEP(
+		hashing.HashFunction(), rand.Reader, key, msg, nil)
 }
 
 // Decrypt ...
 func Decrypt(key *rsa.PrivateKey, msg []byte) ([]byte, error) {
-	return rsa.DecryptOAEP(hashing.HashFunction(), rand.Reader, key, msg, nil)
+	return rsa.DecryptOAEP(
+		hashing.HashFunction(), rand.Reader, key, msg, nil)
 }
