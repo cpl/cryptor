@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/thee-engineer/cryptor/crypt"
-
 	"github.com/thee-engineer/cryptor/crypt/ppk"
 )
 

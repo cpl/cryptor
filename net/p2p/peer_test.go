@@ -2,7 +2,6 @@ package p2p_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/encode/b16"
@@ -48,11 +47,10 @@ func TestPeerAdd(t *testing.T) {
 	dp1 := newTestPeer()
 
 	// Concurent peer add
-	go node.AddPeer(dp0)
-	go node.AddPeer(dp1)
-	go node.AddPeer(newTestPeer())
-	go node.AddPeer(newTestPeer())
-	time.Sleep(5 * time.Second)
+	node.AddPeer(dp0)
+	node.AddPeer(dp1)
+	node.AddPeer(newTestPeer())
+	node.AddPeer(newTestPeer())
 
 	if lenPeers := len(node.Peers()); lenPeers != 8 {
 		t.Errorf("lenPeers, expected 8, got %d", lenPeers)
