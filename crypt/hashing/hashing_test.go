@@ -39,3 +39,18 @@ func TestHashLength(t *testing.T) {
 			crypt.DigestSize, hashLen)
 	}
 }
+
+func TestHashMultiple(t *testing.T) {
+	t.Parallel()
+
+	data0 := crypt.RandomData(100)
+	data1 := crypt.RandomData(100)
+
+	hashAll := hashing.Hash(data0, data1)
+	hash0 := hashing.Hash(data0)
+	hash1 := hashing.Hash(data1)
+
+	if bytes.Equal(hashAll, hash0) || bytes.Equal(hashAll, hash1) {
+		t.Errorf("failed hash, multi-hash matches single hash")
+	}
+}

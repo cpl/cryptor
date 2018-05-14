@@ -21,14 +21,17 @@ func HashFunction() hash.Hash {
 }
 
 // Hash ...
-func Hash(data []byte) []byte {
+func Hash(dataSet ...[]byte) []byte {
 	h := HashFunction()
-	w, err := h.Write(data)
-	if err != nil {
-		panic(err)
-	}
-	if w != len(data) {
-		log.Panicf("blake2: write len %d does not match data len", w)
+	for _, data := range dataSet {
+		w, err := h.Write(data)
+		if err != nil {
+			panic(err)
+		}
+
+		if w != len(data) {
+			log.Panicf("blake2: write len %d does not match data len", w)
+		}
 	}
 
 	return h.Sum(nil)
