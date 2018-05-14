@@ -3,15 +3,12 @@ package p2p_test
 import (
 	"testing"
 
-	"github.com/thee-engineer/cryptor/crypt"
-	"github.com/thee-engineer/cryptor/crypt/encode/b16"
-
 	"github.com/thee-engineer/cryptor/net/p2p"
 )
 
 func newTestPeer() *p2p.Peer {
 	return &p2p.Peer{
-		PublicKey: b16.EncodeString(crypt.RandomData(32)),
+		PublicKey: nil,
 		Address:   "testAddress",
 	}
 }

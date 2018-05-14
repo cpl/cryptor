@@ -1,9 +1,40 @@
 package p2p
 
+import (
+	"crypto/rsa"
+
+	"github.com/thee-engineer/cryptor/crypt/encode/b16"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
+	"github.com/thee-engineer/cryptor/crypt/ppk"
+)
+
 // Peer ...
 type Peer struct {
-	PublicKey string
+	PublicKey *rsa.PublicKey
 	Address   string
+}
+
+// NewPeer ...
+func NewPeer(address string, key *rsa.PublicKey) *Peer {
+	return &Peer{
+		PublicKey: key,
+		Address:   address,
+	}
+}
+
+// Encrypt ...
+func (p *Peer) Encrypt(data []byte) ([]byte, error) {
+	return ppk.Encrypt(p.PublicKey, data)
+}
+
+// Verify ...
+func (p *Peer) Verify(data, signature []byte) bool {
+	return ppk.Verify(p.PublicKey, data, signature)
+}
+
+// Hash ...
+func (p *Peer) Hash() string {
+	return b16.EncodeString(hashing.Hash([]byte(p.Address)))
 }
 
 type peerMap map[string]*Peer
@@ -55,11 +86,11 @@ func (n *Node) AddPeer(peer *Peer) {
 
 	select {
 	case n.peerOp <- func(peers peerMap) {
-		peers[peer.PublicKey] = peer
+		peers[peer.Address] = peer
 	}:
 		<-n.peerOpDone
 	}
-	n.logChan <- "add peer: " + peer.PublicKey
+	n.logChan <- "add peer: " + peer.Hash()
 }
 
 // DelPeer ...
@@ -70,9 +101,9 @@ func (n *Node) DelPeer(peer *Peer) {
 
 	select {
 	case n.peerOp <- func(peers peerMap) {
-		delete(peers, peer.PublicKey)
+		delete(peers, peer.Address)
 	}:
 		<-n.peerOpDone
 	}
-	n.logChan <- "del peer: " + peer.PublicKey
+	n.logChan <- "del peer: " + peer.Hash()
 }

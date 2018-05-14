@@ -138,20 +138,13 @@ func (n *Node) Connect() {
 	n.lock.Unlock()
 
 	// Bind to given address and port
-	listener, err := net.Listen("tcp", n.address+":"+n.port)
+	conn, err := net.ListenPacket("udp", n.address+":"+n.port)
 	if err != nil {
 		n.errChan <- err
 	}
-	n.logChan <- "listening on " + listener.Addr().String()
+	n.logChan <- "listening on " + conn.LocalAddr().String()
 
-	// Start listening and handling connections
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			n.errChan <- err
-		}
-		n.logChan <- "connection from " + conn.RemoteAddr().String()
-	}
+	go handleConn(conn)
 }
 
 // Disconnect stops the node from sending or receiving on the network. Keeps
