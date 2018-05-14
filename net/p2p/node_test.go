@@ -25,9 +25,7 @@ func TestNodeNotRunning(t *testing.T) {
 
 func TestNodeRunning(t *testing.T) {
 	node := p2p.NewNode("localhost", "2000", nil)
-	go node.Start()
-
-	time.Sleep(time.Second)
+	node.Start()
 	node.Disconnect()
 	node.Start()
 

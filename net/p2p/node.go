@@ -27,6 +27,8 @@ type Node struct {
 	port    string     // Port for listening
 	config  NodeConfig // Creation configuration
 
+	udpConn net.PacketConn // UDP Listener
+
 	lock sync.Mutex // Mutex lock for critical code section
 
 	isRunning   bool
@@ -34,8 +36,8 @@ type Node struct {
 
 	peers peerMap // List of known peers
 
-	incoming chan string // Incoming packets buffer
-	outgoing chan string // Outgoing packets buffer
+	incoming chan []byte // Incoming packets buffer
+	outgoing chan []byte // Outgoing packets buffer
 
 	errChan chan error       // Channel for logging error
 	logChan chan interface{} // Channel for loggin messages
@@ -70,8 +72,8 @@ func NewNode(addr, port string, config *NodeConfig) Node {
 		logChan: make(chan interface{}),
 		errChan: make(chan error),
 
-		incoming: make(chan string),
-		outgoing: make(chan string),
+		incoming: make(chan []byte),
+		outgoing: make(chan []byte),
 
 		peerOp:     make(chan peerFunc),
 		peerOpDone: make(chan interface{}),
@@ -93,23 +95,9 @@ func (n *Node) Start() {
 	n.isRunning = true
 	n.lock.Unlock()
 
-	// Start listening on local channels
-	log.Println("node log: started")
-	for {
-		select {
-		case err := <-n.errChan:
-			log.Println("node err:", err)
-		case msg := <-n.logChan:
-			log.Println("node log:", msg)
-		case operation := <-n.peerOp:
-			operation(n.peers)
-			n.peerOpDone <- nil
-		case <-n.quit:
-			log.Println("node log: stopping")
-			n.isRunning = false
-			return
-		}
-	}
+	// Start goroutine
+	go n.run()
+	n.logChan <- "started"
 }
 
 // Stop the node from running (also closes any active connections).
@@ -118,7 +106,16 @@ func (n *Node) Stop() {
 	if !checkRunning(n) {
 		return
 	}
+
+	// Disconnect if connected
+	if n.isConnected {
+		n.Disconnect()
+	}
+
 	n.quit <- nil
+	n.isRunning = false
+
+	log.Println("node log: stopped")
 }
 
 // Connect joins the cryptor network and begins communication with its peers
@@ -134,17 +131,25 @@ func (n *Node) Connect() {
 		n.lock.Unlock()
 		return
 	}
+
+	// Bind to given address and port
+	var err error
+	n.udpConn, err = net.ListenPacket("udp", n.address+":"+n.port)
+	if err != nil {
+		n.errChan <- err
+		n.lock.Unlock()
+		return
+	}
+
+	// Connection is done
 	n.isConnected = true
 	n.lock.Unlock()
 
-	// Bind to given address and port
-	conn, err := net.ListenPacket("udp", n.address+":"+n.port)
-	if err != nil {
-		n.errChan <- err
-	}
-	n.logChan <- "listening on " + conn.LocalAddr().String()
+	// Read incoming
+	go n.listen()
 
-	go handleConn(conn)
+	// Confirm connection
+	n.logChan <- "listening on " + n.udpConn.LocalAddr().String()
 }
 
 // Disconnect stops the node from sending or receiving on the network. Keeps
@@ -162,5 +167,15 @@ func (n *Node) Disconnect() {
 		return
 	}
 
+	// Stop connection
+	err := n.udpConn.Close()
+	if err != nil {
+		n.errChan <- err
+	}
+
+	// Send disconnect signal
+	n.disconnect <- nil
 	n.isConnected = false
+
+	n.logChan <- "disconnected"
 }

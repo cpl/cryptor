@@ -10,3 +10,8 @@ func checkRunning(n *Node) bool {
 	}
 	return n.isRunning
 }
+
+func (n *Node) status() {
+	log.Printf("node status: running: %t, connected: %t\n",
+		n.isRunning, n.isConnected)
+}

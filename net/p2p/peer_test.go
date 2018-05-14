@@ -3,19 +3,21 @@ package p2p_test
 import (
 	"testing"
 
+	"github.com/thee-engineer/cryptor/crypt"
+
 	"github.com/thee-engineer/cryptor/net/p2p"
 )
 
 func newTestPeer() *p2p.Peer {
 	return &p2p.Peer{
 		PublicKey: nil,
-		Address:   "testAddress",
+		Address:   string(crypt.RandomData(10)),
 	}
 }
 
 func TestPeerAdd(t *testing.T) {
 	node := p2p.NewNode("localhost", "2000", nil)
-	go node.Start()
+	node.Start()
 
 	if lenPeers := len(node.Peers()); lenPeers != 0 {
 		t.Errorf("lenPeers, expected 0, got %d", lenPeers)
