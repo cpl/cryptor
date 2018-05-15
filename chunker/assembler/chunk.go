@@ -7,6 +7,7 @@ import (
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/chunker"
 	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/utils"
 )
 
 // EChunk ...
@@ -17,9 +18,7 @@ func GetEChunk(hash []byte, cache cachedb.Database) EChunk {
 
 	// Get data from cache
 	eChunk, err := cache.Get(hash)
-	if err != nil {
-		panic(err)
-	}
+	utils.CheckErr(err)
 
 	return eChunk
 }

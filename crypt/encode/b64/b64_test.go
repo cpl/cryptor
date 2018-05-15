@@ -6,6 +6,7 @@ import (
 
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/encode/b64"
+	"github.com/thee-engineer/cryptor/utils"
 )
 
 func TestEncodeDecode(t *testing.T) {
@@ -15,9 +16,7 @@ func TestEncodeDecode(t *testing.T) {
 	data := crypt.RandomData(32)
 	// Encode then decode the data
 	dData, err := b64.Decode(b64.Encode(data))
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	// Compare decoded data with original data
 	if !bytes.Equal(dData, data) {
@@ -32,9 +31,7 @@ func TestStringEncodeDecode(t *testing.T) {
 	data := crypt.RandomData(32)
 	// Encode data as string then decode the string as []byte
 	dData, err := b64.DecodeString(b64.EncodeString(data))
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	// Compare decoded string with original data
 	if !bytes.Equal(dData, data) {

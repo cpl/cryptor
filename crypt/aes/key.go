@@ -9,6 +9,7 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 	"github.com/thee-engineer/cryptor/crypt/scrypt"
+	"github.com/thee-engineer/cryptor/utils"
 )
 
 // Key is a byte array of AES256 Key size.
@@ -19,10 +20,12 @@ var NullKey Key = [crypt.KeySize]byte{0}
 
 // NewKey returns a new random AES256 Key.
 func NewKey() (key Key) {
-	_, err := io.ReadFull(rand.Reader, key[:])
-	if err != nil {
-		panic(err)
+	n, err := io.ReadFull(rand.Reader, key[:])
+	utils.CheckErr(err)
+	if n != crypt.KeySize {
+		panic(errors.New("failed to generate AES key"))
 	}
+
 	return key
 }
 

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"os"
 	"testing"
+
+	"github.com/thee-engineer/cryptor/utils"
 )
 
 func TestLDBatch(t *testing.T) {
@@ -13,9 +15,7 @@ func TestLDBatch(t *testing.T) {
 	var testData = []string{"", "world", "1409", "\x00cd16\x00", ""}
 	dbPath, cache, err := createTestEnv()
 	defer os.RemoveAll(dbPath)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 	defer cache.Close()
 
 	// Create batch and start putting
@@ -28,9 +28,8 @@ func TestLDBatch(t *testing.T) {
 	// Check data
 	for _, data := range testData {
 		value, err := cache.Get([]byte(data))
-		if err != nil {
-			t.Error(err)
-		}
+		utils.CheckErrTest(err, t)
+
 		if !bytes.Equal(value, []byte(data)) {
 			t.Error("value error: unexpected value")
 		}

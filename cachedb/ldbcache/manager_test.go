@@ -10,6 +10,7 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
+	"github.com/thee-engineer/cryptor/utils"
 )
 
 const testPath = "/tmp/cryptor_man_test_"
@@ -41,9 +42,7 @@ func TestLDBManager(t *testing.T) {
 	// Create new cache
 	db, err := ldbcache.New(testPath+"d", 0, 0)
 	defer os.RemoveAll(testPath + "d")
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	// Prepare manager config
 	conf := cachedb.ManagerConfig{
@@ -74,9 +73,7 @@ func TestLDBManager(t *testing.T) {
 
 	// Get data from cache
 	value, err := man.Get(testHash)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	// Compare data with data from cache
 	if !bytes.Equal(value, testData) {
@@ -134,9 +131,7 @@ func TestLDBCacheMultiAdd(t *testing.T) {
 	// Create cache
 	db, err := ldbcache.New(testPath+"md", 0, 0)
 	defer os.RemoveAll(testPath + "md")
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	// Manager config
 	conf := cachedb.ManagerConfig{
@@ -241,9 +236,8 @@ func TestLDBLimitsCount(t *testing.T) {
 	// Create new cache
 	db, err := ldbcache.New(testPath+"limc", 0, 0)
 	defer os.RemoveAll(testPath + "limc")
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer db.Close()
 
 	// Prepare manager config
@@ -278,9 +272,8 @@ func TestLDBManagerDynamic(t *testing.T) {
 	// Create new cache
 	db, err := ldbcache.New(testPath+"dyn", 0, 0)
 	defer os.RemoveAll(testPath + "dyn")
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer db.Close()
 
 	conf := cachedb.ManagerConfig{
@@ -350,9 +343,8 @@ func TestLDBManagerDynamic(t *testing.T) {
 	// Load existing cache
 	newDB, err := ldbcache.New(testPath+"dyn", 0, 0)
 	defer os.RemoveAll(testPath + "dyn")
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer newDB.Close()
 
 	// New manager on top of existing cache
@@ -369,9 +361,8 @@ func TestLDBManagerDel(t *testing.T) {
 	// Create new cache
 	db, err := ldbcache.New(testPath+"del", 0, 0)
 	defer os.RemoveAll(testPath + "del")
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer db.Close()
 
 	conf := cachedb.ManagerConfig{
@@ -411,9 +402,8 @@ func TestLDBClosed(t *testing.T) {
 	// Create new cache
 	db, err := ldbcache.New(testPath+"closed", 0, 0)
 	defer os.RemoveAll(testPath + "closed")
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer db.Close()
 
 	conf := cachedb.ManagerConfig{

@@ -8,6 +8,7 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/ppk"
+	"github.com/thee-engineer/cryptor/utils"
 )
 
 func TestEncryption(t *testing.T) {
@@ -19,9 +20,7 @@ func TestEncryption(t *testing.T) {
 
 	// Encrypt data
 	eData, err := ppk.Encrypt(&key.PublicKey, data)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	// Sanity check
 	if bytes.Equal(eData, data) {
@@ -30,9 +29,7 @@ func TestEncryption(t *testing.T) {
 
 	// Decrypt data
 	dData, err := ppk.Decrypt(key, eData)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	// Check if data matches
 	if !bytes.Equal(data, dData) {
@@ -58,9 +55,8 @@ func TestEncryptionErrors(t *testing.T) {
 	}
 
 	eData, err := ppk.Encrypt(&key.PublicKey, crypt.RandomData(10))
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	nKey := ppk.NewKey()
 	_, err = ppk.Decrypt(nKey, eData)
 	if err.Error() != "crypto/rsa: decryption error" {
@@ -81,9 +77,7 @@ func TestSignature(t *testing.T) {
 	key := ppk.NewKey()
 
 	signature, err := ppk.Sign(key, data)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	if !ppk.Verify(&key.PublicKey, data, signature) {
 		t.Errorf("ppk verify failed")
@@ -98,9 +92,7 @@ func TestSignatureErrors(t *testing.T) {
 	key1 := ppk.NewKey()
 
 	signature, err := ppk.Sign(key0, data)
-	if err != nil {
-		t.Error()
-	}
+	utils.CheckErrTest(err, t)
 
 	if ppk.Verify(&key1.PublicKey, data, signature) {
 		t.Errorf("ppk verified wrong key")
@@ -125,25 +117,20 @@ func TestLargeEncrypt(t *testing.T) {
 	data := crypt.RandomData(con.MB)
 
 	eData, err := aes.Encrypt(aesKey, data)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	secretKey, err := ppk.Encrypt(&rsaKey.PublicKey, aesKey.Bytes())
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	decryptedKeyBytes, err := ppk.Decrypt(rsaKey, secretKey)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	decryptedKey, err := aes.NewKeyFromBytes(decryptedKeyBytes)
 	if err != nil {
 		t.Error(err)
 	}
 	dData, err := aes.Decrypt(decryptedKey, eData)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
 
 	if !bytes.Equal(data, dData) {
 		t.Errorf("rsa aes failed, data mismatch")

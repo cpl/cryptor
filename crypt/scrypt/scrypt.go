@@ -1,9 +1,8 @@
 package scrypt
 
 import (
-	"log"
-
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/utils"
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -18,10 +17,7 @@ const randomPassSize = 128
 func Scrypt(password string, salt []byte) []byte {
 	// Derive 32 byte key.
 	key, err := scrypt.Key([]byte(password), salt, n, r, p, crypt.KeySize)
-	if err != nil {
-		log.Panic(err)
-	}
-
+	utils.CheckErr(err)
 	return key
 }
 

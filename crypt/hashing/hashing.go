@@ -5,6 +5,7 @@ import (
 	"hash"
 	"log"
 
+	"github.com/thee-engineer/cryptor/utils"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -25,9 +26,7 @@ func Hash(dataSet ...[]byte) []byte {
 	h := HashFunction()
 	for _, data := range dataSet {
 		w, err := h.Write(data)
-		if err != nil {
-			panic(err)
-		}
+		utils.CheckErr(err)
 
 		if w != len(data) {
 			log.Panicf("blake2: write len %d does not match data len", w)
