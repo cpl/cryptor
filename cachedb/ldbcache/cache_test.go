@@ -3,6 +3,7 @@ package ldbcache_test
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
@@ -202,22 +203,22 @@ func TestCDBErrors(t *testing.T) {
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	defer os.RemoveAll(dbPath)
-	utils.CheckErrTest(err, t)
-
+	if err != nil {
+		t.Error(err)
+	}
 	defer cdb.Close()
 
 	// Get (non existing)
 	data, err := cdb.Get([]byte("hello"))
-	utils.CheckErrTest(err, t)
-
+	if err == nil {
+		t.Error(err)
+	}
 	if data != nil {
 		t.Error("ldb: got invalid data")
 	}
 
 	// Has (non existing)
 	status, err := cdb.Has([]byte("hello"))
-	utils.CheckErrTest(err, t)
-
 	if status {
 		t.Error("ldb: found invalid key/value")
 	}
@@ -239,7 +240,9 @@ func TestCDBErrors(t *testing.T) {
 
 	// Get (non existing after delete)
 	data, err = cdb.Get([]byte("hello"))
-	utils.CheckErrTest(err, t)
+	if err != nil {
+		log.Println("err")
+	}
 
 	if data != nil {
 		if len(data) != 0 {
