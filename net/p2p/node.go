@@ -52,17 +52,6 @@ type Node struct {
 
 // NewNode constructs a node with default configurations
 func NewNode(addr, port string, config *NodeConfig) Node {
-
-	var qc, dc chan interface{}
-
-	if config != nil {
-		qc = config.quitChan
-		dc = config.discChan
-	} else {
-		qc = make(chan interface{})
-		dc = make(chan interface{})
-	}
-
 	return Node{
 		address: addr,
 		port:    port,
@@ -72,14 +61,14 @@ func NewNode(addr, port string, config *NodeConfig) Node {
 		logChan: make(chan interface{}),
 		errChan: make(chan error),
 
-		incoming: make(chan []byte),
-		outgoing: make(chan []byte),
+		incoming: make(chan []byte, 10),
+		outgoing: make(chan []byte, 10),
 
 		peerOp:     make(chan peerFunc),
 		peerOpDone: make(chan interface{}),
 
-		quit:       qc,
-		disconnect: dc,
+		quit:       make(chan interface{}),
+		disconnect: make(chan interface{}),
 	}
 }
 
