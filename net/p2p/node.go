@@ -51,8 +51,8 @@ type Node struct {
 }
 
 // NewNode constructs a node with default configurations
-func NewNode(addr, port string, config *NodeConfig) Node {
-	return Node{
+func NewNode(addr, port string, config *NodeConfig) *Node {
+	return &Node{
 		address: addr,
 		port:    port,
 
