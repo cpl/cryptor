@@ -14,11 +14,11 @@ const CryptoHash = crypto.BLAKE2b_256
 
 // HashFunction ...
 func HashFunction() hash.Hash {
-	if h, err := blake2b.New256(nil); err != nil {
+	h, err := blake2b.New256(nil)
+	if err != nil {
 		log.Panic(err)
-	} else {
-		return h
 	}
+	return h
 }
 
 // Hash ...
