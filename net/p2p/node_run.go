@@ -18,7 +18,7 @@ func (n *Node) run() {
 			return
 		case msg := <-n.incoming:
 			smsg := string(msg)
-			log.Println("msg:", smsg)
+			log.Println("msg:", smsg) // ! DEBUG
 			if smsg == "stop" {
 				go n.Stop()
 			}

@@ -10,10 +10,7 @@ import (
 // NodeConfig is a static structure used for creating node configuration
 // presets used before node startup.
 type NodeConfig struct {
-	TrustedPeers []*Peer
-
-	quitChan chan interface{}
-	discChan chan interface{}
+	trustedPeers []*Peer
 }
 
 // Node can run in offline or online mode. In offline mode only local settings
@@ -23,9 +20,10 @@ type NodeConfig struct {
 // mode where only trusted peers can connect. The local node will act as both
 // a reciver and sender.
 type Node struct {
-	address string     // Host address (IPv4/IPv6/hostname)
-	port    string     // Port for listening
-	config  NodeConfig // Creation configuration
+	config NodeConfig // Configuration
+
+	address string // Host address (IPv4/IPv6/hostname)
+	port    string // Port for listening
 
 	udpConn net.PacketConn // UDP Listener
 
