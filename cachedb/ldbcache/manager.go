@@ -2,6 +2,7 @@ package ldbcache
 
 import (
 	"errors"
+	"log"
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt/encode/b16"
@@ -17,7 +18,7 @@ type Manager struct {
 // NewManager ...
 func NewManager(config cachedb.ManagerConfig, db cachedb.Database) cachedb.Manager {
 	if !cachedb.ValidateConfig(config) {
-		panic(cachedb.ErrInvalidConfig)
+		log.Panic(cachedb.ErrInvalidConfig)
 	}
 
 	ldbMan := &Manager{config, db}
@@ -42,10 +43,10 @@ func (man *Manager) update() {
 
 	// Check for exceding limits
 	if count > man.MaxChunkCount {
-		panic(errors.New("ldb man: chunk count excedes max count"))
+		log.Panic(errors.New("ldb man: chunk count excedes max count"))
 	}
 	if size > man.MaxCacheSize {
-		panic(errors.New("ldb man: cache size excedes max size"))
+		log.Panic(errors.New("ldb man: cache size excedes max size"))
 	}
 
 	// Update size
@@ -65,7 +66,7 @@ func (man *Manager) updateCount() {
 
 	// Check for exceding limit
 	if count > man.MaxChunkCount {
-		panic(errors.New("ldb man: chunk count excedes max count"))
+		log.Panic(errors.New("ldb man: chunk count excedes max count"))
 	}
 
 	// Update count

@@ -15,7 +15,7 @@ const CryptoHash = crypto.BLAKE2b_256
 // HashFunction ...
 func HashFunction() hash.Hash {
 	if h, err := blake2b.New256(nil); err != nil {
-		panic(err)
+		log.Panic(err)
 	} else {
 		return h
 	}
@@ -41,7 +41,7 @@ func Sum(data []byte) []byte {
 	h := HashFunction()
 	w, err := h.Write(data)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	if w != len(data) {
 		log.Panicf("blake2: write len %d does not match data len", w)

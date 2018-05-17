@@ -1,11 +1,14 @@
 package utils
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 // CheckErr ...
 func CheckErr(err error) {
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"io"
+	"log"
 	"strings"
 
 	"github.com/thee-engineer/cryptor/crypt"
@@ -23,7 +24,7 @@ func NewKey() (key Key) {
 	n, err := io.ReadFull(rand.Reader, key[:])
 	utils.CheckErr(err)
 	if n != crypt.KeySize {
-		panic(errors.New("failed to generate AES key"))
+		log.Panic(errors.New("failed to generate AES key"))
 	}
 
 	return key
