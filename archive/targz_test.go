@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/thee-engineer/cryptor/chunker/archive"
+	"github.com/thee-engineer/cryptor/archive"
 )
 
 func TestTarUnTar(t *testing.T) {
@@ -16,23 +16,23 @@ func TestTarUnTar(t *testing.T) {
 	var buffer bytes.Buffer
 
 	// Tar the file
-	if err := archive.TarGz("data/tarfile.txt", &buffer); err != nil {
+	if err := archive.TarGz("../test/data/tarfile.txt", &buffer); err != nil {
 		t.Error(err)
 	}
 
 	// Create output file
-	_, err := os.Create("data/out/tarfile.txt")
+	_, err := os.Create("../test/data/out/tarfile.txt")
 	if err != nil {
 		t.Error(err)
 	}
 
 	// Untar the file
-	if err := archive.UnTarGz("data/out/tarfile.txt", &buffer); err != nil {
+	if err := archive.UnTarGz("../test/data/out/tarfile.txt", &buffer); err != nil {
 		t.Error(err)
 	}
 
 	// Remove output file
-	if err := os.Remove("data/out/tarfile.txt"); err != nil {
+	if err := os.Remove("../test/data/out/tarfile.txt"); err != nil {
 		t.Error(err)
 	}
 }
