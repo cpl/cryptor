@@ -8,6 +8,8 @@ little contribution helps.
 
 [![GitHub forks](https://img.shields.io/github/forks/thee-engineer/cryptor.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/thee-engineer/cryptor/)
 
+We are also looking for *volunteers* to join the network.
+
 ## Workflow
 
 1. Start by [installing Go](https://golang.org/doc/install) and getting familiar with the syntax

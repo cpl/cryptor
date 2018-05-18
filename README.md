@@ -10,16 +10,20 @@
 ---
 
 ## Description
-`Cryptor` is a P2P network designed for sharing data without revealing one's true identity or the nature of the shared files. This is accomplished using AES256 encrypted chunks of files and sharing them across the network. No node will know what package it stores + everything is encrypted junk without the `tail chunk` and the encryption key.
 
-P2P communication uses Elliptic Curve key exchange in order to generate a new symetric AES256 block cipher, used in sending requests between peers.
+**Cryptor** is a P2P network designed for sharing data without revealing one's true identity or the nature of the shared information. Data security is accomplished using asymetric encryption (AES256) and public-private key (RSA) for safe peer-to-peer communication and data integrity validation.
 
-The initial idea came from [Dragos A. Radu](https://github.com/dragosthealex) & [Daniel Hodgson](https://github.com/DanielHodgson) who provided a prototype implementation in Python.
+All local data stored on your machine is encrypted using your master password. The chunk design of the file sharing protocol also further improves security.
+
+The P2P Protocol uses fake (or cover) request in order to avoid timing, MITM, 
 
 ## Install
+
 In order to install the latest version of `cryptor` you will need to have [Go 1.5](https://golang.org/dl/ "download go") or higher installed. To check if you have Go installed and which verions, just run `go version` in your terminal.
 
-```
+The test suite will only run with Go 1.10 or higher.
+
+```shell
 # This will download the cryptor source files inside your $GOPATH/src/...
 go get github.com/thee-engineer/cryptor
 
@@ -29,3 +33,7 @@ cd $GOPATH/src/thee-engineer/cryptor
 # This will put a binary of cryptor inside build/
 make build
 ```
+
+## Volunteer
+
+The more nodes in the network, the faster and more secure it is for everyone using Cryptor. There are no risks involved. All communication between you and other peers is encrypted. Cryptor is also a "zero knowldge" system allowing you the freedom of Plausible deniability.
