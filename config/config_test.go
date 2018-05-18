@@ -9,15 +9,20 @@ import (
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
+var configTests = path.Join(
+	os.Getenv("GOPATH"),
+	"src/github.com/thee-engineer/cryptor/test/")
+
 var configFile = path.Join(
-	os.Getenv("GOPATH"),
-	"src/github.com/thee-engineer/cryptor/config_test.json")
+	configTests,
+	"config_test.json")
 var configFileJunk = path.Join(
-	os.Getenv("GOPATH"),
-	"src/github.com/thee-engineer/cryptor/config_test_junk.json")
+	configTests,
+	"config_test_junk.json")
 
 func TestConfigJunk(t *testing.T) {
 	viper.Reset()
+	viper.AddConfigPath(configTests)
 
 	defer aes.EncryptFiles("testpassword", configFileJunk)
 	if err := readConfig("config_test_junk"); err == nil {
@@ -41,6 +46,7 @@ func TestBasicConfig(t *testing.T) {
 	viper.Reset()
 	readConfig("config_test")
 	viper.Reset()
+	viper.AddConfigPath(configTests)
 
 	if usedFile := viper.ConfigFileUsed(); usedFile != "" {
 		t.Fatalf("read config file should be none")
