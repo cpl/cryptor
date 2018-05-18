@@ -12,6 +12,18 @@ import (
 var configFile = path.Join(
 	os.Getenv("GOPATH"),
 	"src/github.com/thee-engineer/cryptor/config_test.json")
+var configFileJunk = path.Join(
+	os.Getenv("GOPATH"),
+	"src/github.com/thee-engineer/cryptor/config_test_junk.json")
+
+func TestConfigJunk(t *testing.T) {
+	viper.Reset()
+
+	defer aes.EncryptFiles("testpassword", configFileJunk)
+	if err := readConfig("config_test_junk"); err == nil {
+		t.Errorf("read invalid json config")
+	}
+}
 
 func TestConfigNotFound(t *testing.T) {
 	viper.Reset()
