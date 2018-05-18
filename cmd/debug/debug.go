@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	_ "github.com/thee-engineer/cryptor/config"
 	"github.com/thee-engineer/cryptor/net/p2p"
 )
@@ -39,6 +41,10 @@ func main() {
 		args := strings.Split(line, " ")
 
 		switch args[0] {
+		case "save":
+			if err := viper.WriteConfig(); err != nil {
+				log.Fatalln(err)
+			}
 		case "new":
 			switch args[1] {
 			case "node":

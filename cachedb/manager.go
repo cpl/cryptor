@@ -4,13 +4,13 @@ import "errors"
 
 // ManagerConfig ...
 type ManagerConfig struct {
-	MaxCacheSize  int
-	MaxChunkCount int
-	MaxChunkSize  int
-	MinChunkSize  int
+	MaxCacheSize  int `json:"maxCacheSize"`
+	MaxChunkCount int `json:"maxChunkCount"`
+	MaxChunkSize  int `json:"maxChunkSize"`
+	MinChunkSize  int `json:"minChunkSize"`
 
-	CurrentCacheSize  int
-	CurrentChunkCount int
+	CurrentCacheSize  int `json:"-"`
+	CurrentChunkCount int `json:"-"`
 }
 
 // ErrInvalidConfig is used in panic and error returns.
