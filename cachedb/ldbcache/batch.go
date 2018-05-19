@@ -2,19 +2,18 @@ package ldbcache
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 // Batch is a LevelDB batch interface
 type Batch struct {
 	db    *leveldb.DB
 	batch *leveldb.Batch
-	size  int
 }
 
 // Put appends a Put key/value pair instruction in the Batch
-func (b *Batch) Put(key, value []byte) error {
-	b.batch.Put(key, value)
-	b.size += len(value)
+func (b *Batch) Put(value []byte) error {
+	b.batch.Put(hashing.Hash(value), value)
 	return nil
 }
 
