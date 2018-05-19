@@ -25,11 +25,7 @@ func BenchmarkLDBWriteMin(b *testing.B) {
 	b.ResetTimer()
 
 	for count := 0; count < b.N; count++ {
-
-		data := crypt.RandomData(dataSize)
-		key := hashing.Hash(data)
-
-		if err := cache.Put(key, data); err != nil {
+		if err := cache.Put(crypt.RandomData(dataSize)); err != nil {
 			b.Error(err)
 		}
 	}
@@ -48,11 +44,7 @@ func BenchmarkLDBWrite2048(b *testing.B) {
 	b.ResetTimer()
 
 	for count := 0; count < b.N; count++ {
-
-		data := crypt.RandomData(dataSize)
-		key := hashing.Hash(data)
-
-		if err := cache.Put(key, data); err != nil {
+		if err := cache.Put(crypt.RandomData(dataSize)); err != nil {
 			b.Error(err)
 		}
 	}
@@ -68,13 +60,12 @@ func BenchmarkLDBWriteSingle(b *testing.B) {
 		b.Error(err)
 	}
 
-	key := []byte("test")
 	data := crypt.RandomData(dataSize)
 
 	b.ResetTimer()
 
 	for count := 0; count < b.N; count++ {
-		if err := cache.Put(key, data); err != nil {
+		if err := cache.Put(data); err != nil {
 			b.Error(err)
 		}
 	}
@@ -90,9 +81,9 @@ func BenchmarkLDBReadSingle(b *testing.B) {
 		b.Error(err)
 	}
 
-	key := []byte("test")
 	data := crypt.RandomData(dataSize)
-	cache.Put(key, data)
+	key := hashing.Hash(data)
+	cache.Put(data)
 
 	b.ResetTimer()
 

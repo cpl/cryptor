@@ -5,6 +5,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 // Cache is a LevelDB database used as cache
@@ -61,9 +62,10 @@ func (cdb *Cache) Path() string {
 // 	return cdb.db
 // }
 
-// Put stores the key/value pair in the DB
-func (cdb *Cache) Put(key, value []byte) error {
-	return cdb.db.Put(key, value, nil)
+// Put stores the key/value pair in the DB. It computes the hash of value to
+// use it as key.
+func (cdb *Cache) Put(value []byte) error {
+	return cdb.db.Put(hashing.Hash(value), value, nil)
 }
 
 // Get returns the value at the given key

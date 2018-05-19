@@ -11,6 +11,7 @@ import (
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/encode/b16"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 	"github.com/thee-engineer/cryptor/utils"
 )
 
@@ -50,12 +51,13 @@ func TestCDBBasic(t *testing.T) {
 	}
 
 	// Test Put
-	if err := cdb.Put([]byte("item0"), []byte("hello")); err != nil {
+	tdata := []byte("hello")
+	if err := cdb.Put(tdata); err != nil {
 		t.Error(err)
 	}
 
 	// Test Has (true)
-	status, err := cdb.Has([]byte("item0"))
+	status, err := cdb.Has(hashing.Hash(tdata))
 	utils.CheckErrTest(err, t)
 
 	if !status {
@@ -97,7 +99,7 @@ func TestCDBSameKeyPut(t *testing.T) {
 	// Put count entries with the same keys and random data
 	for count := 0; count < 5; count++ {
 		data := b16.Encode(crypt.RandomData(10))
-		cdb.Put([]byte("key"), data)
+		cdb.Put(data)
 	}
 
 	// TODO: Add iterator to check keys
@@ -115,14 +117,13 @@ func TestCDBAdvanced(t *testing.T) {
 
 	// Put
 	for _, data := range testData {
-		err := cdb.Put([]byte(data), []byte(data))
+		err := cdb.Put([]byte(data))
 		utils.CheckErrTest(err, t)
-
 	}
 
 	// Get
 	for _, data := range testData {
-		value, err := cdb.Get([]byte(data))
+		value, err := cdb.Get(hashing.Hash([]byte(data)))
 		utils.CheckErrTest(err, t)
 
 		if !bytes.Equal(value, []byte(data)) {
@@ -131,21 +132,20 @@ func TestCDBAdvanced(t *testing.T) {
 	}
 
 	// Put overwrite
-	for _, data := range testData {
-		err := cdb.Put([]byte(data), []byte("OVERWRITE"))
-		utils.CheckErrTest(err, t)
-
-	}
+	// for _, data := range testData {
+	// 	err := cdb.Put([]byte(data), []byte("OVERWRITE"))
+	// 	utils.CheckErrTest(err, t)
+	// }
 
 	// Get overwrite
-	for _, data := range testData {
-		value, err := cdb.Get([]byte(data))
-		utils.CheckErrTest(err, t)
+	// for _, data := range testData {
+	// 	value, err := cdb.Get(hashing.Hash([]byte(data)))
+	// 	utils.CheckErrTest(err, t)
 
-		if !bytes.Equal(value, []byte("OVERWRITE")) {
-			t.Error("value error: got unexpected value")
-		}
-	}
+	// 	if !bytes.Equal(value, []byte("OVERWRITE")) {
+	// 		t.Error("value error: got unexpected value")
+	// 	}
+	// }
 
 	// Del
 	for _, data := range testData {
@@ -175,7 +175,7 @@ func TestCDBIterator(t *testing.T) {
 
 	// Put test data in cache
 	for _, data := range testData {
-		err := cdb.Put([]byte(data), []byte(data))
+		err := cdb.Put([]byte(data))
 		utils.CheckErrTest(err, t)
 
 	}
@@ -229,12 +229,13 @@ func TestCDBErrors(t *testing.T) {
 	}
 
 	// Put value
-	if err := cdb.Put([]byte("hello"), []byte("world")); err != nil {
+	tdata := []byte("world")
+	if err := cdb.Put(tdata); err != nil {
 		t.Error(err)
 	}
 
 	// Del (existing)
-	if err := cdb.Del([]byte("hello")); err != nil {
+	if err := cdb.Del(hashing.Hash(tdata)); err != nil {
 		t.Error(err)
 	}
 
@@ -261,7 +262,7 @@ func TestCDBErrors(t *testing.T) {
 	cdb.Close()
 
 	// Put value
-	if err := cdb.Put([]byte("hello"), []byte("world")); err == nil {
+	if err := cdb.Put([]byte("world")); err == nil {
 		t.Error("ldb: wrote to closed database")
 	}
 }

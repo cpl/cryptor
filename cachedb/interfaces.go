@@ -5,7 +5,7 @@ package cachedb
 // Database is an interface that covers read/write interactions with
 // underlaying databases.
 type Database interface {
-	Put(key, value []byte) error    // Store key/value pair in the DB
+	Put(value []byte) error         // Store key/value pair in the DB
 	Get(key []byte) ([]byte, error) // Get value with key from the DB
 	Has(key []byte) (bool, error)   // Check if key exists in DB
 	Del(key []byte) error           // Delete value with key
