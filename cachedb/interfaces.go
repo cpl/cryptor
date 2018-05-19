@@ -18,9 +18,9 @@ type Database interface {
 // Batch contains a set of write instructions that can be executed by a
 // Database.
 type Batch interface {
-	Put(key, value []byte) error // Store key/value pair instruction
-	Del(key []byte) error        // Delete value with key instruction
-	Write() error                // Write all instructions in the Batch
+	Put(value []byte) error // Store key/value pair instruction
+	Del(key []byte) error   // Delete value with key instruction
+	Write() error           // Write all instructions in the Batch
 }
 
 // Iterator allows iterating over all elements in the DB in a order.
@@ -35,13 +35,13 @@ type Iterator interface {
 
 // Manager provides operations on top of the cryptor cache
 type Manager interface {
-	Size() int  // Returns the size (in bytes) of the current cache
-	Count() int // Return the total count of chunks
+	Size() uint  // Returns the size (in bytes) of the current cache
+	Count() uint // Return the total count of chunks
 
 	Add([]byte) error           // Add a new chunk to the cache
-	Has(string) bool            // Check if cache has chunk
-	Get(string) ([]byte, error) // Get a chunk from the cache
-	Del(string) error           // Remove a chunk
+	Has([]byte) bool            // Check if cache has chunk
+	Get([]byte) ([]byte, error) // Get a chunk from the cache
+	Del([]byte) error           // Remove a chunk
 
 	Close() error // Closes the underlaying cache
 }

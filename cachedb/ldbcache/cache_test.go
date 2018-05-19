@@ -9,6 +9,7 @@ import (
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
+	"github.com/thee-engineer/cryptor/common/paths"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/encode/b16"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
@@ -264,5 +265,25 @@ func TestCDBErrors(t *testing.T) {
 	// Put value
 	if err := cdb.Put([]byte("world")); err == nil {
 		t.Error("ldb: wrote to closed database")
+	}
+}
+
+func TestCDBSize(t *testing.T) {
+	t.Parallel()
+
+	// Initiate db
+	path, _, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(path)
+
+	// Check size of empty ldb
+	size, err := paths.DirSize(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if size != 429 {
+		t.Errorf("expected size 429, got %d", size)
 	}
 }
