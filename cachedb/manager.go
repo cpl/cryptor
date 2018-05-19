@@ -62,7 +62,6 @@ func (m *manager) Count() uint {
 	iter := m.db.NewIterator()
 	for iter.Next() {
 		count++
-		log.Println(count)
 	}
 	iter.Release()
 	m.count = count
@@ -74,7 +73,7 @@ func (m *manager) Add(data []byte) error {
 	if err := m.db.Put(data); err != nil {
 		return err
 	}
-	go m.update()
+	// go m.update()
 	m.count++
 	return nil
 }
@@ -97,7 +96,7 @@ func (m *manager) Del(key []byte) error {
 	if err := m.db.Del(key); err != nil {
 		return err
 	}
-	go m.update()
+	// go m.update()
 	m.count--
 	return nil
 }

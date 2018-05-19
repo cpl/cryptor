@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
@@ -36,7 +35,6 @@ func TestManager(t *testing.T) {
 	manager.Add(crypt.RandomData(10 * con.MB))
 	manager.Add(crypt.RandomData(con.MB))
 	manager.Add(crypt.RandomData(2 * con.MB))
-	time.Sleep(time.Second)
 
 	data := crypt.RandomData(con.KB)
 	hash := hashing.Hash(data)
@@ -71,7 +69,6 @@ func TestManager(t *testing.T) {
 	defer reCache.Close()
 
 	newManager := cachedb.NewManager(tmpDir, reCache)
-	time.Sleep(time.Second)
 	count := newManager.Count()
 	size := newManager.Size()
 	if count != 3 {
