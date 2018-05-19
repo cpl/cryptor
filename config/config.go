@@ -5,8 +5,6 @@ import (
 	"log"
 	"syscall"
 
-	"github.com/thee-engineer/cryptor/cachedb"
-
 	"github.com/spf13/viper"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"golang.org/x/crypto/ssh/terminal"
@@ -57,7 +55,6 @@ func readConfig(name string) error {
 	viper.SetDefault("version", "0.1")
 	viper.SetDefault("node.address", "localhost")
 	viper.SetDefault("node.port", 2000)
-	viper.SetDefault("mcf", cachedb.DefaultManagerConfig)
 
 	return nil
 }
