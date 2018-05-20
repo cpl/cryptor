@@ -12,16 +12,15 @@ import (
 // NullByteArray is used for the last chunk header.Next
 var NullByteArray [32]byte
 
-// Chunk ...
-type Chunk struct {
+type chunk struct {
 	Head *header
 	Body []byte
 
 	size int
 }
 
-func newChunk(size uint) *Chunk {
-	return &Chunk{
+func newChunk(size uint) *chunk {
+	return &chunk{
 		Head: newHeader(),
 		Body: make([]byte, size),
 		size: 0,
@@ -30,12 +29,12 @@ func newChunk(size uint) *Chunk {
 
 // Unpack ...
 // TODO Finish for extraction/decryption/assembly
-func Unpack(key aes.Key, data []byte) *Chunk {
+func unpack(key aes.Key, data []byte) *chunk {
 	return nil
 }
 
 // Bytes ...
-func (c *Chunk) Bytes() []byte {
+func (c *chunk) Bytes() []byte {
 	data := make([]byte, HeaderSize+cap(c.Body))
 	copy(data[0:HeaderSize], c.Head.Bytes())
 	copy(data[HeaderSize:], c.Body)
@@ -43,31 +42,26 @@ func (c *Chunk) Bytes() []byte {
 }
 
 // Zero ...
-func (c *Chunk) Zero() {
+func (c *chunk) Zero() {
 	crypt.ZeroBytes(c.Body)
 	c.Head.Zero()
 }
 
 // Read ...
-// TODO Finish for extraction/decryption/assembly
-func (c *Chunk) Read(p []byte) (n int, err error) {
+func (c *chunk) Read(p []byte) (n int, err error) {
 	return 0, nil
 }
 
-// IsValid ...
-// TODO Finish for extraction/decryption/assembly
-func (c *Chunk) IsValid() bool {
+func (c *chunk) isValid() bool {
 	return bytes.Equal(c.Head.Hash, hashing.Hash(c.Body[:c.size]))
 }
 
-// IsLast ...
-// TODO Finish for extraction/decryption/assembly
-func (c *Chunk) IsLast() bool {
+func (c *chunk) isLast() bool {
 	return bytes.Equal(c.Head.NextHash, NullByteArray[:])
 }
 
 // Write ...
-func (c *Chunk) Write(p []byte) (n int, err error) {
+func (c *chunk) Write(p []byte) (n int, err error) {
 	// Check if write exceeded chunk body size
 	if c.size+len(p) > cap(c.Body) {
 		return 0, errors.New("data does not fit inside chunk")
@@ -89,7 +83,7 @@ func (c *Chunk) Write(p []byte) (n int, err error) {
 }
 
 // Padd ...
-func (c *Chunk) padd() {
+func (c *chunk) padd() {
 	// Check if chunk is full
 	if c.size == cap(c.Body) {
 		c.Head.Padding = 0
@@ -103,8 +97,7 @@ func (c *Chunk) padd() {
 	copy(c.Body[c.size:], crypt.RandomData(uint(c.Head.Padding)))
 }
 
-// Pack ...
-func (c *Chunk) Pack(key, nkey aes.Key, next []byte) ([]byte, error) {
+func (c *chunk) pack(key, nkey aes.Key, next []byte) ([]byte, error) {
 	// Remove chunk after packing
 	defer c.Zero()
 	defer crypt.ZeroBytes(key[:], nkey[:], next)
@@ -125,7 +118,6 @@ func (c *Chunk) Pack(key, nkey aes.Key, next []byte) ([]byte, error) {
 	return e, nil
 }
 
-// Decrypt ...
-func Decrypt(key aes.Key, data []byte) (*Chunk, error) {
+func decrypt(key aes.Key, data []byte) (*chunk, error) {
 	return nil, nil
 }

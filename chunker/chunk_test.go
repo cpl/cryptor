@@ -43,7 +43,7 @@ func TestChunk(t *testing.T) {
 	// }
 	key := aes.NewKey()
 	nkey := aes.NewKey()
-	_, err = c.Pack(key, nkey, crypt.RandomData(32))
+	_, err = c.pack(key, nkey, crypt.RandomData(32))
 	if err != nil {
 		t.Error(err)
 	}
@@ -58,7 +58,7 @@ func TestChunkEdge(t *testing.T) {
 		t.Errorf("failed to write to chunk")
 	}
 
-	_, err = c.Pack(aes.NewKey(), aes.NewKey(), crypt.RandomData(32))
+	_, err = c.pack(aes.NewKey(), aes.NewKey(), crypt.RandomData(32))
 	if err != nil {
 		t.Error(err)
 	}
