@@ -1,4 +1,4 @@
-package chunk
+package chunker
 
 import (
 	"bytes"
@@ -20,8 +20,7 @@ type Chunk struct {
 	size int
 }
 
-// New ...
-func New(size uint) *Chunk {
+func newChunk(size uint) *Chunk {
 	return &Chunk{
 		Head: newHeader(),
 		Body: make([]byte, size),

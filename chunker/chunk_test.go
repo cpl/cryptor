@@ -1,10 +1,9 @@
-package chunk_test
+package chunker
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/thee-engineer/cryptor/chunk"
 	"github.com/thee-engineer/cryptor/common/con"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
@@ -13,7 +12,7 @@ import (
 func TestChunk(t *testing.T) {
 	t.Parallel()
 
-	c := chunk.New(con.KB)
+	c := newChunk(con.KB)
 	data := crypt.RandomData(500)
 	n, err := c.Write(data)
 	if err != nil {
@@ -53,7 +52,7 @@ func TestChunk(t *testing.T) {
 func TestChunkEdge(t *testing.T) {
 	t.Parallel()
 
-	c := chunk.New(con.KB)
+	c := newChunk(con.KB)
 	n, err := c.Write(crypt.RandomData(con.KB))
 	if n != con.KB || err != nil {
 		t.Errorf("failed to write to chunk")
