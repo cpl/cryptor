@@ -14,7 +14,7 @@ var NullByteArray [32]byte
 
 // Chunk ...
 type Chunk struct {
-	Head *Header
+	Head *header
 	Body []byte
 
 	size int
@@ -23,7 +23,7 @@ type Chunk struct {
 // New ...
 func New(size uint) *Chunk {
 	return &Chunk{
-		Head: NewHeader(),
+		Head: newHeader(),
 		Body: make([]byte, size),
 		size: 0,
 	}

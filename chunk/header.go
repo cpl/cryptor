@@ -13,17 +13,15 @@ import (
 // HeaderSize ...
 var HeaderSize = 4 + crypt.KeySize + hashing.HashFunction().Size()*2
 
-// Header ...
-type Header struct {
+type header struct {
 	Hash     []byte  // Hash of the chunk content
 	NextHash []byte  // Hash of the next chunk
 	NextKey  aes.Key // Key for the next chunk
 	Padding  uint32  // Byte size of the padding
 }
 
-// NewHeader ...
-func NewHeader() *Header {
-	return &Header{
+func newHeader() *header {
+	return &header{
 		NextKey:  aes.NullKey,
 		NextHash: make([]byte, hashing.HashFunction().Size()),
 		Hash:     make([]byte, hashing.HashFunction().Size()),
@@ -31,14 +29,13 @@ func NewHeader() *Header {
 	}
 }
 
-// ExtractHeader ...
-func ExtractHeader(data []byte) (*Header, error) {
+func extractHeader(data []byte) (*header, error) {
 	if len(data) < HeaderSize {
 		return nil, errors.New("invalid header size")
 	}
 
 	var count int
-	head := NewHeader()
+	head := newHeader()
 	copy(head.Hash, data[count:count+hashing.HashFunction().Size()])
 	count += hashing.HashFunction().Size()
 	copy(head.NextHash, data[count:count+hashing.HashFunction().Size()])
@@ -51,7 +48,7 @@ func ExtractHeader(data []byte) (*Header, error) {
 }
 
 // Bytes ...
-func (h *Header) Bytes() []byte {
+func (h *header) Bytes() []byte {
 	var count int
 	data := make([]byte, HeaderSize)
 
@@ -72,13 +69,13 @@ func (h *Header) Bytes() []byte {
 }
 
 // Zero clears the chunk header
-func (h *Header) Zero() {
+func (h *header) Zero() {
 	crypt.ZeroBytes(h.Hash[:], h.NextKey[:], h.NextHash[:])
 	h.Padding = 0
 }
 
 // Equal ...
-func (h *Header) Equal(other *Header) bool {
+func (h *header) Equal(other *header) bool {
 	if !bytes.Equal(h.Hash, other.Hash) {
 		return false
 	}

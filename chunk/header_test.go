@@ -1,16 +1,15 @@
-package chunk_test
+package chunk
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/thee-engineer/cryptor/chunk"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 )
 
-func fakeHeader() *chunk.Header {
-	return &chunk.Header{
+func fakeHeader() *header {
+	return &header{
 		Hash:     crypt.RandomData(32),
 		NextHash: crypt.RandomData(32),
 		NextKey:  aes.NewKey(),
@@ -23,7 +22,7 @@ func TestHeader(t *testing.T) {
 
 	head := fakeHeader()
 
-	extractedHead, err := chunk.ExtractHeader(head.Bytes())
+	extractedHead, err := extractHeader(head.Bytes())
 	if err != nil {
 		t.Error(err)
 	}
@@ -78,7 +77,7 @@ func TestHeaderEqual(t *testing.T) {
 
 func TestHeaderExtractErr(t *testing.T) {
 	t.Parallel()
-	if _, err := chunk.ExtractHeader(crypt.RandomData(99)); err == nil {
+	if _, err := extractHeader(crypt.RandomData(99)); err == nil {
 		t.Errorf("extracted invalid header")
 	}
 }
