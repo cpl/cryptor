@@ -16,23 +16,15 @@ type manager struct {
 // New ...
 func New(path string, db Database) Manager {
 	m := &manager{
-		db:    db,
-		size:  0,
-		count: 0,
-		path:  path,
+		db:   db,
+		size: 0,
+		path: path,
 	}
 
 	// Update size
 	if err := m.update(); err != nil {
 		log.Panic(err)
 	}
-
-	// Update count
-	iter := m.db.NewIterator()
-	for iter.Next() {
-		m.count++
-	}
-	iter.Release()
 
 	return m
 }
@@ -74,7 +66,6 @@ func (m *manager) Add(data []byte) error {
 		return err
 	}
 	// go m.update()
-	m.count++
 	return nil
 }
 
@@ -97,7 +88,6 @@ func (m *manager) Del(key []byte) error {
 		return err
 	}
 	// go m.update()
-	m.count--
 	return nil
 }
 

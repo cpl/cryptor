@@ -1,7 +1,6 @@
 package chunker
 
 import (
-	"bytes"
 	"errors"
 
 	"github.com/thee-engineer/cryptor/crypt"
@@ -42,17 +41,17 @@ func (c *chunk) Zero() {
 }
 
 // Read ...
-func (c *chunk) Read(p []byte) (n int, err error) {
-	return 0, nil
-}
+// func (c *chunk) Read(p []byte) (n int, err error) {
+// 	return 0, nil
+// }
 
-func (c *chunk) isValid() bool {
-	return bytes.Equal(c.Head.Hash, hashing.Hash(c.Body[:c.size]))
-}
+// func (c *chunk) isValid() bool {
+// 	return bytes.Equal(c.Head.Hash, hashing.Hash(c.Body[:c.size]))
+// }
 
-func (c *chunk) isLast() bool {
-	return bytes.Equal(c.Head.NextHash, NullByteArray[:])
-}
+// func (c *chunk) isLast() bool {
+// 	return bytes.Equal(c.Head.NextHash, NullByteArray[:])
+// }
 
 // Write ...
 func (c *chunk) Write(p []byte) (n int, err error) {

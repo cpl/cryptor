@@ -1,28 +1,30 @@
 package chunker_test
 
-// func TestChunker(t *testing.T) {
-// 	t.Parallel()
+import (
+	"os"
+	"testing"
 
-// 	db, err := ldbcache.New("/tmp/cryptordb", 0, 0)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer os.RemoveAll("/tmp/cryptordb")
-// 	manager := cachedb.New("/tmp/cryptordb", db)
+	"github.com/thee-engineer/cryptor/archive"
+	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
+	"github.com/thee-engineer/cryptor/chunker"
+)
 
-// 	c := chunker.New(con.MB, manager)
-// 	archive.TarGz("../", c)
+func TestChunker(t *testing.T) {
+	t.Parallel()
 
-// 	tail, err := c.Pack(aes.NewKey())
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
+	db, err := ldbcache.New("/tmp/cryptordb", 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll("/tmp/cryptordb")
+	manager := cachedb.New("/tmp/cryptordb", db)
 
-// 	log.Println(manager.Count(), manager.Size())
-// 	i := manager.Iterator()
-// 	for i.Next() {
-// 		log.Println(b16.EncodeString(i.Key()))
-// 	}
+	c := chunker.New(100, manager)
+	archive.TarGz("../test/data/", c)
 
-// 	log.Println(b16.EncodeString(tail))
-// }
+	_, err = c.Pack("testpassword")
+	if err != nil {
+		t.Error(err)
+	}
+}
