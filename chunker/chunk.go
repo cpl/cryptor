@@ -27,12 +27,6 @@ func newChunk(size uint) *chunk {
 	}
 }
 
-// Unpack ...
-// TODO Finish for extraction/decryption/assembly
-func unpack(key aes.Key, data []byte) *chunk {
-	return nil
-}
-
 // Bytes ...
 func (c *chunk) Bytes() []byte {
 	data := make([]byte, HeaderSize+cap(c.Body))
@@ -71,14 +65,6 @@ func (c *chunk) Write(p []byte) (n int, err error) {
 	copy(c.Body[c.size:c.size+len(p)], p)
 	c.size += len(p)
 
-	// Recompute hash of content
-	// c.Head.Hash = hashing.Hash(c.Body[:c.size])
-
-	// Update padding
-	// if c.Head.Padding > 0 {
-	// 	c.Head.Padding -= uint32(len(p))
-	// }
-
 	return len(p), nil
 }
 
@@ -97,17 +83,17 @@ func (c *chunk) padd() {
 	copy(c.Body[c.size:], crypt.RandomData(uint(c.Head.Padding)))
 }
 
-func (c *chunk) pack(key, nkey aes.Key, next []byte) ([]byte, error) {
+func (c *chunk) pack(key, nkey aes.Key, nhash []byte) ([]byte, error) {
 	// Remove chunk after packing
 	defer c.Zero()
-	defer crypt.ZeroBytes(key[:], nkey[:], next)
+	defer crypt.ZeroBytes(key[:], nkey[:], nhash)
 
 	// Compute content hash
 	c.Head.Hash = hashing.Hash(c.Body[:c.size])
 	// Add padding
 	c.padd()
 	// Add next chunk hash & key
-	c.Head.NextHash = next
+	c.Head.NextHash = nhash
 	c.Head.NextKey = nkey
 
 	// Encrypt chunk
@@ -116,8 +102,4 @@ func (c *chunk) pack(key, nkey aes.Key, next []byte) ([]byte, error) {
 		return nil, err
 	}
 	return e, nil
-}
-
-func decrypt(key aes.Key, data []byte) (*chunk, error) {
-	return nil, nil
 }
