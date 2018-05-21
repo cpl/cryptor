@@ -44,7 +44,6 @@ type Manager interface {
 	Del([]byte) error           // Remove a chunk
 
 	Iterator() Iterator // Returns a db iterator
-	Batch() Batch       // Returns a db batch
 
 	Close() error // Closes the underlaying cache
 }

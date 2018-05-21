@@ -23,7 +23,7 @@ func createTestEnv() (string, cachedb.Database, cachedb.Manager) {
 		log.Fatal(err)
 	}
 
-	manager := cachedb.NewManager(tmpDir, cache)
+	manager := cachedb.New(tmpDir, cache)
 	if manager.Count() != 0 {
 		log.Fatal("found too many chunks")
 	}

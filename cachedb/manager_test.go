@@ -27,7 +27,7 @@ func TestManager(t *testing.T) {
 	}
 	defer cache.Close()
 
-	manager := cachedb.NewManager(tmpDir, cache)
+	manager := cachedb.New(tmpDir, cache)
 	if manager.Count() != 0 {
 		t.Errorf("found too many chunks")
 	}
@@ -68,7 +68,7 @@ func TestManager(t *testing.T) {
 	}
 	defer reCache.Close()
 
-	newManager := cachedb.NewManager(tmpDir, reCache)
+	newManager := cachedb.New(tmpDir, reCache)
 	count := newManager.Count()
 	size := newManager.Size()
 	if count != 3 {

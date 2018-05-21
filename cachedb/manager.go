@@ -13,8 +13,8 @@ type manager struct {
 	count uint     // Number of chunks
 }
 
-// NewManager ...
-func NewManager(path string, db Database) Manager {
+// New ...
+func New(path string, db Database) Manager {
 	m := &manager{
 		db:    db,
 		size:  0,
@@ -99,11 +99,6 @@ func (m *manager) Del(key []byte) error {
 	// go m.update()
 	m.count--
 	return nil
-}
-
-// Batch ...
-func (m *manager) Batch() Batch {
-	return m.db.NewBatch()
 }
 
 // Iterator ...
