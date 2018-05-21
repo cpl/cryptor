@@ -101,6 +101,16 @@ func (m *manager) Del(key []byte) error {
 	return nil
 }
 
+// Batch ...
+func (m *manager) Batch() Batch {
+	return m.db.NewBatch()
+}
+
+// Iterator ...
+func (m *manager) Iterator() Iterator {
+	return m.db.NewIterator()
+}
+
 // Close ...
 func (m *manager) Close() error {
 	return m.db.Close()

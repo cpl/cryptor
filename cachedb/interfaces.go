@@ -43,5 +43,8 @@ type Manager interface {
 	Get([]byte) ([]byte, error) // Get a chunk from the cache
 	Del([]byte) error           // Remove a chunk
 
+	Iterator() Iterator // Returns a db iterator
+	Batch() Batch       // Returns a db batch
+
 	Close() error // Closes the underlaying cache
 }
