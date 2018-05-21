@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/thee-engineer/cryptor/crypt/hashing"
-
 	"github.com/thee-engineer/cryptor/common/con"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 func TestChunk(t *testing.T) {

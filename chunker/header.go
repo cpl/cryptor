@@ -42,7 +42,7 @@ func extractHeader(data []byte) (*header, error) {
 	count += hashing.HashSize
 	copy(head.NextKey[:], data[count:count+crypt.KeySize])
 	count += crypt.KeySize
-	head.Padding = binary.LittleEndian.Uint32(data[count:])
+	head.Padding = binary.LittleEndian.Uint32(data[count : count+4])
 
 	return head, nil
 }

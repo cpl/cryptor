@@ -44,6 +44,20 @@ func TestHeader(t *testing.T) {
 	}
 }
 
+func TestHeaderExtract(t *testing.T) {
+	t.Parallel()
+
+	head := fakeHeader()
+	headerBytes := head.Bytes()
+	extractedHeader, err := extractHeader(headerBytes)
+	if err != nil {
+		t.Error(err)
+	}
+	if !head.Equal(extractedHeader) {
+		t.Errorf("headers do not match")
+	}
+}
+
 func TestHeaderEqual(t *testing.T) {
 	t.Parallel()
 

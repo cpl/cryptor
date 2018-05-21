@@ -8,9 +8,6 @@ import (
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
-// NullByteArray is used for the last chunk header.Next
-var NullByteArray [hashing.HashSize]byte
-
 // Chunk ...
 type Chunk struct {
 	Head *header
@@ -19,18 +16,32 @@ type Chunk struct {
 	size int
 }
 
-func newChunk(size uint) *Chunk {
-	return &Chunk{
-		Head: newHeader(),
-		Body: make([]byte, size),
-		size: 0,
+// ExtractChunk ...
+func ExtractChunk(data []byte) (*Chunk, error) {
+	// Extract head from chunk data
+	header, err := extractHeader(data)
+	if err != nil {
+		return nil, err
 	}
+
+	// Create chunk (computing size of body)
+	c := &Chunk{
+		Head: header,
+		Body: make([]byte, uint(len(data))-uint(HeaderSize)-uint(header.Padding)),
+		size: len(data) - HeaderSize - int(header.Padding),
+	}
+	// Assign header
+	c.Head = header
+	// Move body data
+	copy(c.Body, data[HeaderSize:HeaderSize+c.size])
+
+	return c, nil
 }
 
 // Bytes ...
 func (c *Chunk) Bytes() []byte {
 	data := make([]byte, HeaderSize+cap(c.Body))
-	copy(data[0:HeaderSize], c.Head.Bytes())
+	copy(data[:HeaderSize], c.Head.Bytes())
 	copy(data[HeaderSize:], c.Body)
 	return data
 }
@@ -42,16 +53,24 @@ func (c *Chunk) Zero() {
 }
 
 // Read ...
-// func (c *chunk) Read(p []byte) (n int, err error) {
-// 	return 0, nil
-// }
+func (c *Chunk) Read(p []byte) (n int, err error) {
+	if capp := cap(p); capp >= c.size {
+		n = c.size
+	} else {
+		n = capp
+	}
 
-// func (c *chunk) isValid() bool {
+	copy(p, c.Body[:n])
+
+	return n, nil
+}
+
+// func (c *Chunk) isValid() bool {
 // 	return bytes.Equal(c.Head.Hash, hashing.Hash(c.Body[:c.size]))
 // }
 
-// func (c *chunk) isLast() bool {
-// 	return bytes.Equal(c.Head.NextHash, NullByteArray[:])
+// func (c *Chunk) isLast() bool {
+// 	return bytes.Equal(c.Head.NextHash, make([]byte, hashing.HashSize))
 // }
 
 // Write ...
@@ -66,6 +85,14 @@ func (c *Chunk) Write(p []byte) (n int, err error) {
 	c.size += len(p)
 
 	return len(p), nil
+}
+
+func newChunk(size uint) *Chunk {
+	return &Chunk{
+		Head: newHeader(),
+		Body: make([]byte, size),
+		size: 0,
+	}
 }
 
 // Padd ...
