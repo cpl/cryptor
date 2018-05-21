@@ -11,15 +11,16 @@ import (
 // NullByteArray is used for the last chunk header.Next
 var NullByteArray [32]byte
 
-type chunk struct {
+// Chunk ...
+type Chunk struct {
 	Head *header
 	Body []byte
 
 	size int
 }
 
-func newChunk(size uint) *chunk {
-	return &chunk{
+func newChunk(size uint) *Chunk {
+	return &Chunk{
 		Head: newHeader(),
 		Body: make([]byte, size),
 		size: 0,
@@ -27,7 +28,7 @@ func newChunk(size uint) *chunk {
 }
 
 // Bytes ...
-func (c *chunk) Bytes() []byte {
+func (c *Chunk) Bytes() []byte {
 	data := make([]byte, HeaderSize+cap(c.Body))
 	copy(data[0:HeaderSize], c.Head.Bytes())
 	copy(data[HeaderSize:], c.Body)
@@ -35,7 +36,7 @@ func (c *chunk) Bytes() []byte {
 }
 
 // Zero ...
-func (c *chunk) Zero() {
+func (c *Chunk) Zero() {
 	crypt.ZeroBytes(c.Body)
 	c.Head.Zero()
 }
@@ -54,7 +55,7 @@ func (c *chunk) Zero() {
 // }
 
 // Write ...
-func (c *chunk) Write(p []byte) (n int, err error) {
+func (c *Chunk) Write(p []byte) (n int, err error) {
 	// Check if write exceeded chunk body size
 	if c.size+len(p) > cap(c.Body) {
 		return 0, errors.New("data does not fit inside chunk")
@@ -68,7 +69,7 @@ func (c *chunk) Write(p []byte) (n int, err error) {
 }
 
 // Padd ...
-func (c *chunk) padd() {
+func (c *Chunk) padd() {
 	// Check if chunk is full
 	if c.size == cap(c.Body) {
 		c.Head.Padding = 0
@@ -82,7 +83,7 @@ func (c *chunk) padd() {
 	copy(c.Body[c.size:], crypt.RandomData(uint(c.Head.Padding)))
 }
 
-func (c *chunk) pack(key, nkey aes.Key, nhash []byte) ([]byte, error) {
+func (c *Chunk) pack(key, nkey aes.Key, nhash []byte) ([]byte, error) {
 	// Remove chunk after packing
 	defer c.Zero()
 	defer crypt.ZeroBytes(key[:], nkey[:], nhash)

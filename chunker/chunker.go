@@ -11,7 +11,7 @@ import (
 // Chunker ...
 type Chunker struct {
 	size    uint
-	chunks  []*chunk
+	chunks  []*Chunk
 	manager cachedb.Manager
 }
 
@@ -19,7 +19,7 @@ type Chunker struct {
 func New(chunkSize uint, manager cachedb.Manager) *Chunker {
 	return &Chunker{
 		size:    chunkSize,
-		chunks:  []*chunk{newChunk(chunkSize)},
+		chunks:  []*Chunk{newChunk(chunkSize)},
 		manager: manager,
 	}
 }
