@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/thee-engineer/cryptor/crypt/hashing"
+
 	"github.com/thee-engineer/cryptor/common/con"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
@@ -43,7 +45,7 @@ func TestChunk(t *testing.T) {
 	// }
 	key := aes.NewKey()
 	nkey := aes.NewKey()
-	_, err = c.pack(key, nkey, crypt.RandomData(32))
+	_, err = c.pack(key, nkey, crypt.RandomData(hashing.HashSize))
 	if err != nil {
 		t.Error(err)
 	}
@@ -58,7 +60,8 @@ func TestChunkEdge(t *testing.T) {
 		t.Errorf("failed to write to chunk")
 	}
 
-	_, err = c.pack(aes.NewKey(), aes.NewKey(), crypt.RandomData(32))
+	_, err = c.pack(aes.NewKey(), aes.NewKey(),
+		crypt.RandomData(hashing.HashSize))
 	if err != nil {
 		t.Error(err)
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 // NullByteArray is used for the last chunk header.Next
-var NullByteArray [32]byte
+var NullByteArray [hashing.HashSize]byte
 
 // Chunk ...
 type Chunk struct {

@@ -11,7 +11,7 @@ import (
 )
 
 // HeaderSize ...
-var HeaderSize = 4 + crypt.KeySize + hashing.HashFunction().Size()*2
+var HeaderSize = 4 + crypt.KeySize + hashing.HashSize*2
 
 type header struct {
 	Hash     []byte  // Hash of the chunk content
@@ -23,8 +23,8 @@ type header struct {
 func newHeader() *header {
 	return &header{
 		NextKey:  aes.NullKey,
-		NextHash: make([]byte, hashing.HashFunction().Size()),
-		Hash:     make([]byte, hashing.HashFunction().Size()),
+		NextHash: make([]byte, hashing.HashSize),
+		Hash:     make([]byte, hashing.HashSize),
 		Padding:  0,
 	}
 }
@@ -36,10 +36,10 @@ func extractHeader(data []byte) (*header, error) {
 
 	var count int
 	head := newHeader()
-	copy(head.Hash, data[count:count+hashing.HashFunction().Size()])
-	count += hashing.HashFunction().Size()
-	copy(head.NextHash, data[count:count+hashing.HashFunction().Size()])
-	count += hashing.HashFunction().Size()
+	copy(head.Hash, data[count:count+hashing.HashSize])
+	count += hashing.HashSize
+	copy(head.NextHash, data[count:count+hashing.HashSize])
+	count += hashing.HashSize
 	copy(head.NextKey[:], data[count:count+crypt.KeySize])
 	count += crypt.KeySize
 	head.Padding = binary.LittleEndian.Uint32(data[count:])
@@ -52,10 +52,10 @@ func (h *header) Bytes() []byte {
 	var count int
 	data := make([]byte, HeaderSize)
 
-	copy(data[count:count+hashing.HashFunction().Size()], h.Hash)
-	count += hashing.HashFunction().Size()
-	copy(data[count:count+hashing.HashFunction().Size()], h.NextHash)
-	count += hashing.HashFunction().Size()
+	copy(data[count:count+hashing.HashSize], h.Hash)
+	count += hashing.HashSize
+	copy(data[count:count+hashing.HashSize], h.NextHash)
+	count += hashing.HashSize
 	copy(data[count:count+crypt.KeySize], h.NextKey.Bytes())
 	count += crypt.KeySize
 

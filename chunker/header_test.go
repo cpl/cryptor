@@ -6,12 +6,13 @@ import (
 
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
 func fakeHeader() *header {
 	return &header{
-		Hash:     crypt.RandomData(32),
-		NextHash: crypt.RandomData(32),
+		Hash:     crypt.RandomData(hashing.HashSize),
+		NextHash: crypt.RandomData(hashing.HashSize),
 		NextKey:  aes.NewKey(),
 		Padding:  100,
 	}

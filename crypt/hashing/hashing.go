@@ -12,6 +12,9 @@ import (
 // CryptoHash ...
 const CryptoHash = crypto.BLAKE2b_256
 
+// HashSize ...
+const HashSize = blake2b.Size256
+
 // HashFunction ...
 func HashFunction() hash.Hash {
 	h, err := blake2b.New256(nil)

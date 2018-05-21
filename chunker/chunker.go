@@ -38,7 +38,7 @@ func (c *Chunker) Write(p []byte) (n int, err error) {
 // Pack ...
 func (c *Chunker) Pack(password string) (tail []byte, err error) {
 	var key, nkey aes.Key
-	nhash := make([]byte, 32)
+	nhash := make([]byte, hashing.HashSize)
 
 	// Erase keys
 	defer crypt.ZeroBytes(key[:], nkey[:])

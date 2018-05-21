@@ -6,6 +6,7 @@ import (
 
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/encode/b64"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 	"github.com/thee-engineer/cryptor/utils"
 )
 
@@ -13,7 +14,7 @@ func TestEncodeDecode(t *testing.T) {
 	t.Parallel()
 
 	// Generate random data
-	data := crypt.RandomData(32)
+	data := crypt.RandomData(hashing.HashSize)
 	// Encode then decode the data
 	dData, err := b64.Decode(b64.Encode(data))
 	utils.CheckErrTest(err, t)
@@ -28,7 +29,7 @@ func TestStringEncodeDecode(t *testing.T) {
 	t.Parallel()
 
 	// Generate random data
-	data := crypt.RandomData(32)
+	data := crypt.RandomData(hashing.HashSize)
 	// Encode data as string then decode the string as []byte
 	dData, err := b64.DecodeString(b64.EncodeString(data))
 	utils.CheckErrTest(err, t)
