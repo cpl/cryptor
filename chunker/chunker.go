@@ -5,7 +5,6 @@ import (
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
-	"github.com/thee-engineer/cryptor/crypt/scrypt"
 )
 
 // Chunker ...
@@ -38,7 +37,7 @@ func (c *Chunker) Write(p []byte) (n int, err error) {
 // Pack ...
 func (c *Chunker) Pack(password string) (tail []byte, err error) {
 	var key, nkey aes.Key
-	nhash := make([]byte, hashing.HashSize)
+	nhash := hashing.NullHash[:]
 
 	// Erase keys
 	defer crypt.ZeroBytes(key[:], nkey[:])
@@ -48,7 +47,7 @@ func (c *Chunker) Pack(password string) (tail []byte, err error) {
 
 		// If "tail" chunk, encrypt using password
 		if index == len(c.chunks)-1 {
-			key, err = aes.NewKeyFromBytes(scrypt.Scrypt(password, []byte{}))
+			key, err = aes.NewKeyFromPassword(password)
 			if err != nil {
 				return nil, nil
 			}
@@ -58,7 +57,7 @@ func (c *Chunker) Pack(password string) (tail []byte, err error) {
 		}
 
 		// Encrypt chunk with key and append previous chunk key and hash
-		data, err := chk.pack(key, nkey, nhash)
+		data, err := chk.pack(key, nkey, nhash[:])
 		if err != nil {
 			return nil, err
 		}
