@@ -1,19 +1,4 @@
 {
-  "caches": [
-    {
-      "c": 16,
-      "h": 16,
-      "path": "~/.cryptor"
-    }
-  ],
-  "mcf": {
-    "currentcachesize": 0,
-    "currentchunkcount": 0,
-    "maxcachesize": 1073742000,
-    "maxchunkcount": 1000,
-    "maxchunksize": 10485760,
-    "minchunksize": 0
-  },
   "node": {
     "address": "localhost",
     "port": 2000

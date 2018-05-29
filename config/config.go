@@ -27,8 +27,6 @@ func readConfig(name string) error {
 	viper.AddConfigPath("$GOPATH/src/github.com/thee-engineer/cryptor")
 
 	if err := viper.ReadInConfig(); err != nil {
-		// log.Println("failed reading", viper.ConfigFileUsed(), err)
-
 		// Read password for decryption
 		fmt.Print(">>> ")
 		password, err := terminal.ReadPassword(int(syscall.Stdin))
