@@ -1,4 +1,4 @@
-![CRYPTOR](https://imgur.com/9435lX0.jpg)
+![CRYPTOR](https://i.imgur.com/9t64mhU.jpg)
 
 [![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://godoc.org/github.com/thee-engineer/cryptor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thee-engineer/cryptor?style=flat-square)](https://goreportcard.com/report/github.com/thee-engineer/cryptor)
