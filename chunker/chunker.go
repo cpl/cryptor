@@ -1,104 +1,76 @@
-// Package chunker contains data structures and functions that
-// read, chunk and write from an io.Reader to a Database cache where
-// data is stored in chunks (the hash acts as key).
 package chunker
 
 import (
-	"io"
-
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
-// NewDefaultChunker ...
-// func NewDefaultChunker(Reader io.Reader, ChunkSize uint32, Cache cachedb.Database) Chunker {
-// 	return &DefaultChunker{ChunkSize: ChunkSize, Cache: Cache, Reader: Reader}
-// }
-
-// ChunkFrom starts chunking all data from the Reader into the Cache.
-// If a non-null AES Key is given, the the tail chunk will be encrypted
-// using this key, allowing the user more control. If a null key is given
-// then a random AES Key will be used.
-func ChunkFrom(reader io.Reader, size uint32, cache cachedb.Manager, tailKey aes.Key) (nextHash []byte, err error) {
-	// Make a chunk struct
-	chunk := NewChunk(size)
-
-	nextKey := aes.NullKey      // Next key is empty (first chunk)
-	nextHash = make([]byte, 32) // Next hash is empty (at the end, tail)
-
-	// Prepare a batch for the cache, all chunks will be written at once
-	// batch := cache.NewBatch()
-
-	// Zero memory of tail key, next key and tail hash after chunking
-	defer crypt.ZeroBytes(tailKey[:], nextKey[:], nextHash[:])
-	// Zero memory of the chunk struct
-	defer chunk.Zero()
-
-	for {
-		// Read archive content into chunks
-		read, err := reader.Read(chunk.Content)
-
-		// Check for EOF
-		if read == 0 || err == io.EOF {
-			break
-		}
-
-		// Check for errors
-		if err != nil {
-			return nil, err
-		}
-
-		// Set the header (key, hash, next)
-		chunk.setHeader(nextKey, nextHash, read)
-		// Setup padding of chunk and update header
-		chunk.padd(read)
-
-		// Generatea a new encryption key for each chunk
-		if read < int(size) {
-			// Use tail key for the last chunk
-			nextKey = tailKey
-		} else {
-			// Generate new random key
-			nextKey = aes.NewKey()
-		}
-
-		// Encrypt chunk data
-		encryptedData, err := aes.Encrypt(nextKey, chunk.Bytes())
-		if err != nil {
-			return nil, err
-		}
-
-		// Zero key from memory
-		crypt.ZeroBytes(chunk.Header.NKey[:])
-
-		// Hash encrypted content
-		eHash := hashing.SHA256Digest(encryptedData)
-
-		// Store chunk in cache batch
-		if err := cache.Add(encryptedData); err != nil {
-			return nil, err
-		}
-
-		// Update previous hash
-		nextHash = eHash
-	}
-
-	// Write batch to cache
-	// if err := batch.Write(); err != nil {
-	// 	return nil, err
-	// }
-
-	// Return the tail hash
-	return nextHash, nil
+// Chunker ...
+type Chunker struct {
+	size    uint
+	chunks  []*Chunk
+	manager cachedb.Manager
 }
 
-// func randomizePackageOrder(reader io.Reader) ([][]byte, error) {
-// 	// Read all the package data
-// 	packageContent, err := ioutil.ReadAll(reader)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return nil, nil
-// }
+// New ...
+func New(chunkSize uint, manager cachedb.Manager) *Chunker {
+	return &Chunker{
+		size:    chunkSize,
+		chunks:  []*Chunk{newChunk(chunkSize)},
+		manager: manager,
+	}
+}
+
+// Write ...
+func (c *Chunker) Write(p []byte) (n int, err error) {
+	// Write data to current chunk
+	n, nerr := c.chunks[len(c.chunks)-1].Write(p)
+	// Append more chunks if data does not fit
+	if nerr != nil && nerr.Error() == "data does not fit inside chunk" {
+		c.chunks = append(c.chunks, newChunk(c.size))
+	}
+	return n, nil
+}
+
+// Pack ...
+func (c *Chunker) Pack(password string) (tail []byte, err error) {
+	var key, nkey aes.Key
+	nhash := hashing.NullHash[:]
+
+	// Erase keys
+	defer crypt.ZeroBytes(key[:], nkey[:])
+
+	// Iterate chunks
+	for index, chk := range c.chunks {
+
+		// If "tail" chunk, encrypt using password
+		if index == len(c.chunks)-1 {
+			key, err = aes.NewKeyFromPassword(password)
+			if err != nil {
+				return nil, nil
+			}
+		} else {
+			// Use random key for any other chunk
+			key = aes.NewKey()
+		}
+
+		// Encrypt chunk with key and append previous chunk key and hash
+		data, err := chk.pack(key, nkey, nhash[:])
+		if err != nil {
+			return nil, err
+		}
+
+		// Add encrypted chunk to cache
+		if err := c.manager.Add(data); err != nil {
+			return nil, err
+		}
+
+		// Store previous chunk hash and key
+		nhash = hashing.Hash(data)
+		nkey = key
+	}
+
+	return nhash, nil
+}

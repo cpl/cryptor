@@ -1,87 +1,80 @@
 package cachedb_test
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
+	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
+	"github.com/thee-engineer/cryptor/common/con"
+	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
-func TestLDBManagerConfig(t *testing.T) {
+func TestManager(t *testing.T) {
 	t.Parallel()
 
-	validConf := cachedb.ManagerConfig{
-		MaxCacheSize:  1000000,
-		MaxChunkSize:  10000,
-		MinChunkSize:  0,
-		MaxChunkCount: 0,
+	tmpDir, err := ioutil.TempDir("/tmp", "cachedb_test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	cache, err := ldbcache.New(tmpDir, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cache.Close()
+
+	manager := cachedb.New(tmpDir, cache)
+	if manager.Count() != 0 {
+		t.Errorf("found too many chunks")
 	}
 
-	confs := []cachedb.ManagerConfig{
-		// MaxCacheSize < MaxChunkSize
-		cachedb.ManagerConfig{
-			MaxCacheSize:  100,
-			MaxChunkSize:  200,
-			MinChunkSize:  10,
-			MaxChunkCount: 10,
-		},
-		// MaxChunkSize < MinChunkSize
-		cachedb.ManagerConfig{
-			MaxCacheSize:  100,
-			MaxChunkSize:  40,
-			MinChunkSize:  1000,
-			MaxChunkCount: 10,
-		},
-		// MaxCacheSize < 0
-		cachedb.ManagerConfig{
-			MaxCacheSize:  -10,
-			MaxChunkSize:  40,
-			MinChunkSize:  30,
-			MaxChunkCount: 10,
-		},
-		// MaxChunkCount < 0
-		cachedb.ManagerConfig{
-			MaxCacheSize:  100,
-			MaxChunkSize:  40,
-			MinChunkSize:  30,
-			MaxChunkCount: -10,
-		},
-		// MaxChunkSize < 0
-		cachedb.ManagerConfig{
-			MaxCacheSize:  100,
-			MaxChunkSize:  -10,
-			MinChunkSize:  50,
-			MaxChunkCount: 10,
-		},
-		// MinChunkSize < 0
-		cachedb.ManagerConfig{
-			MaxCacheSize:  100,
-			MaxChunkSize:  40,
-			MinChunkSize:  -10,
-			MaxChunkCount: 10,
-		},
-		// MinChunkSize < MaxCacheSize
-		cachedb.ManagerConfig{
-			MaxCacheSize:  100,
-			MaxChunkSize:  40,
-			MinChunkSize:  10,
-			MaxChunkCount: 100,
-		},
-		// MaxChunkSize < MinChunkSize
-		cachedb.ManagerConfig{
-			MaxCacheSize:  1000,
-			MaxChunkSize:  10,
-			MinChunkSize:  20,
-			MaxChunkCount: 10,
-		},
+	manager.Add(crypt.RandomData(10 * con.MB))
+	manager.Add(crypt.RandomData(con.MB))
+	manager.Add(crypt.RandomData(2 * con.MB))
+
+	data := crypt.RandomData(con.KB)
+	hash := hashing.Hash(data)
+	if manager.Has(hash) {
+		t.Errorf("found invalid key, Has()")
+	}
+	if _, err := manager.Get(hash); err == nil {
+		t.Errorf("found invalid key, Get()")
+	}
+	if err := manager.Del(hash); err != nil {
+		t.Errorf("found invalid key, Del()")
+	}
+	manager.Add(data)
+	if !manager.Has(hash) {
+		t.Errorf("could not find valid key, Has()")
+	}
+	if _, err := manager.Get(hash); err != nil {
+		t.Errorf("could not find valid key, Get()")
+		t.Error(err)
+	}
+	if err := manager.Del(hash); err != nil {
+		t.Error(err)
+	}
+	if err := manager.Close(); err != nil {
+		t.Error(err)
 	}
 
-	for index, conf := range confs {
-		if cachedb.ValidateConfig(conf) {
-			t.Errorf("man config: parsed invalid config %d", index)
-		}
+	reCache, err := ldbcache.New(tmpDir, 0, 0)
+	if err != nil {
+		t.Error(err)
 	}
+	defer reCache.Close()
 
-	if !cachedb.ValidateConfig(validConf) {
-		t.Error("man config: ignored valid config")
+	newManager := cachedb.New(tmpDir, reCache)
+	count := newManager.Count()
+	size := newManager.Size()
+	if count != 3 {
+		t.Errorf("found %d chunks, expected %d", count, 3)
+	}
+	if size < 13661000 {
+		t.Errorf("size is %d, expected more than %d", size, 13661000)
 	}
 }

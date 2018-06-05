@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 )
 
 const (
@@ -26,4 +27,16 @@ func GetUserHomePath() string {
 		return usr.HomeDir
 	}
 	return ""
+}
+
+// DirSize ...
+func DirSize(path string) (uint, error) {
+	var size uint
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			size += uint(info.Size())
+		}
+		return err
+	})
+	return size, err
 }

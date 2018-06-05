@@ -29,3 +29,23 @@ func TestPaths(t *testing.T) {
 		t.Error("path error: cryptor paths mismatch")
 	}
 }
+
+func TestDirSize(t *testing.T) {
+	t.Parallel()
+
+	size, err := paths.DirSize("../../test/emptydir")
+	if err != nil {
+		t.Error(err)
+	}
+	if size != 0 {
+		t.Errorf("expected size of dir 0, got %d", size)
+	}
+
+	size, err = paths.DirSize("../../test/dirsize")
+	if err != nil {
+		t.Error(err)
+	}
+	if size != 195 {
+		t.Errorf("expected size of dir 195, got %d", size)
+	}
+}

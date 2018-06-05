@@ -3,54 +3,90 @@ package chunker
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 
 	"github.com/thee-engineer/cryptor/crypt"
-
 	"github.com/thee-engineer/cryptor/crypt/aes"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
-// HeaderSize defines the expected size of the header
-const HeaderSize = 100
+// HeaderSize ...
+var HeaderSize = 4 + crypt.KeySize + hashing.HashSize*2
 
-// ChunkHeader ...
-type ChunkHeader struct {
-	NKey aes.Key // Key for the next chunk
-	Next []byte  // Hash of the next chunk
-	Hash []byte  // Hash of the chunk content
-	Padd uint32  // Byte size of the padding
+type header struct {
+	Hash     []byte  // Hash of the chunk content
+	NextHash []byte  // Hash of the next chunk
+	NextKey  aes.Key // Key for the next chunk
+	Padding  uint32  // Byte size of the padding
 }
 
-// NewChunkHeader returns a new chunk header
-func NewChunkHeader() *ChunkHeader {
-	return &ChunkHeader{
-		NKey: aes.NullKey,
-		Next: nil,
-		Hash: nil,
-		Padd: 0,
+func newHeader() *header {
+	return &header{
+		NextKey:  aes.NullKey,
+		NextHash: make([]byte, hashing.HashSize),
+		Hash:     make([]byte, hashing.HashSize),
+		Padding:  0,
 	}
 }
 
-// Bytes returns the chunk header as a byte array. Data is distributed as
-// follows:
-//
-// | NKEY 32B | NEXT 32B | HASH 32B | PADD 4B |
-func (header ChunkHeader) Bytes() []byte {
-	buffer := new(bytes.Buffer)
+func extractHeader(data []byte) (*header, error) {
+	if len(data) < HeaderSize {
+		return nil, errors.New("invalid header size")
+	}
 
-	buffer.Write(header.NKey.Bytes()) // 32
-	buffer.Write(header.Next)         // 32
-	buffer.Write(header.Hash)         // 32
+	var count int
+	head := newHeader()
+	copy(head.Hash, data[count:count+hashing.HashSize])
+	count += hashing.HashSize
+	copy(head.NextHash, data[count:count+hashing.HashSize])
+	count += hashing.HashSize
+	copy(head.NextKey[:], data[count:count+crypt.KeySize])
+	count += crypt.KeySize
+	head.Padding = binary.LittleEndian.Uint32(data[count : count+4])
+
+	return head, nil
+}
+
+// Bytes ...
+func (h *header) Bytes() []byte {
+	var count int
+	data := make([]byte, HeaderSize)
+
+	copy(data[count:count+hashing.HashSize], h.Hash)
+	count += hashing.HashSize
+	copy(data[count:count+hashing.HashSize], h.NextHash)
+	count += hashing.HashSize
+	copy(data[count:count+crypt.KeySize], h.NextKey.Bytes())
+	count += crypt.KeySize
 
 	// Convert uint32 to byte array
 	uintConv := make([]byte, 4)
-	binary.LittleEndian.PutUint32(uintConv, header.Padd)
-	buffer.Write(uintConv) // 4
+	binary.LittleEndian.PutUint32(uintConv, h.Padding)
 
-	return buffer.Bytes()
+	copy(data[count:], uintConv)
+
+	return data
 }
 
-// Zero writes all header data with 0
-func (header ChunkHeader) Zero() {
-	crypt.ZeroBytes(header.Hash[:], header.Next[:], header.NKey[:])
-	header.Padd = 0
+// Zero clears the chunk header
+func (h *header) Zero() {
+	crypt.ZeroBytes(h.Hash[:], h.NextKey[:], h.NextHash[:])
+	h.Padding = 0
+}
+
+// Equal ...
+func (h *header) Equal(other *header) bool {
+	if !bytes.Equal(h.Hash, other.Hash) {
+		return false
+	}
+	if !bytes.Equal(h.NextHash, other.NextHash) {
+		return false
+	}
+	if !bytes.Equal(h.NextKey.Bytes(), other.NextKey.Bytes()) {
+		return false
+	}
+	if h.Padding != other.Padding {
+		return false
+	}
+	return true
 }

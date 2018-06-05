@@ -2,78 +2,134 @@ package chunker
 
 import (
 	"bytes"
+	"errors"
 
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
 )
 
-// NullByteArray is used for the last chunk header.Next
-var NullByteArray [32]byte
-
-// Chunk combines the chunk content which is a []byte of header.Size and the
-// chunk header which contains information about the this chunk and next chunk.
+// Chunk ...
 type Chunk struct {
-	Header  *ChunkHeader
-	Content []byte
+	Head *header
+	Body []byte
+
+	size int
 }
 
-// NewChunk creates a new chunk with given size content
-func NewChunk(size uint32) *Chunk {
-	return &Chunk{
-		Header:  NewChunkHeader(),
-		Content: make([]byte, size),
+// ExtractChunk ...
+func ExtractChunk(data []byte) (*Chunk, error) {
+	// Extract head from chunk data
+	header, err := extractHeader(data)
+	if err != nil {
+		return nil, err
 	}
+
+	// Create chunk (computing size of body)
+	c := &Chunk{
+		Head: header,
+		Body: make([]byte, uint(len(data))-uint(HeaderSize)-uint(header.Padding)),
+		size: len(data) - HeaderSize - int(header.Padding),
+	}
+	// Assign header
+	c.Head = header
+	// Move body data
+	copy(c.Body, data[HeaderSize:HeaderSize+c.size])
+
+	return c, nil
 }
 
-// Bytes returns the chunk header and content as []byte
-func (c Chunk) Bytes() []byte {
-	var buffer bytes.Buffer
-
-	buffer.Write(c.Header.Bytes()) // Write header bytes
-	buffer.Write(c.Content)        // Write chunk content
-
-	return buffer.Bytes()
+// Bytes ...
+func (c *Chunk) Bytes() []byte {
+	data := make([]byte, HeaderSize+cap(c.Body))
+	copy(data[:HeaderSize], c.Head.Bytes())
+	copy(data[HeaderSize:], c.Body)
+	return data
 }
 
-// IsValid compares the header hash with the content hash
-func (c Chunk) IsValid() bool {
-	return bytes.Equal(c.Header.Hash, hashing.SHA256Digest(c.Content))
+// Zero ...
+func (c *Chunk) Zero() {
+	crypt.ZeroBytes(c.Body)
+	c.Head.Zero()
 }
 
-// IsLast checks if the next chunk hash is the NullByteArray
-func (c Chunk) IsLast() bool {
-	return bytes.Equal(c.Header.Next, NullByteArray[:])
-}
-
-// Zero writes all the chunk content with 0 and the chunk header data
-func (c Chunk) Zero() {
-	crypt.ZeroBytes(c.Content)
-	c.Header.Zero()
-}
-
-func (c *Chunk) setHeader(nextKey aes.Key, nextHash []byte, read int) {
-	// Compute content hash for validity check
-	c.Header.Hash = hashing.SHA256Digest(c.Content[:read])
-
-	// Store previous encryption key inside this chunk's header
-	c.Header.NKey = nextKey
-
-	// Store previous encrypted chunk hash inside this chunk's header
-	c.Header.Next = nextHash
-}
-
-func (c *Chunk) padd(realSize int) {
-	expectedSize := cap(c.Content)
-
-	// Add random padding if needed
-	if realSize < expectedSize {
-		c.Content = append(
-			c.Content[:realSize],
-			crypt.RandomData(uint(expectedSize)-uint(realSize))...)
-		c.Header.Padd = uint32(expectedSize) - uint32(realSize)
+// Read ...
+func (c *Chunk) Read(p []byte) (n int, err error) {
+	if capp := cap(p); capp >= c.size {
+		n = c.size
 	} else {
-		// No padding needed
-		c.Header.Padd = 0
+		n = capp
 	}
+
+	copy(p, c.Body[:n])
+
+	return n, nil
+}
+
+// IsValid ...
+func (c *Chunk) IsValid() bool {
+	return bytes.Equal(c.Head.Hash, hashing.Hash(c.Body[:c.size]))
+}
+
+// IsLast ...
+func (c *Chunk) IsLast() bool {
+	return bytes.Equal(c.Head.NextHash, hashing.NullHash[:])
+}
+
+// Write ...
+func (c *Chunk) Write(p []byte) (n int, err error) {
+	// Check if write exceeded chunk body size
+	if c.size+len(p) > cap(c.Body) {
+		return 0, errors.New("data does not fit inside chunk")
+	}
+
+	// Copy data inside chunk
+	copy(c.Body[c.size:c.size+len(p)], p)
+	c.size += len(p)
+
+	return len(p), nil
+}
+
+func newChunk(size uint) *Chunk {
+	return &Chunk{
+		Head: newHeader(),
+		Body: make([]byte, size),
+		size: 0,
+	}
+}
+
+// Padd ...
+func (c *Chunk) padd() {
+	// Check if chunk is full
+	if c.size == cap(c.Body) {
+		c.Head.Padding = 0
+		return
+	}
+
+	// Calculate required padding
+	c.Head.Padding = uint32(cap(c.Body)) - uint32(c.size)
+
+	// Add random padding to chunk
+	copy(c.Body[c.size:], crypt.RandomData(uint(c.Head.Padding)))
+}
+
+func (c *Chunk) pack(key, nkey aes.Key, nhash []byte) ([]byte, error) {
+	// Remove chunk after packing
+	defer c.Zero()
+	defer crypt.ZeroBytes(key[:], nkey[:], nhash)
+
+	// Compute content hash
+	c.Head.Hash = hashing.Hash(c.Body[:c.size])
+	// Add padding
+	c.padd()
+	// Add next chunk hash & key
+	c.Head.NextHash = nhash
+	c.Head.NextKey = nkey
+
+	// Encrypt chunk
+	e, err := aes.Encrypt(key, c.Bytes())
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
 }
