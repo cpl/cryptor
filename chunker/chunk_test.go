@@ -1,9 +1,10 @@
-package chunker_test
+package chunker
 
 import (
+	"bytes"
 	"testing"
 
-	"github.com/thee-engineer/cryptor/chunker"
+	"github.com/thee-engineer/cryptor/common/con"
 	"github.com/thee-engineer/cryptor/crypt"
 	"github.com/thee-engineer/cryptor/crypt/aes"
 	"github.com/thee-engineer/cryptor/crypt/hashing"
@@ -12,26 +13,55 @@ import (
 func TestChunk(t *testing.T) {
 	t.Parallel()
 
-	// Create a chunk of 1024 bytes
-	chunk := chunker.NewChunk(1024)
-	// Fill the chunk with random data
-	chunk.Content = crypt.RandomData(1024)
+	c := newChunk(con.KB)
+	data := crypt.RandomData(500)
+	n, err := c.Write(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n != 500 {
+		t.Errorf("did not write 500 bytes")
+	}
+	if !bytes.Equal(data, c.Body[0:500]) {
+		t.Errorf("data does not match chunk body")
+	}
+	// if !bytes.Equal(c.Head.Hash, hashing.Hash(data)) {
+	// 	t.Errorf("hashes do not match")
+	// }
+	n, err = c.Write(crypt.RandomData(1000))
+	if err == nil || n != 0 {
+		t.Errorf("wrote too much data")
+	}
+	// if !c.IsValid() {
+	// 	t.Errorf("is valid returned false")
+	// }
+	n, err = c.Write(crypt.RandomData(500))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// if c.Head.Padding != 0 {
+	// 	t.Errorf("padding is not 0")
+	// }
+	key := aes.NewKey()
+	nkey := aes.NewKey()
+	_, err = c.pack(key, nkey, crypt.RandomData(hashing.HashSize))
+	if err != nil {
+		t.Error(err)
+	}
+}
 
-	// Create the chunk header
-	chunkHeader := chunker.NewChunkHeader()
-	chunkHeader.Hash = hashing.SHA256Digest(chunk.Content) // Content hash
-	chunkHeader.Next = chunker.NullByteArray[:]            // Tail hash
-	chunkHeader.NKey = aes.NullKey                         // Tail key
+func TestChunkEdge(t *testing.T) {
+	t.Parallel()
 
-	chunk.Header = chunkHeader
-
-	if !chunk.IsValid() {
-		t.Error("chunk error: invalid chunk")
+	c := newChunk(con.KB)
+	n, err := c.Write(crypt.RandomData(con.KB))
+	if n != con.KB || err != nil {
+		t.Errorf("failed to write to chunk")
 	}
 
-	if !chunk.IsLast() {
-		t.Error("chunk error: expected last")
+	_, err = c.pack(aes.NewKey(), aes.NewKey(),
+		crypt.RandomData(hashing.HashSize))
+	if err != nil {
+		t.Error(err)
 	}
-
-	chunk.Bytes()
 }

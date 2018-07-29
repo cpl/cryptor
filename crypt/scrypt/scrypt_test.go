@@ -2,6 +2,7 @@ package scrypt_test
 
 import (
 	"bytes"
+	"log"
 	"testing"
 
 	"github.com/thee-engineer/cryptor/crypt/scrypt"
@@ -16,6 +17,8 @@ func TestScrypt(t *testing.T) {
 	if !bytes.Equal(key0, key1) {
 		t.Error("scrypt: derived keys don't match")
 	}
+
+	log.Println(key0, len(key0))
 }
 
 func TestScryptRandomSalt(t *testing.T) {
@@ -38,9 +41,4 @@ func TestScryptAllRandom(t *testing.T) {
 	if !bytes.Equal(key0, key1) {
 		t.Error("scrypt: derived keys don't match")
 	}
-}
-
-func TestScryptErrors(t *testing.T) {
-	t.Parallel()
-
 }

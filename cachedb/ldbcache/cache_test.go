@@ -3,12 +3,17 @@ package ldbcache_test
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
 	"github.com/thee-engineer/cryptor/cachedb"
 	"github.com/thee-engineer/cryptor/cachedb/ldbcache"
+	"github.com/thee-engineer/cryptor/common/paths"
 	"github.com/thee-engineer/cryptor/crypt"
+	"github.com/thee-engineer/cryptor/crypt/encode/b16"
+	"github.com/thee-engineer/cryptor/crypt/hashing"
+	"github.com/thee-engineer/cryptor/utils"
 )
 
 // Test data for all key/value pair tests
@@ -37,9 +42,8 @@ func TestCDBBasic(t *testing.T) {
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	defer os.RemoveAll(dbPath)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer cdb.Close()
 
 	// Check db path
@@ -48,24 +52,23 @@ func TestCDBBasic(t *testing.T) {
 	}
 
 	// Test Put
-	if err := cdb.Put([]byte("item0"), []byte("hello")); err != nil {
+	tdata := []byte("hello")
+	if err := cdb.Put(tdata); err != nil {
 		t.Error(err)
 	}
 
 	// Test Has (true)
-	status, err := cdb.Has([]byte("item0"))
-	if err != nil {
-		t.Error(err)
-	}
+	status, err := cdb.Has(hashing.Hash(tdata))
+	utils.CheckErrTest(err, t)
+
 	if !status {
 		t.Error("key error: expected key not found")
 	}
 
 	// Test Has (false)
 	status, err = cdb.Has([]byte("item1"))
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	if status {
 		t.Error("key error: found unexpected key")
 	}
@@ -77,9 +80,8 @@ func TestCDBBasic(t *testing.T) {
 
 	// Check if deleted key exists
 	status, err = cdb.Has([]byte("item0"))
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	if status {
 		t.Error("key error: found deleted key")
 	}
@@ -91,15 +93,14 @@ func TestCDBSameKeyPut(t *testing.T) {
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	defer os.RemoveAll(dbPath)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer cdb.Close()
 
 	// Put count entries with the same keys and random data
 	for count := 0; count < 5; count++ {
-		data := crypt.Encode(crypt.RandomData(10))
-		cdb.Put([]byte("key"), data)
+		data := b16.Encode(crypt.RandomData(10))
+		cdb.Put(data)
 	}
 
 	// TODO: Add iterator to check keys
@@ -111,55 +112,47 @@ func TestCDBAdvanced(t *testing.T) {
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	defer os.RemoveAll(dbPath)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer cdb.Close()
 
 	// Put
 	for _, data := range testData {
-		err := cdb.Put([]byte(data), []byte(data))
-		if err != nil {
-			t.Error(err)
-		}
+		err := cdb.Put([]byte(data))
+		utils.CheckErrTest(err, t)
 	}
 
 	// Get
 	for _, data := range testData {
-		value, err := cdb.Get([]byte(data))
-		if err != nil {
-			t.Error(err)
-		}
+		value, err := cdb.Get(hashing.Hash([]byte(data)))
+		utils.CheckErrTest(err, t)
+
 		if !bytes.Equal(value, []byte(data)) {
 			t.Error("value error: got unexpected value")
 		}
 	}
 
 	// Put overwrite
-	for _, data := range testData {
-		err := cdb.Put([]byte(data), []byte("OVERWRITE"))
-		if err != nil {
-			t.Error(err)
-		}
-	}
+	// for _, data := range testData {
+	// 	err := cdb.Put([]byte(data), []byte("OVERWRITE"))
+	// 	utils.CheckErrTest(err, t)
+	// }
 
 	// Get overwrite
-	for _, data := range testData {
-		value, err := cdb.Get([]byte(data))
-		if err != nil {
-			t.Error(err)
-		}
-		if !bytes.Equal(value, []byte("OVERWRITE")) {
-			t.Error("value error: got unexpected value")
-		}
-	}
+	// for _, data := range testData {
+	// 	value, err := cdb.Get(hashing.Hash([]byte(data)))
+	// 	utils.CheckErrTest(err, t)
+
+	// 	if !bytes.Equal(value, []byte("OVERWRITE")) {
+	// 		t.Error("value error: got unexpected value")
+	// 	}
+	// }
 
 	// Del
 	for _, data := range testData {
 		err := cdb.Del([]byte(data))
-		if err != nil {
-			t.Error(err)
-		}
+		utils.CheckErrTest(err, t)
+
 	}
 
 	// Get del
@@ -177,17 +170,15 @@ func TestCDBIterator(t *testing.T) {
 	// Create test env
 	dbPath, cdb, err := createTestEnv()
 	defer os.RemoveAll(dbPath)
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	defer cdb.Close()
 
 	// Put test data in cache
 	for _, data := range testData {
-		err := cdb.Put([]byte(data), []byte(data))
-		if err != nil {
-			t.Error(err)
-		}
+		err := cdb.Put([]byte(data))
+		utils.CheckErrTest(err, t)
+
 	}
 
 	// Open iterator over cache
@@ -229,9 +220,6 @@ func TestCDBErrors(t *testing.T) {
 
 	// Has (non existing)
 	status, err := cdb.Has([]byte("hello"))
-	if err != nil {
-		t.Error(err)
-	}
 	if status {
 		t.Error("ldb: found invalid key/value")
 	}
@@ -242,20 +230,22 @@ func TestCDBErrors(t *testing.T) {
 	}
 
 	// Put value
-	if err := cdb.Put([]byte("hello"), []byte("world")); err != nil {
+	tdata := []byte("world")
+	if err := cdb.Put(tdata); err != nil {
 		t.Error(err)
 	}
 
 	// Del (existing)
-	if err := cdb.Del([]byte("hello")); err != nil {
+	if err := cdb.Del(hashing.Hash(tdata)); err != nil {
 		t.Error(err)
 	}
 
 	// Get (non existing after delete)
 	data, err = cdb.Get([]byte("hello"))
-	if err == nil {
-		t.Error(err)
+	if err != nil {
+		log.Println("err")
 	}
+
 	if data != nil {
 		if len(data) != 0 {
 			t.Error("ldb: got invalid data")
@@ -264,9 +254,8 @@ func TestCDBErrors(t *testing.T) {
 
 	// Has (non existing after delete)
 	status, err = cdb.Has([]byte("hello"))
-	if err != nil {
-		t.Error(err)
-	}
+	utils.CheckErrTest(err, t)
+
 	if status {
 		t.Error("ldb: found invalid key/value")
 	}
@@ -274,7 +263,27 @@ func TestCDBErrors(t *testing.T) {
 	cdb.Close()
 
 	// Put value
-	if err := cdb.Put([]byte("hello"), []byte("world")); err == nil {
+	if err := cdb.Put([]byte("world")); err == nil {
 		t.Error("ldb: wrote to closed database")
+	}
+}
+
+func TestCDBSize(t *testing.T) {
+	t.Parallel()
+
+	// Initiate db
+	path, _, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(path)
+
+	// Check size of empty ldb
+	size, err := paths.DirSize(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if size == 0 {
+		t.Errorf("size is 0")
 	}
 }

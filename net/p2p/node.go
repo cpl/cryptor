@@ -1,4 +1,3 @@
-// Package p2p ...
 package p2p
 
 import (
@@ -8,205 +7,162 @@ import (
 	"sync"
 )
 
-// Node is a representation of the machine on the Cryptor network. A node
-// listens both UDP (Peer discovery and requests) and TCP (Chunk sharing and
-// handshakes).
+// NodeConfig is a static structure used for creating node configuration
+// presets used before node startup.
+type NodeConfig struct {
+	trustedPeers []*Peer
+}
+
+// Node can run in offline or online mode. In offline mode only local settings
+// can be changed and peers managed. Once online the node will become a peer
+// in the cryptor network. The node will send and receive requests. Peers
+// will be discovered after connecting to the network unless running in trust
+// mode where only trusted peers can connect. The local node will act as both
+// a reciver and sender.
 type Node struct {
-	config *NodeConfig // Static configuration generated at node creation
+	config NodeConfig // Configuration
 
-	lock      sync.Mutex // Protects the running state
-	running   bool       // Node state
-	listening bool       // Node state
+	address string // Host address (IPv4/IPv6/hostname)
+	port    string // Port for listening
 
-	udpAddr *net.UDPAddr // Node UDP address
-	tcpAddr *net.TCPAddr // Node TCP address
+	udpConn net.PacketConn // UDP Listener
 
-	udpConn *net.UDPConn // Node UDP connection
-	tcpConn *net.TCPConn // Node TCP connection
+	lock sync.Mutex // Mutex lock for critical code section
 
-	quit chan struct{} // Stops node from running when it receives
-	disc chan struct{} // Disconnects node from network
-	errc chan error    // Channel for transmiting errors
+	isRunning   bool
+	isConnected bool
 
-	addp chan *Peer    // Add peer request channel
-	remp chan *Peer    // Rem peer request channel
-	pops chan peerFunc // Peer count and peer list operations
-	popd chan struct{} // Peer operation done
+	peers peerMap // List of known peers
 
-	peers map[string]*Peer  // Memory map with key/value peer pairs
-	token map[string][]byte // List of tokens used in requests
+	incoming chan []byte // Incoming packets buffer
+	outgoing chan []byte // Outgoing packets buffer
 
-	udpIncoming chan UDPPacket // Incoming UDP channel
-	udpOutgoing chan UDPPacket // Outgoing UDP channel
+	errChan chan error       // Channel for logging error
+	logChan chan interface{} // Channel for loggin messages
+
+	// Run functions on peers using peerOp chan
+	peerOp     chan peerFunc
+	peerOpDone chan interface{}
+
+	quit       chan interface{} // Stops the node from running
+	disconnect chan interface{} // Disconnects the node from the network
 }
 
-// NewNode returns a Node attached to the given IP:PORT pair, and controlled
-// using the given quit channel. This is more for testing and debugging than
-// actual production.
-func NewNode(ip string, tcp, udp int, quit chan struct{}, config *NodeConfig) *Node {
-	// Create node configuration
-	if config == nil {
-		log.Println("warn: node config is nil, not recommended")
-		config = &NodeConfig{
-			IP:           net.ParseIP(ip),
-			TCP:          tcp,
-			UDP:          udp,
-			TrustedPeers: make([]*Peer, 0),
-		}
-	}
-
+// NewNode constructs a node with default configurations
+func NewNode(addr, port string, config *NodeConfig) *Node {
 	return &Node{
-		config:      config,
-		udpAddr:     &net.UDPAddr{Port: config.UDP},
-		tcpAddr:     &net.TCPAddr{IP: config.IP, Port: config.TCP},
-		quit:        quit,
-		disc:        make(chan struct{}),
-		addp:        make(chan *Peer),
-		remp:        make(chan *Peer),
-		errc:        make(chan error),
-		pops:        make(chan peerFunc),
-		popd:        make(chan struct{}),
-		peers:       make(map[string]*Peer),
-		udpIncoming: make(chan UDPPacket, UDPPacketSize),
-		udpOutgoing: make(chan UDPPacket, UDPPacketSize),
+		address: addr,
+		port:    port,
+
+		peers: make(peerMap),
+
+		logChan: make(chan interface{}),
+		errChan: make(chan error),
+
+		incoming: make(chan []byte, 10),
+		outgoing: make(chan []byte, 10),
+
+		peerOp:     make(chan peerFunc),
+		peerOpDone: make(chan interface{}),
+
+		quit:       make(chan interface{}),
+		disconnect: make(chan interface{}),
 	}
 }
 
-func (n *Node) passTrustedPeers() {
-	for _, peer := range n.config.TrustedPeers {
-		n.AddPeer(peer)
-	}
-}
-
-// Start begins the listening process for the Node on the network and all
-// operations/requests handling.
+// Start allows the node to recive commands from a control interface.
 func (n *Node) Start() {
-	// Check for already running
+	// Check if the node is already running
 	n.lock.Lock()
-	if n.running {
-		n.errc <- errors.New("node: already running")
+	if n.isRunning {
+		n.errChan <- errors.New("already started")
+		n.lock.Unlock()
 		return
 	}
-	n.running = true
+	n.isRunning = true
 	n.lock.Unlock()
 
-	// Node initialization
-	go n.passTrustedPeers()
-
-	for {
-		select {
-		case err := <-n.errc:
-			log.Println("err:", n.tcpAddr.String(), "|", err) // DEBUG
-		case <-n.quit:
-			n.running = false
-			return
-		case peer := <-n.addp:
-			n.peers[peer.tcpAddr.String()] = peer
-		case peer := <-n.remp:
-			delete(n.peers, peer.tcpAddr.String())
-		case operation := <-n.pops:
-			operation(n.peers)
-			n.popd <- struct{}{}
-		}
-	}
+	// Start goroutine
+	go n.run()
+	n.logChan <- "started"
 }
 
-// Listen currently in a drafting stage.
-func (n *Node) Listen() {
-	// Check for already listening
-	n.lock.Lock()
-	if n.listening {
-		n.errc <- errors.New("node: already listening")
-		return
-	}
-	n.listening = true
-	n.lock.Unlock()
-
-	// Listen for UDP on the given node address port
-	conn, err := net.ListenUDP("udp4", n.udpAddr)
-	if err != nil {
-		n.errc <- err
-		return
-	}
-	n.udpConn = conn
-
-	go n.receive() // Pass incoming packets to incoming channel
-	go n.send()    // Pass outgoing packets to outgoing channel
-
-	for {
-		select {
-		case <-n.disc:
-			n.listening = false
-			return
-		case packet := <-n.udpIncoming:
-			go parsePacket(&packet)
-			// DEBUG
-			log.Println(
-				"| packet from |", packet.addr.String(),
-				"| containing  |", string(packet.data))
-		}
-	}
-}
-
-// Disconnect stops the node from listening.
-func (n *Node) Disconnect() {
-	n.lock.Lock()
-	defer n.lock.Unlock()
-
-	if !n.listening {
-		return
-	}
-	n.listening = false
-
-	close(n.disc)
-
-	return
-}
-
-func (n *Node) receive() {
-	buffer := make([]byte, UDPPacketSize)
-	for {
-		r, addr, err := n.udpConn.ReadFromUDP(buffer)
-		if err != nil {
-			n.errc <- err
-			continue
-		}
-		n.udpIncoming <- UDPPacket{buffer[:r], addr}
-	}
-}
-
-func (n *Node) send() {
-	for packet := range n.udpOutgoing {
-		_, err := n.udpConn.WriteToUDP(packet.data, packet.addr)
-		if err != nil {
-			n.errc <- err
-			continue
-		}
-		log.Println(
-			"| sending |", string(packet.data),
-			"| to |", packet.addr.String())
-	}
-}
-
-// Send is currently a test method that sends one packet.
-func (n *Node) Send(packet UDPPacket) {
-	n.udpOutgoing <- packet
-}
-
-// UDPAddr is just for testing for now.
-func (n *Node) UDPAddr() *net.UDPAddr {
-	return n.udpAddr
-}
-
-// Stop closes the quit channel of the Node.
+// Stop the node from running (also closes any active connections).
 func (n *Node) Stop() {
-	n.lock.Lock()
-	defer n.lock.Unlock()
-
-	if !n.running {
+	// Check if the node is not running
+	if !checkRunning(n) {
 		return
 	}
-	n.running = false
 
-	close(n.quit)
+	// Disconnect if connected
+	if n.isConnected {
+		n.Disconnect()
+	}
+
+	n.quit <- nil
+	n.isRunning = false
+
+	log.Println("node log: stopped")
+}
+
+// Connect joins the cryptor network and begins communication with its peers
+func (n *Node) Connect() {
+	if !checkRunning(n) {
+		return
+	}
+
+	// Check if the node is already connected
+	n.lock.Lock()
+	if n.isConnected {
+		n.errChan <- errors.New("already connected")
+		n.lock.Unlock()
+		return
+	}
+
+	// Bind to given address and port
+	var err error
+	n.udpConn, err = net.ListenPacket("udp", n.address+":"+n.port)
+	if err != nil {
+		n.errChan <- err
+		n.lock.Unlock()
+		return
+	}
+
+	// Connection is done
+	n.isConnected = true
+	n.lock.Unlock()
+
+	// Read incoming
+	go n.listen()
+
+	// Confirm connection
+	n.logChan <- "listening on " + n.udpConn.LocalAddr().String()
+}
+
+// Disconnect stops the node from sending or receiving on the network. Keeps
+// the node running for control operations.
+func (n *Node) Disconnect() {
+	if !checkRunning(n) {
+		return
+	}
+
+	// Check if the node is not connected
+	n.lock.Lock()
+	defer n.lock.Unlock()
+	if !n.isConnected {
+		n.errChan <- errors.New("not connected")
+		return
+	}
+
+	// Stop connection
+	err := n.udpConn.Close()
+	if err != nil {
+		n.errChan <- err
+	}
+
+	// Send disconnect signal
+	n.disconnect <- nil
+	n.isConnected = false
+
+	n.logChan <- "disconnected"
 }

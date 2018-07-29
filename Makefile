@@ -1,4 +1,4 @@
-.PHONY: cover view push update build test testf clean
+.PHONY: cover push update build test testf clean tool
 
 profile-cpu:
 	@cd $(PKG); \
@@ -10,11 +10,17 @@ profile-mem:
 	go test -race -parallel 4 -memprofile prof.mem; \
 	go tool pprof $(PKG).test ./prof.mem; \
 
-cover:
-	gocovmerge $(shell find . -name coverage.out -type f) > build/report.out
+tool:
+	@go build -o build/$(TARGET) tools/$(TARGET)/$(TARGET).go;
+	@chmod a+x build/$(TARGET);
+	@echo "DONE $(TARGET)";
 
-view:
+cover:
 	@go tool cover -html=build/report.out
+
+update:
+	git fetch --all
+	git pull
 
 push:
 	@if [ -n "$$(git status --porcelain)" ]; then \
@@ -23,37 +29,23 @@ push:
 		git push; \
 	fi \
 
-update:
-	git pull
-
-test:
+test: clean
 	@mkdir -p build
 	@CRYPTORROOT=`pwd`;
-	@for pkg in `go list ./...`; do \
-		cd $$GOPATH/src;\
-		cd $$pkg; \
-		go test -coverprofile=coverage.out -v -race -parallel 8; \
-	done; \
-	cd $$CRYPTORROOT;
+	@cd $$CRYPTORROOT;
+	@go test -coverprofile=build/report.out -v -count=1 -race -parallel 8 ./...; \
 
-testf:
-	@mkdir -p build
+testf: clean
+	@mkdir -p build;
 	@CRYPTORROOT=`pwd`;
-	@for pkg in `go list ./...`; do \
-		cd $$GOPATH/src;\
-		cd $$pkg; \
-		go test -coverprofile=coverage.out -v -race -parallel 8 | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
-	done; \
-	cd $$CRYPTORROOT;
+	@cd $$CRYPTORROOT;
+	@go test -coverprofile=build/report.out -v -count=1 -race -parallel 8 ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/''; \
 
-docker:
-	@docker build . -t cryptor
-
-container:
-	@docker run -p $(PORT):2000/udp -td cryptor; \
+testall: update clean testf bench
 
 bench:
-	@go test -bench=. ./...
+	@go test -bench=. ./...;
+	cd $$CRYPTORROOT;
 
 clean:
 	@rm -f $(shell find . -name coverage.out -type f);

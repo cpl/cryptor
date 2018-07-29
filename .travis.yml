@@ -7,27 +7,21 @@ os:
 matrix:
   allow_failures:
     - os: osx
-    - go: 1.10beta1
-    - go: tip
+
 
 go:
-  - 1.5
-  - 1.6
-  - 1.7
-  - 1.8
-  - 1.9
   - tip
-  - 1.10beta1
 
 before_install:
+  - go get github.com/mattn/goveralls
   - go get github.com/wadey/gocovmerge
   - go get -v ./...
 
 script:
-  - make test
-  - make cover
+  - make testall
   - cp build/report.out coverage.txt
-  - make clean
 
 after_success:
+  - $GOPATH/bin/goveralls -coverprofile=build/report.out -service=travis-ci
   - bash <(curl -s https://codecov.io/bash)
+  - make clean
