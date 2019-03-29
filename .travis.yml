@@ -4,10 +4,4 @@ os:
   - linux
 
 go:
-  - 1.10
-  - 1.11
-  - 1.12
-  - tip
-
-script:
-  - go test -v ./...
+  - 1.12.x
