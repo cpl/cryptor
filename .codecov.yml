@@ -1,9 +1,0 @@
-codecov:
-  branch: master
-  notify:
-    require_ci_to_pass: yes
-
-coverage:
-  range: 50..100
-  round: nearest
-  precision: 2
