@@ -17,7 +17,8 @@ func ZeroBytes(data ...[]byte) {
 }
 
 // RandomBytes generates a byte array of given size, containing random byte
-// values extracted from "crypto/rand".
+// values extracted from "crypto/rand". If you wish to fill an array with random
+// data, simply call `rand.Read(arr[:])`.
 func RandomBytes(size uint) []byte {
 	// allocate byte array
 	data := make([]byte, size)

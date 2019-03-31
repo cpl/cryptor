@@ -26,15 +26,24 @@ func HashFunction() hash.Hash {
 // Hash can take multiple byte arrays as input and compute their sum using
 // BLAKE2s 256 hashing. The checksum is returned in the first argument as
 // it must be a pointer to a byte array.
-func Hash(sum *Blake2sHash, data ...[]byte) {
+func Hash(sum *Blake2sHash, data ...[]byte) *Blake2sHash {
 	// create hash
-	hash := HashFunction()
-	defer hash.Reset()
+	h := HashFunction()
+	defer h.Reset()
 
 	// iterate byte arrays
 	for _, set := range data {
-		hash.Write(set)
+		h.Write(set)
 	}
 
-	hash.Sum(sum[:0])
+	// if sum is nil, return a new byte array
+	if sum == nil {
+		ret := new(Blake2sHash)
+		h.Sum(ret[:0])
+		return ret
+	}
+
+	// use the given sum pointer to store hash checksum
+	h.Sum(sum[:0])
+	return nil
 }

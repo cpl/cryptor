@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"cpl.li/go/cryptor/crypt"
+
+	chacha "golang.org/x/crypto/chacha20poly1305"
 )
 
 func TestRandomBytes(t *testing.T) {
@@ -56,4 +58,62 @@ func TestHash(t *testing.T) {
 		"69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9")
 	assertHash(t, "Hello, World!",
 		"ec9db904d636ef61f1421b2ba47112a4fa6b8964fd4a0a514834455c21df7812")
+}
+
+func TestHashNil(t *testing.T) {
+	data := []byte("Hello, World!")
+
+	// request hash to be returned not passed in first argument
+	hash0 := crypt.Hash(nil, data)
+	if hash0.ToHex() !=
+		"ec9db904d636ef61f1421b2ba47112a4fa6b8964fd4a0a514834455c21df7812" {
+		t.Fatalf("failed to match hash from nil request\n")
+	}
+
+	// request hash to be passed in as argument
+	var sum crypt.Blake2sHash
+	hash1 := crypt.Hash(&sum, data)
+	if hash1 != nil {
+		t.Fatalf("hash function returned non-nil byte array %v\n", hash1[:])
+	}
+
+	if sum != *hash0 {
+		t.Fatalf("failed to match hashes\n")
+	}
+}
+
+func TestAEADEncryption(t *testing.T) {
+	msg := []byte("We attack at dawn")
+	key := crypt.RandomBytes(chacha.KeySize)
+
+	// create cypher with random key
+	cipher, err := chacha.New(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// generate nonce and hash
+	nonce := crypt.RandomBytes(chacha.NonceSize)
+	hash := crypt.Hash(nil, msg)[:]
+
+	// encrypt message with nonce and hash for message auth
+	ciphertext := cipher.Seal(nil, nonce, msg, hash)
+
+	// generate new cipher with the same key
+	newCipher, err := chacha.New(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// decrypt message
+	decrypted, err := newCipher.Open(nil, nonce, ciphertext, hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// compare messages
+	if !bytes.Equal(decrypted, msg) {
+		t.Fatalf("message does not match decrypted message: %s : %s\n",
+			string(decrypted), string(msg))
+	}
 }
