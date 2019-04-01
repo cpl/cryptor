@@ -10,6 +10,14 @@ import (
 // network. Other nodes are represented as peers.
 type Node struct {
 
+	// state of the node RUNNING/STOPPED and OFFLINE/ONLINE
+	state struct {
+		sync.RWMutex
+
+		isRunning bool
+		isOnline  bool
+	}
+
 	// static identity of a node
 	static struct {
 		sync.RWMutex
@@ -17,6 +25,11 @@ type Node struct {
 		privateKey ppk.PrivateKey
 		publicKey  ppk.PublicKey
 	}
+
+	// TODO
+	// - channels for packets
+	// - channels for errors and logging
+	// - connection, listening and receiving
 }
 
 // NewNode creates a node running on the local machine. The default starting
