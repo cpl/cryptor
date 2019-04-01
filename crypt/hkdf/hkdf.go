@@ -37,27 +37,22 @@ func HMAC(sum *[blake2s.Size]byte, key []byte, data ...[]byte) {
 
 // HKDF applies the HMAC algorithm with blake2s hashing and generates `count`
 // number of keys returned as a list of byte arrays.
-func HKDF(key, data []byte, count int) [][blake2s.Size]byte {
+func HKDF(key, data []byte, outkeys ...*[blake2s.Size]byte) {
 	// generate key used in all future HMAC instances
 	var localKey [blake2s.Size]byte
 	HMAC(&localKey, key, data)
 	defer crypt.ZeroBytes(localKey[:])
 
-	// generate output keys
-	ret := make([][blake2s.Size]byte, count)
-
 	// iterate and generate new keys
-	for index := 0; index < count; index++ {
+	for index, outkey := range outkeys {
 		// iter will be a byte in the range [0x1, 0x2, 0x3 ... 0xCOUNT]
 		iter := []byte{byte(index + 1)}
 
 		// if the first generated key, there is no prev to use
 		if index <= 0 {
-			HMAC(&(ret[index]), localKey[:], iter)
+			HMAC(outkey, localKey[:], iter)
 		} else {
-			HMAC(&(ret[index]), localKey[:], ret[index-1][:], iter)
+			HMAC(outkey, localKey[:], outkeys[index-1][:], iter)
 		}
 	}
-
-	return ret
 }

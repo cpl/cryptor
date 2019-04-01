@@ -113,20 +113,27 @@ var testData = []kdfTest{
 
 func runKDFTest(t *testing.T, count int) {
 	for _, test := range testData {
+		// decode test data
 		key, _ := hex.DecodeString(test.key)
 		data, _ := hex.DecodeString(test.data)
-		out := hkdf.HKDF(key, data, count)
 
+		// define output keys
+		var key0, key1, key2 [blake2s.Size]byte
+
+		// apply HKDF and output to key0, key1, key2
+		hkdf.HKDF(key, data, &key0, &key1, &key2)
+
+		// test HKDF with 1, 2, 3 keys generated
 		switch count {
 		case 3:
-			tests.AssertEqual(t, test.t2, hex.EncodeToString(out[2][:]))
-			tests.AssertEqual(t, test.t1, hex.EncodeToString(out[1][:]))
-			tests.AssertEqual(t, test.t0, hex.EncodeToString(out[0][:]))
+			tests.AssertEqual(t, test.t2, hex.EncodeToString(key2[:]))
+			tests.AssertEqual(t, test.t1, hex.EncodeToString(key1[:]))
+			tests.AssertEqual(t, test.t0, hex.EncodeToString(key0[:]))
 		case 2:
-			tests.AssertEqual(t, test.t1, hex.EncodeToString(out[1][:]))
-			tests.AssertEqual(t, test.t0, hex.EncodeToString(out[0][:]))
+			tests.AssertEqual(t, test.t1, hex.EncodeToString(key1[:]))
+			tests.AssertEqual(t, test.t0, hex.EncodeToString(key0[:]))
 		case 1:
-			tests.AssertEqual(t, test.t0, hex.EncodeToString(out[0][:]))
+			tests.AssertEqual(t, test.t0, hex.EncodeToString(key0[:]))
 		}
 	}
 }
