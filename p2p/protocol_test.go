@@ -1,4 +1,4 @@
-package net_test
+package p2p_test
 
 import (
 	"bytes"
