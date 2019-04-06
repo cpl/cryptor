@@ -1,7 +1,7 @@
 # CRYPTOR
 
 [![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://godoc.org/cpl.li/go/cryptor)
-[![Travis Build](https://img.shields.io/travis/cpl/cryptor/master.svg?style=flat-square)](https://cpl.li/go/cryptor)
+[![Travis Build](https://img.shields.io/travis/cpl/cryptor/master.svg?style=flat-square)](https://travis-ci.org/cpl/cryptor)
 [![Go Report Card](https://goreportcard.com/badge/cpl.li/go/cryptor?style=flat-square)](https://goreportcard.com/report/cpl.li/go/cryptor)
 
 
