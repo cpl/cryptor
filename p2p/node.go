@@ -1,9 +1,4 @@
-/*
-Package node defines the structure of a node (UDP listener and receiver). A
-node is capable of running in offline mode where it may take commands and
-configurations.
-*/
-package node // import "cpl.li/go/cryptor/p2p/node"
+package p2p
 
 import (
 	"errors"
@@ -13,8 +8,6 @@ import (
 	"sync"
 
 	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p"
-	"cpl.li/go/cryptor/p2p/proto"
 )
 
 // Node represents the local machine running and/or connected to the Cryptor
@@ -31,8 +24,8 @@ type Node struct {
 		addr *net.UDPAddr // address for listening and receiving
 		conn *net.UDPConn // bind/connection for listening and receiving
 
-		recv chan *proto.Packet // receive network traffic
-		send chan *proto.Packet // send network responses
+		recv chan *Packet // receive network traffic
+		send chan *Packet // send network responses
 	}
 
 	// state of the node
@@ -86,6 +79,7 @@ func NewNode(name string) *Node {
 	n := new(Node)
 
 	// initialize logger
+	// TODO Add logger configuration
 	n.logger = log.New(os.Stdout, name+": ", log.Ldate|log.Ltime)
 
 	// initialize communication channels
@@ -94,8 +88,8 @@ func NewNode(name string) *Node {
 	n.comm.dis = make(chan interface{})
 
 	// initialize network forwarding channels
-	n.net.recv = make(chan *proto.Packet)
-	n.net.send = make(chan *proto.Packet)
+	n.net.recv = make(chan *Packet)
+	n.net.send = make(chan *Packet)
 
 	// default state
 	n.state.isRunning = false
@@ -134,7 +128,8 @@ func (n *Node) Start() {
 	go n.run()
 }
 
-// Stop attempts to safely shutdown the Cryptor Node and any active tasks.
+// Stop attempts to safely shutdown the Cryptor Node and any active tasks. If
+// the Node is connected to the network, a Disconnect will run before stopping.
 func (n *Node) Stop() {
 	// lock state
 	n.state.Lock()
@@ -246,7 +241,7 @@ func (n *Node) SetAddr(addr string) (err error) {
 	}
 
 	// set address
-	n.net.addr, err = net.ResolveUDPAddr(p2p.Network, addr)
+	n.net.addr, err = net.ResolveUDPAddr(Network, addr)
 
 	return err
 }

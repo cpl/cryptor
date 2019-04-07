@@ -1,11 +1,10 @@
-package node
+package p2p
 
 import (
 	"errors"
 	"net"
 
 	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p"
 )
 
 // PeerAdd takes the public key of a peer and creates a new entry in the node
@@ -95,7 +94,7 @@ func (n *Node) PeerSetAddr(pk ppk.PublicKey, addr string) (err error) {
 	}
 
 	// only set addr if no errors
-	newaddr, err := net.ResolveUDPAddr(p2p.Network, addr)
+	newaddr, err := net.ResolveUDPAddr(Network, addr)
 	if err != nil {
 		return err
 	}

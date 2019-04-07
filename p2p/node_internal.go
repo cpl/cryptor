@@ -1,13 +1,9 @@
-package node
+package p2p
 
 import (
-	"bytes"
-	"encoding/gob"
 	"net"
 
 	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/p2p"
-	"cpl.li/go/cryptor/p2p/proto"
 )
 
 func (n *Node) run() {
@@ -31,7 +27,7 @@ func (n *Node) connect() (err error) {
 	defer n.net.Unlock()
 
 	// network bind on entire local address space, using random port
-	n.net.conn, err = net.ListenUDP(p2p.Network, n.net.addr)
+	n.net.conn, err = net.ListenUDP(Network, n.net.addr)
 
 	return err
 }
@@ -66,7 +62,7 @@ func (n *Node) disconnect() error {
 	return nil
 }
 
-// forward handles receiving and sending data to the network
+// forward handles sending and receiving data to and from the network
 func (n *Node) forward() {
 	for {
 		select {
@@ -75,14 +71,10 @@ func (n *Node) forward() {
 			return
 		// receive
 		case pack := <-n.net.recv:
-			go n.handlePacket(pack)
+			go n.recv(pack)
 		// send
-		// TODO Finish sending data
 		case pack := <-n.net.send:
-			_, err := n.net.conn.WriteToUDP(pack.MsgData[:], &net.UDPAddr{})
-			if err != nil {
-				n.comm.err <- err
-			}
+			go n.send(pack)
 		}
 	}
 }
@@ -91,8 +83,7 @@ func (n *Node) forward() {
 // and passes on valid packets only
 func (n *Node) listen() {
 	// incoming data buffer
-	buffer := make([]byte, p2p.MaxUDPSize)
-	reader := bytes.NewReader(buffer)
+	buffer := make([]byte, MaxUDPSize)
 
 	// zero buffer on disconnect
 	defer crypt.ZeroBytes(buffer)
@@ -116,29 +107,41 @@ func (n *Node) listen() {
 			continue
 		}
 
+		// check min size, drop packets if too small
+		if r < MsgMinSize {
+			continue
+		}
+
+		var pack *Packet
+
 		// check connection type
 		if p, ok := n.lookup.address[addr.String()]; ok {
 			// known peer
-			n.logger.Println("peer connection from", p.staticPublicKey.ToHex())
+
+			// TODO Write checks for handshake state and handle package as such
+
+			// ! DEBUG
+			if p.handshake.status == 0 {
+
+			}
+
 		} else {
 			// unknown
-			n.logger.Println("unknown connection from", addr.String())
-		}
 
-		// check for handshake messages
-		switch r {
-		case proto.MsgSizeHandshakeI:
-			var msg proto.MsgHandshakeI
-			dec := gob.NewDecoder(reader)
-			n.comm.err <- dec.Decode(&msg)
-		case proto.MsgSizeHandshakeR:
+			// packet must be handshake initialization otherwise drop it
+			if r != MsgSizeHandshakeI {
+				continue
+			}
+
+			// ! DEBUG
+			// convert received data to pack
+			pack = new(Packet)
+			pack.Address = addr
+			pack.Payload = buffer[:r]
+			pack.Type = packetTypeHandshakeI
 		}
 
 		// send parsed packet
-		n.net.recv <- nil
+		n.net.recv <- pack
 	}
-}
-
-func (n *Node) handlePacket(pack *proto.Packet) {
-	n.logger.Println("debug pack:", pack)
 }

@@ -1,22 +1,22 @@
-package proto_test
+package p2p_test
 
 import (
 	"bytes"
 	"testing"
 
 	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p/proto"
+	"cpl.li/go/cryptor/p2p"
 )
 
 func TestHandshake(t *testing.T) {
 	// initializer
 	isk, _ := ppk.NewPrivateKey()
-	ihs := new(proto.Handshake)
+	ihs := new(p2p.Handshake)
 
 	// receiver
 	rsk, _ := ppk.NewPrivateKey()
 	rpk := rsk.PublicKey()
-	rhs := new(proto.Handshake)
+	rhs := new(p2p.Handshake)
 
 	// protocol
 
@@ -57,4 +57,12 @@ func TestHandshake(t *testing.T) {
 	if !bytes.Equal(rsend[:], irecv[:]) || !bytes.Equal(isend[:], rrecv[:]) {
 		t.Fatal("failed to match transport keys")
 	}
+}
+
+func TestHandshakeInvalid(t *testing.T) {
+	// TODO Write test cases for invalid states
+}
+
+func TestHandshakeAttacks(t *testing.T) {
+	// TODO Write test cases for MITM and other attacks
 }

@@ -1,4 +1,4 @@
-package proto
+package p2p
 
 import (
 	"sync"
