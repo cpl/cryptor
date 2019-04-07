@@ -2,6 +2,7 @@ package crypt_test
 
 import (
 	"bytes"
+	"crypto/rand"
 	"math"
 	"testing"
 
@@ -33,15 +34,28 @@ func TestZero(t *testing.T) {
 	data2 := crypt.RandomBytes(1024)
 	data3 := crypt.RandomBytes(4096)
 
+	var data4 [40]byte
+	rand.Read(data4[:])
+
+	var data5 []byte
+	data5 = make([]byte, 50)
+	rand.Read(data5)
+
 	// zero data
 	crypt.ZeroBytes(data0, data1, data2)
 	crypt.ZeroBytes(data3)
+	crypt.ZeroBytes(data4[:])
+
+	crypt.ZeroBytes(data5[:20])
+	crypt.ZeroBytes(data5[20:])
 
 	// check all are zero
 	assertZero(t, data0)
 	assertZero(t, data1)
 	assertZero(t, data2)
 	assertZero(t, data3)
+	assertZero(t, data4[:])
+	assertZero(t, data5)
 }
 
 func assertHash(t *testing.T, data, expected string) {
