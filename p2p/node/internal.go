@@ -3,7 +3,6 @@ package node
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"net"
 
 	"cpl.li/go/cryptor/crypt"
@@ -13,7 +12,6 @@ import (
 
 func (n *Node) run() {
 	for {
-		// TODO Expand select case to cover operations
 		select {
 		// pick up and display errors
 		case err := <-n.comm.err:
@@ -33,23 +31,20 @@ func (n *Node) connect() (err error) {
 	defer n.net.Unlock()
 
 	// network bind on entire local address space, using random port
-	// TODO Add Node configuration for static port and address
-	// TODO Look into NAT punchtrough
 	n.net.conn, err = net.ListenUDP(p2p.Network, n.net.addr)
-	n.comm.err <- err
 
 	return err
 }
 
-func (n *Node) disconnect() {
+func (n *Node) disconnect() error {
 	// ignore if node is not running
 	if !n.state.isRunning {
-		return
+		return nil
 	}
 
 	// ignore if node is not connected
 	if !n.state.isConnected {
-		return
+		return nil
 	}
 
 	// set node as disconnected
@@ -57,16 +52,18 @@ func (n *Node) disconnect() {
 
 	// disconnect network bind
 	if err := n.net.conn.Close(); err != nil {
-		n.comm.err <- err
 		// on error, set node back as connected
 		n.state.isConnected = true
-		return
+
+		return err
 	}
 
 	// send disconnect signal, stop listening
 	n.comm.dis <- nil
 
 	n.logger.Println("disconnected")
+
+	return nil
 }
 
 // forward handles receiving and sending data to the network
@@ -78,8 +75,7 @@ func (n *Node) forward() {
 			return
 		// receive
 		case pack := <-n.net.recv:
-			// TODO Implement receiving packets
-			fmt.Println(pack.MsgType, len(pack.MsgData))
+			go n.handlePacket(pack)
 		// send
 		// TODO Finish sending data
 		case pack := <-n.net.send:
@@ -95,7 +91,7 @@ func (n *Node) forward() {
 // and passes on valid packets only
 func (n *Node) listen() {
 	// incoming data buffer
-	buffer := make([]byte, p2p.MaxUDPRead)
+	buffer := make([]byte, p2p.MaxUDPSize)
 	reader := bytes.NewReader(buffer)
 
 	// zero buffer on disconnect
@@ -115,15 +111,15 @@ func (n *Node) listen() {
 				return
 			}
 
-			// send error to node and continue
+			// send error to node and retry
 			n.comm.err <- err
 			continue
 		}
 
 		// check connection type
-		if p, ok := n.lookup.addres[addr.String()]; ok {
+		if p, ok := n.lookup.address[addr.String()]; ok {
 			// known peer
-			n.logger.Println("peer connection from", p.PublicKey().ToHex())
+			n.logger.Println("peer connection from", p.staticPublicKey.ToHex())
 		} else {
 			// unknown
 			n.logger.Println("unknown connection from", addr.String())
@@ -141,4 +137,8 @@ func (n *Node) listen() {
 		// send parsed packet
 		n.net.recv <- nil
 	}
+}
+
+func (n *Node) handlePacket(pack *proto.Packet) {
+	n.logger.Println("debug pack:", pack)
 }

@@ -6,13 +6,14 @@ configurations.
 package node // import "cpl.li/go/cryptor/p2p/node"
 
 import (
+	"errors"
 	"log"
 	"net"
 	"os"
 	"sync"
 
 	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p/peer"
+	"cpl.li/go/cryptor/p2p"
 	"cpl.li/go/cryptor/p2p/proto"
 )
 
@@ -27,8 +28,8 @@ type Node struct {
 	net struct {
 		sync.RWMutex
 
-		addr *net.UDPAddr // address for listening and sending
-		conn *net.UDPConn // listening connection
+		addr *net.UDPAddr // address for listening and receiving
+		conn *net.UDPConn // bind/connection for listening and receiving
 
 		recv chan *proto.Packet // receive network traffic
 		send chan *proto.Packet // send network responses
@@ -44,8 +45,6 @@ type Node struct {
 
 	// static identity of a node
 	identity struct {
-		sync.RWMutex
-
 		privateKey ppk.PrivateKey // static private key
 		publicKey  ppk.PublicKey  // static public key (public identifier)
 	}
@@ -55,10 +54,10 @@ type Node struct {
 		sync.RWMutex
 
 		// a key,value map of publicKey/peer
-		peers map[ppk.PublicKey]*peer.Peer
+		peers map[ppk.PublicKey]*Peer
 
 		// a key,value map of address/peer
-		addres map[string]*peer.Peer
+		address map[string]*Peer
 	}
 
 	// communication covers the channels used by the node to send information
@@ -80,10 +79,10 @@ type Node struct {
 	}
 }
 
-// New creates a node running on the local machine. The default starting
+// NewNode creates a node running on the local machine. The default starting
 // state is NOT RUNNING and OFFLINE. Allowing the Node to be further configured
 // before starting and connecting to the Cryptor Network.
-func New(name string) *Node {
+func NewNode(name string) *Node {
 	n := new(Node)
 
 	// initialize logger
@@ -108,8 +107,8 @@ func New(name string) *Node {
 	n.identity.publicKey = n.identity.privateKey.PublicKey()
 
 	// initialize lookup maps
-	n.lookup.peers = make(map[ppk.PublicKey]*peer.Peer)
-	n.lookup.addres = make(map[string]*peer.Peer)
+	n.lookup.peers = make(map[ppk.PublicKey]*Peer)
+	n.lookup.address = make(map[string]*Peer)
 
 	n.logger.Println("created")
 
@@ -124,7 +123,6 @@ func (n *Node) Start() {
 
 	// ignore if node is already running
 	if n.state.isRunning {
-		n.logger.Println("node is already running")
 		return
 	}
 
@@ -149,7 +147,10 @@ func (n *Node) Stop() {
 
 	// disconnect node if connected before continuing
 	if n.state.isConnected {
-		n.disconnect()
+		if err := n.disconnect(); err != nil {
+			n.comm.err <- err
+			return
+		}
 	}
 
 	// set node as stopped
@@ -202,7 +203,9 @@ func (n *Node) Disconnect() {
 	n.state.Lock()
 	defer n.state.Unlock()
 
-	n.disconnect()
+	if err := n.disconnect(); err != nil {
+		n.comm.err <- err
+	}
 }
 
 // PublicKey returns the node static public key.
@@ -210,7 +213,13 @@ func (n *Node) PublicKey() ppk.PublicKey {
 	return n.identity.publicKey
 }
 
-// Addr returns the node listening address.
+// PrivateKey returns the node static private key.
+func (n *Node) PrivateKey() ppk.PrivateKey {
+	return n.identity.privateKey
+}
+
+// Addr returns the node listening address. If the node is running we return the
+// live connection address, otherwise the pre-configured address.
 func (n *Node) Addr() string {
 	// if not connected, return addr
 	if !n.state.isConnected {
@@ -218,4 +227,26 @@ func (n *Node) Addr() string {
 	}
 
 	return n.net.conn.LocalAddr().String()
+}
+
+// SetAddr sets the nodes listening address and port. The expected address
+// must be "host:port".
+func (n *Node) SetAddr(addr string) (err error) {
+	n.net.Lock()
+	defer n.net.Unlock()
+
+	// ignore if node is not running
+	if !n.state.isRunning {
+		return errors.New("can't change address while node is not running")
+	}
+
+	// ignore if node is connected
+	if n.state.isConnected {
+		return errors.New("can't change address while node is online")
+	}
+
+	// set address
+	n.net.addr, err = net.ResolveUDPAddr(p2p.Network, addr)
+
+	return err
 }
