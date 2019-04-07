@@ -42,4 +42,19 @@ func TestHandshake(t *testing.T) {
 	if !bytes.Equal(rhs.Hash[:], ihs.Hash[:]) {
 		t.Fatal("failed to match handshake hashes")
 	}
+
+	// finalize handshakes and derive transport keys
+	rsend, rrecv := rhs.Finalize()
+	isend, irecv := ihs.Finalize()
+
+	// check keys to not be zero
+	var zeroKey [ppk.KeySize]byte
+	if bytes.Equal(zeroKey[:], rsend[:]) || bytes.Equal(zeroKey[:], isend[:]) {
+
+	}
+
+	// compare keys
+	if !bytes.Equal(rsend[:], irecv[:]) || !bytes.Equal(isend[:], rrecv[:]) {
+		t.Fatal("failed to match transport keys")
+	}
 }
