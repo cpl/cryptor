@@ -1,9 +1,6 @@
 package proto
 
 import (
-	"bytes"
-	"encoding/gob"
-
 	"cpl.li/go/cryptor/crypt/ppk"
 )
 
@@ -17,13 +14,12 @@ const (
 
 const (
 	// MsgSizeHandshakeI - Handshake Initializer Size
-	// 80 = PlaintextUniquePublicKey (32) + EncryptedStaticPublicKey (48)
+	// 81 = PlaintextUniquePublicKey (32) + EncryptedStaticPublicKey (48)
 	MsgSizeHandshakeI = 80
 
 	// MsgSizeHandshakeR - Handshake Response Size
-	// 0 = ?
-	// TODO Define handshake response structure and compute size
-	MsgSizeHandshakeR = 0
+	// 48 = PlaintextUniquePublicKey (32) + EncryptedNothing (16)
+	MsgSizeHandshakeR = 48
 )
 
 // MsgHandshakeI is the first message used by an initiator on the
@@ -33,11 +29,9 @@ type MsgHandshakeI struct {
 	EncryptedStaticPublicKey [48]byte
 }
 
-// MarshalBinary returns the content of the message as a single byte array.
-// TODO Improve binary marshaling of messages in general
-func (m *MsgHandshakeI) MarshalBinary() ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(m)
-	return buf.Bytes(), err
+// MsgHandshakeR is the response created by the receiver to the initializer
+// after the first handshake was successfully validated.
+type MsgHandshakeR struct {
+	PlaintextUniquePublicKey ppk.PublicKey
+	EncryptedNothing         [16]byte
 }
