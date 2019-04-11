@@ -8,6 +8,13 @@ package p2p // import "cpl.li/go/cryptor/p2p"
 // In this case we use "udp", allowing "udp4" and "udp6".
 const Network = "udp"
 
-// MaxUDPSize is the maximum number of bytes a UDP packet may safely contain.
 // TODO Readup on UDP packet safe size, 1024 is for testing only
-const MaxUDPSize = 1024
+const maxUDPSize = 1024
+
+const (
+	// MaxPayloadSize is the maximum size of a data payload.
+	MaxPayloadSize = maxUDPSize
+
+	// MinPayloadSize is the minimum size of a data payload.
+	MinPayloadSize = 48
+)

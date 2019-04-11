@@ -1,15 +1,15 @@
-package p2p
+package node
 
 import (
 	"errors"
-	"net"
 
 	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/p2p/peer"
 )
 
 // PeerAdd takes the public key of a peer and creates a new entry in the node
 // map. An optional string address can be passed.
-func (n *Node) PeerAdd(pk ppk.PublicKey, addr string) (p *Peer, err error) {
+func (n *Node) PeerAdd(pk ppk.PublicKey, addr string) (p *peer.Peer, err error) {
 	n.lookup.Lock()
 	defer n.lookup.Unlock()
 
@@ -23,11 +23,8 @@ func (n *Node) PeerAdd(pk ppk.PublicKey, addr string) (p *Peer, err error) {
 		return nil, errors.New("can't add peer, public key already in use")
 	}
 
-	// create new peer
-	p = NewPeer(pk, addr)
-
-	// map peer
-	n.lookup.peers[pk] = p
+	// create new peer and map it
+	n.lookup.peers[pk] = peer.NewPeer(pk, addr)
 
 	return p, nil
 }
@@ -74,31 +71,8 @@ func (n *Node) PeerList() {
 	count := 0
 	for pk, p := range n.lookup.peers {
 		// print public key as hex
-		n.logger.Printf("%4d: %s %s\n", count, pk.ToHex(), p.addr.String())
+		n.logger.Printf("%4d: %s %s\n", count, pk.ToHex(), p.Addr())
 
 		count++
 	}
-}
-
-// PeerSetAddr sets an existing peer address to the given one.
-func (n *Node) PeerSetAddr(pk ppk.PublicKey, addr string) (err error) {
-	// check node is running
-	if !n.state.isRunning {
-		return err
-	}
-
-	// lookup peer
-	p, ok := n.lookup.peers[pk]
-	if !ok {
-		return errors.New("can't set peer address, peer not found")
-	}
-
-	// only set addr if no errors
-	newaddr, err := net.ResolveUDPAddr(Network, addr)
-	if err != nil {
-		return err
-	}
-	p.addr = newaddr
-
-	return nil
 }

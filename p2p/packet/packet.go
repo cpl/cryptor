@@ -1,15 +1,18 @@
-package p2p
+package packet
 
 import (
 	"net"
 )
 
-// TODO Redefine packet structure and handling
-
 const (
-	packetTypeTransport  byte = 0
-	packetTypeHandshakeI byte = 1
-	packetTypeHandshakeR byte = 2
+	// TypeTransport ...
+	TypeTransport byte = 0
+
+	// TypeHandshakeInitializer ...
+	TypeHandshakeInitializer byte = 1
+
+	// TypeHandshakeResponder ...
+	TypeHandshakeResponder byte = 2
 )
 
 // Packet contains the necessary info for sending and receiveing messages over

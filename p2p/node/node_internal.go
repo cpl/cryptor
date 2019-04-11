@@ -1,9 +1,11 @@
-package p2p
+package node
 
 import (
+	"fmt"
 	"net"
 
 	"cpl.li/go/cryptor/crypt"
+	"cpl.li/go/cryptor/p2p"
 )
 
 func (n *Node) run() {
@@ -14,7 +16,7 @@ func (n *Node) run() {
 			if err != nil {
 				n.logger.Println("err", err)
 			}
-		// receive exit signal
+		// listen exit signal
 		case <-n.comm.exi:
 			return
 		}
@@ -27,7 +29,7 @@ func (n *Node) connect() (err error) {
 	defer n.net.Unlock()
 
 	// network bind on entire local address space, using random port
-	n.net.conn, err = net.ListenUDP(Network, n.net.addr)
+	n.net.conn, err = net.ListenUDP(p2p.Network, n.net.addr)
 
 	return err
 }
@@ -54,36 +56,16 @@ func (n *Node) disconnect() error {
 		return err
 	}
 
-	// send disconnect signal, stop listening
-	n.comm.dis <- nil
-
 	n.logger.Println("disconnected")
 
 	return nil
-}
-
-// forward handles sending and receiving data to and from the network
-func (n *Node) forward() {
-	for {
-		select {
-		// disconnect
-		case <-n.comm.dis:
-			return
-		// receive
-		case pack := <-n.net.recv:
-			go n.recv(pack)
-		// send
-		case pack := <-n.net.send:
-			go n.send(pack)
-		}
-	}
 }
 
 // listen checks the network for incoming connections, extracts the data
 // and passes on valid packets only
 func (n *Node) listen() {
 	// incoming data buffer
-	buffer := make([]byte, MaxUDPSize)
+	buffer := make([]byte, p2p.MaxPayloadSize)
 
 	// zero buffer on disconnect
 	defer crypt.ZeroBytes(buffer)
@@ -108,40 +90,15 @@ func (n *Node) listen() {
 		}
 
 		// check min size, drop packets if too small
-		if r < MsgMinSize {
+		if r < p2p.MinPayloadSize {
 			continue
 		}
 
-		var pack *Packet
+		// parse payload into packet
+		// ! DEBUG
+		fmt.Println(r, addr)
 
-		// check connection type
-		if p, ok := n.lookup.address[addr.String()]; ok {
-			// known peer
-
-			// TODO Write checks for handshake state and handle package as such
-
-			// ! DEBUG
-			if p.handshake.status == 0 {
-
-			}
-
-		} else {
-			// unknown
-
-			// packet must be handshake initialization otherwise drop it
-			if r != MsgSizeHandshakeI {
-				continue
-			}
-
-			// ! DEBUG
-			// convert received data to pack
-			pack = new(Packet)
-			pack.Address = addr
-			pack.Payload = buffer[:r]
-			pack.Type = packetTypeHandshakeI
-		}
-
-		// send parsed packet
-		n.net.recv <- pack
+		// forward packet
+		// go n.recv(pack)
 	}
 }

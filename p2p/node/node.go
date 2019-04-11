@@ -1,4 +1,8 @@
-package p2p
+/*
+Packet node ...
+
+*/
+package node // import "cpl.li/go/cryptor/p2p/node"
 
 import (
 	"errors"
@@ -8,12 +12,13 @@ import (
 	"sync"
 
 	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/p2p"
+	"cpl.li/go/cryptor/p2p/peer"
 )
 
 // Node represents the local machine running and/or connected to the Cryptor
 // network. Other nodes are represented as peers.
 type Node struct {
-
 	// a custom logger
 	logger *log.Logger
 
@@ -24,8 +29,8 @@ type Node struct {
 		addr *net.UDPAddr // address for listening and receiving
 		conn *net.UDPConn // bind/connection for listening and receiving
 
-		recv chan *Packet // receive network traffic
-		send chan *Packet // send network responses
+		recv chan []byte // receive network traffic
+		send chan []byte // send network responses
 	}
 
 	// state of the node
@@ -47,10 +52,10 @@ type Node struct {
 		sync.RWMutex
 
 		// a key,value map of publicKey/peer
-		peers map[ppk.PublicKey]*Peer
+		peers map[ppk.PublicKey]*peer.Peer
 
 		// a key,value map of address/peer
-		address map[string]*Peer
+		address map[string]*peer.Peer
 	}
 
 	// communication covers the channels used by the node to send information
@@ -88,8 +93,8 @@ func NewNode(name string) *Node {
 	n.comm.dis = make(chan interface{})
 
 	// initialize network forwarding channels
-	n.net.recv = make(chan *Packet)
-	n.net.send = make(chan *Packet)
+	n.net.recv = make(chan []byte)
+	n.net.send = make(chan []byte)
 
 	// default state
 	n.state.isRunning = false
@@ -101,8 +106,8 @@ func NewNode(name string) *Node {
 	n.identity.publicKey = n.identity.privateKey.PublicKey()
 
 	// initialize lookup maps
-	n.lookup.peers = make(map[ppk.PublicKey]*Peer)
-	n.lookup.address = make(map[string]*Peer)
+	n.lookup.peers = make(map[ppk.PublicKey]*peer.Peer)
+	n.lookup.address = make(map[string]*peer.Peer)
 
 	n.logger.Println("created")
 
@@ -183,9 +188,6 @@ func (n *Node) Connect() {
 	n.state.isConnected = true
 	n.logger.Printf("connected on %s\n", n.net.conn.LocalAddr().String())
 
-	// start forwarding service
-	go n.forward()
-
 	// start network listening
 	go n.listen()
 }
@@ -241,7 +243,7 @@ func (n *Node) SetAddr(addr string) (err error) {
 	}
 
 	// set address
-	n.net.addr, err = net.ResolveUDPAddr(Network, addr)
+	n.net.addr, err = net.ResolveUDPAddr(p2p.Network, addr)
 
 	return err
 }
