@@ -1,11 +1,11 @@
 package node
 
 import (
-	"fmt"
 	"net"
 
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/p2p"
+	"cpl.li/go/cryptor/p2p/packet"
 )
 
 func (n *Node) run() {
@@ -16,7 +16,7 @@ func (n *Node) run() {
 			if err != nil {
 				n.logger.Println("err", err)
 			}
-		// listen exit signal
+		// listen for exit signal
 		case <-n.comm.exi:
 			return
 		}
@@ -28,7 +28,7 @@ func (n *Node) connect() (err error) {
 	n.net.Lock()
 	defer n.net.Unlock()
 
-	// network bind on entire local address space, using random port
+	// network bind using Node address
 	n.net.conn, err = net.ListenUDP(p2p.Network, n.net.addr)
 
 	return err
@@ -89,16 +89,19 @@ func (n *Node) listen() {
 			continue
 		}
 
+		n.logger.Println("receive packet")
+
 		// check min size, drop packets if too small
 		if r < p2p.MinPayloadSize {
 			continue
 		}
 
 		// parse payload into packet
-		// ! DEBUG
-		fmt.Println(r, addr)
+		pack := new(packet.Packet)
+		pack.Address = addr
+		pack.Payload = buffer[:r]
 
-		// forward packet
-		// go n.recv(pack)
+		// forward packet to handler
+		go n.recv(pack)
 	}
 }

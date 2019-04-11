@@ -18,11 +18,11 @@ var zeroNonce [chacha.NonceSize]byte
 const (
 	// HandshakeSizeInitializer is the size of a handshake message sent by
 	// initializer to the responder.
-	HandshakeSizeInitializer = sizeEncPub + ppk.KeySize
+	HandshakeSizeInitializer = ppk.KeySize + sizeEncPub
 
 	// HandshakeSizeResponder is the size of the response message from the
 	// responder to the initializer.
-	HandshakeSizeResponder = sizeEncNth + ppk.KeySize
+	HandshakeSizeResponder = ppk.KeySize + sizeEncNth
 )
 
 // encryption sizes

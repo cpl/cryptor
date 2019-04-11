@@ -13,6 +13,7 @@ import (
 
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p"
+	"cpl.li/go/cryptor/p2p/packet"
 	"cpl.li/go/cryptor/p2p/peer"
 )
 
@@ -29,8 +30,8 @@ type Node struct {
 		addr *net.UDPAddr // address for listening and receiving
 		conn *net.UDPConn // bind/connection for listening and receiving
 
-		recv chan []byte // receive network traffic
-		send chan []byte // send network responses
+		recv chan *packet.Packet // receive network traffic
+		send chan *packet.Packet // send network responses
 	}
 
 	// state of the node
@@ -93,8 +94,8 @@ func NewNode(name string) *Node {
 	n.comm.dis = make(chan interface{})
 
 	// initialize network forwarding channels
-	n.net.recv = make(chan []byte)
-	n.net.send = make(chan []byte)
+	n.net.recv = make(chan *packet.Packet)
+	n.net.send = make(chan *packet.Packet)
 
 	// default state
 	n.state.isRunning = false
@@ -243,7 +244,17 @@ func (n *Node) SetAddr(addr string) (err error) {
 	}
 
 	// set address
-	n.net.addr, err = net.ResolveUDPAddr(p2p.Network, addr)
+	newaddr, err := net.ResolveUDPAddr(p2p.Network, addr)
+	if err != nil {
+		return err
+	}
 
-	return err
+	// announce address change
+	n.logger.Printf("change address from %s to %s\n",
+		n.net.addr.String(), newaddr.String())
+
+	// set new address
+	n.net.addr = newaddr
+
+	return nil
 }

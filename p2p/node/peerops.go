@@ -9,7 +9,7 @@ import (
 
 // PeerAdd takes the public key of a peer and creates a new entry in the node
 // map. An optional string address can be passed.
-func (n *Node) PeerAdd(pk ppk.PublicKey, addr string) (p *peer.Peer, err error) {
+func (n *Node) PeerAdd(pk ppk.PublicKey, addr string) (*peer.Peer, error) {
 	n.lookup.Lock()
 	defer n.lookup.Unlock()
 
@@ -26,7 +26,7 @@ func (n *Node) PeerAdd(pk ppk.PublicKey, addr string) (p *peer.Peer, err error) 
 	// create new peer and map it
 	n.lookup.peers[pk] = peer.NewPeer(pk, addr)
 
-	return p, nil
+	return n.lookup.peers[pk], nil
 }
 
 // PeerDel removes the peer from the peers map.

@@ -9,6 +9,7 @@ import (
 
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p"
+	"cpl.li/go/cryptor/p2p/noise"
 )
 
 // Peer represents a foreign machine/node on the Cryptor network and all the
@@ -19,6 +20,9 @@ type Peer struct {
 
 	// lock for operating on the peer
 	sync.RWMutex
+
+	HasHandshake bool
+	Handshake    *noise.Handshake // the current handshake status with this peer
 
 	// transport keys generated from the finalization of the handshake
 	keys struct {
@@ -35,6 +39,9 @@ func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 	// set public key
 	p.staticPublicKey = pk
 
+	// set handshake as nil
+	p.Handshake = nil
+
 	// set address if any is given
 	if addr != "" {
 		p.addr, _ = net.ResolveUDPAddr(p2p.Network, addr)
@@ -46,6 +53,11 @@ func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 // Addr returns the string of the address.
 func (p *Peer) Addr() string {
 	return p.addr.String()
+}
+
+// AddrUDP returns the UDP address of the peer.
+func (p *Peer) AddrUDP() *net.UDPAddr {
+	return p.addr
 }
 
 // PublicKey returns the peer known static public key.
