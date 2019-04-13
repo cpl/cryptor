@@ -29,6 +29,7 @@ func TestNodeHandshakeDEBUG(t *testing.T) {
 
 	// list peers
 	sigma.PeerList()
+	omega.PeerList()
 
 	// connect
 	sigma.Connect()
@@ -38,4 +39,7 @@ func TestNodeHandshakeDEBUG(t *testing.T) {
 	sigma.Handshake(p)
 
 	time.Sleep(5 * time.Second)
+
+	sigma.PeerList()
+	omega.PeerList()
 }
