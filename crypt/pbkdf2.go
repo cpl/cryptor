@@ -5,6 +5,8 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
+// TODO Make this work with randomly generated salts
+
 const salt = ".-_cryptor,$"
 const iter = 131072
 
