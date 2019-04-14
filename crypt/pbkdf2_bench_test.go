@@ -11,9 +11,9 @@ const password = "testing"
 
 func TestPBKDF2(t *testing.T) {
 	expected :=
-		"e9de130eaf35bb44fb45197f40363025db78b7198091d5b7ae3aa70fad95a140"
+		"28df0b93627d5b50ed4fef574e774a00ac634cbd3395d0a57e769581e806f82f"
 	expectedPub :=
-		"6b12ef3a6de11fd8b160acd260a26be9b6f42be405fae2f7afe774048db96a7a"
+		"a5f686a01f0327c2a1bce2d2ae01c4174d1637fd31a5a065d0b235ea37cc3d74"
 
 	// derive key
 	var key ppk.PrivateKey
@@ -26,11 +26,15 @@ func TestPBKDF2(t *testing.T) {
 
 	// check expected key
 	if key.ToHex() != expected {
+		t.Error("got", key.ToHex())
+		t.Error("expected", expected)
 		t.Fatal("derived key does not match expected key")
 	}
 
 	// check expected public key
 	if key.PublicKey().ToHex() != expectedPub {
+		t.Error("got", key.PublicKey().ToHex())
+		t.Error("expected", expectedPub)
 		t.Fatal("derived key public key does not match expected public key")
 	}
 }
