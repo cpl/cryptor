@@ -8,6 +8,7 @@ import (
 )
 
 const password = "testing"
+const salt = ".-_cryptor,$"
 
 func TestPBKDF2(t *testing.T) {
 	expected :=
@@ -17,7 +18,7 @@ func TestPBKDF2(t *testing.T) {
 
 	// derive key
 	var key ppk.PrivateKey
-	key = crypt.Key([]byte(password))
+	key = crypt.Key([]byte(password), []byte(salt))
 
 	// check len
 	if len(key) != ppk.KeySize {
@@ -37,10 +38,16 @@ func TestPBKDF2(t *testing.T) {
 		t.Error("expected", expectedPub)
 		t.Fatal("derived key public key does not match expected public key")
 	}
+
+	// check default salt is working
+	dKey := crypt.Key([]byte(password), nil)
+	if !key.Equals(dKey) {
+		t.Fatal("default salt failed, keys don't match")
+	}
 }
 
 func BenchmarkPBKDF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		crypt.Key([]byte(password))
+		crypt.Key([]byte(password), []byte(salt))
 	}
 }
