@@ -28,28 +28,37 @@ func (ms MnemonicSentence) String() string {
 // is the number of words in the sentence.
 func (ms MnemonicSentence) IsValid() bool {
 	// validate word count
-	if len(ms)%3 != 0 || len(ms) < 12 || len(ms) > 24 {
+	if len(ms)%sentenceMultiple != 0 ||
+		len(ms) < sentenceMinWords || len(ms) > sentenceMaxWords {
 		return false
 	}
 
-	// validate words
+	// validate individual words
 	for _, word := range ms {
-		if !IsValid(word) {
+		if !IsValidWord(word) {
 			return false
 		}
 	}
 	return true
 }
 
-// IsValid checks if the given word is part of the mnemonic word list.
-func IsValid(word string) bool {
-	_, ok := mnemonicLookup[word]
-	return ok
+// MnemonicFromString will split the given sentence, validate it and
+// return a mnemonic sentence if possible, otherwise return an error.
+func MnemonicFromString(sentence string) (MnemonicSentence, error) {
+	// split given string
+	var split MnemonicSentence = strings.Fields(sentence)
+
+	// validate sentence and words
+	if !split.IsValid() {
+		return nil, errors.New("invalid mnemonic sentence")
+	}
+
+	return split, nil
 }
 
-// ToMnemonic generates a BIP-39 mnemonic sentence that satisfies the given
+// EntropyToMnemonic generates a BIP-39 mnemonic sentence that satisfies the given
 // entropy length.
-func ToMnemonic(entropy []byte) (MnemonicSentence, error) {
+func EntropyToMnemonic(entropy []byte) (MnemonicSentence, error) {
 	// compute entropy bitcount
 	bitsEntropy := len(entropy) * 8
 
@@ -66,7 +75,7 @@ func ToMnemonic(entropy []byte) (MnemonicSentence, error) {
 	hSum := h.Sum(nil)
 
 	// compute checksum bitcount
-	bitsChecksum := bitsEntropy / 32
+	bitsChecksum := bitsEntropy / entropyMultiple
 
 	// convert entropy to big.Int, allows for easier bitwise operations
 	bigEntropy := new(big.Int).SetBytes(entropy)
@@ -97,4 +106,69 @@ func ToMnemonic(entropy []byte) (MnemonicSentence, error) {
 	return words, nil
 }
 
-// TODO Write reverse function FromMnemonic(ms MnemonicSentence) ([]byte, error)
+// EntropyFromString automatically performs the string to mnemonic
+// sentence conversion and then applies the FromMnemonic function to get
+// the entropy.
+func EntropyFromString(sentence string) ([]byte, error) {
+	// convert and validate string to mnemonic sentence
+	ms, err := MnemonicFromString(sentence)
+	if err != nil {
+		return nil, err
+	}
+
+	// return entropy or error
+	return EntropyFromMnemonic(ms)
+}
+
+// EntropyFromMnemonic takes a BIP-39 mnemonic sentence and returns the initial
+// entropy used. If the sentence is invalid, an error is returned.
+func EntropyFromMnemonic(ms MnemonicSentence) ([]byte, error) {
+	// check if valid mnemonic
+	if !ms.IsValid() {
+		return nil, errors.New("invalid mnemonic sentence")
+	}
+
+	// compute bit counts
+	bitsEntropy := wordCountToEntropyBits[len(ms)]
+	bitsChecksum := bitsEntropy / entropyMultiple
+
+	// use a big.Int to decode words, easier bitwise operations
+	decoder := big.NewInt(0)
+
+	// iterate words
+	for _, word := range ms {
+		// get word index
+		index := mnemonicLookup[word]
+
+		decoder.Lsh(decoder, 11)
+		decoder.Or(decoder, big.NewInt(int64(index)))
+	}
+
+	// shift out checksum bits
+	checksumBits := big.NewInt(0)
+	checksumBits.And(decoder, checksumMaskMap[bitsEntropy])
+	decoder.Rsh(decoder, uint(bitsChecksum))
+
+	// get byte array
+	decoded := decoder.Bytes()
+
+	// check if the byte array needs zero padding
+	if len(decoded) != bitsEntropy/8 {
+		padding := make([]byte, (bitsEntropy/8)-len(decoded))
+		decoded = append(padding, decoded...)
+	}
+
+	// compute checksum
+	h := sha256.New()
+	if _, err := h.Write(decoded); err != nil {
+		return nil, err
+	}
+	hSum := h.Sum(nil)
+
+	// validate checksum bits
+	if checksumBits.Cmp(big.NewInt(int64(hSum[0]>>uint(8-bitsChecksum)))) != 0 {
+		return nil, errors.New("failed to validate checksum bits")
+	}
+
+	return decoded, nil
+}
