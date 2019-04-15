@@ -6,6 +6,7 @@ import (
 
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/noise"
+	"cpl.li/go/cryptor/tests"
 )
 
 func TestHandshake(t *testing.T) {
@@ -23,9 +24,8 @@ func TestHandshake(t *testing.T) {
 	// responder receives handshake data
 	rHandshake, iSPublicR, msgR, err :=
 		noise.Respond(msgI, rSSecret)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
+
 	if !bytes.Equal(iSPublicR[:], iSPublic[:]) {
 		t.Fatalf("failed to match initializer public key")
 	}
@@ -37,13 +37,10 @@ func TestHandshake(t *testing.T) {
 
 	// both handshakes can compute transport keys
 	iSend, iRecv, err := iHandshake.Finalize()
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
+
 	rSend, rRecv, err := rHandshake.Finalize()
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
 
 	// check for zero key
 	var zeroKey [ppk.KeySize]byte

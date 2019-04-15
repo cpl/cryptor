@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cpl.li/go/cryptor/p2p/node"
+	"cpl.li/go/cryptor/tests"
 )
 
 func TestNodeHandshakeDEBUG(t *testing.T) {
@@ -23,9 +24,7 @@ func TestNodeHandshakeDEBUG(t *testing.T) {
 
 	// add external peer
 	p, err := sigma.PeerAdd(omega.PublicKey(), omega.Addr())
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
 
 	// list peers
 	sigma.PeerList()

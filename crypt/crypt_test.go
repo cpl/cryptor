@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"cpl.li/go/cryptor/crypt"
+	"cpl.li/go/cryptor/tests"
 
 	chacha "golang.org/x/crypto/chacha20poly1305"
 )
@@ -102,9 +103,7 @@ func TestAEADEncryption(t *testing.T) {
 
 	// create cypher with random key
 	cipher, err := chacha.New(key)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
 
 	// generate nonce and hash
 	nonce := crypt.RandomBytes(chacha.NonceSize)
@@ -115,15 +114,11 @@ func TestAEADEncryption(t *testing.T) {
 
 	// generate new cipher with the same key
 	newCipher, err := chacha.New(key)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
 
 	// decrypt message
 	decrypted, err := newCipher.Open(nil, nonce, ciphertext, hash)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
 
 	// compare messages
 	if !bytes.Equal(decrypted, msg) {

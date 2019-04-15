@@ -7,6 +7,7 @@ import (
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/noise"
+	"cpl.li/go/cryptor/tests"
 )
 
 func TestMarshalMessagesInitializer(t *testing.T) {
@@ -18,9 +19,7 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 
 	// marshal into binary
 	dataI, err := msgI.MarshalBinary()
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
 
 	// check size
 	if len(dataI) != noise.HandshakeSizeInitializer {
@@ -60,9 +59,7 @@ func TestMarshalMessagesResponder(t *testing.T) {
 
 	// marshal into binary
 	dataI, err := msgR.MarshalBinary()
-	if err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, err)
 
 	// check size
 	if len(dataI) != noise.HandshakeSizeResponder {
