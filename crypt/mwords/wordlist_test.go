@@ -24,6 +24,16 @@ func TestValidateWordlist(t *testing.T) {
 	for _, word := range mnemonicWords {
 		copy(totalData[totalCount:], []byte(word))
 		totalCount += len(word)
+
+		// at the same time test the lookup map
+		if idx, ok := mnemonicLookup[word]; !ok {
+			t.Fatalf("failed to find expected word %s in lookup map\n", word)
+		} else {
+			if mnemonicWords[idx] != word {
+				t.Fatalf("mismatch word at index %d, got %s but want %s\n",
+					idx, mnemonicWords[idx], word)
+			}
+		}
 	}
 
 	// perform CRC32 checksum on data
