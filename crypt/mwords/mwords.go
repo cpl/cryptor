@@ -13,12 +13,6 @@ import (
 	"strings"
 )
 
-// bit mask for 11 least significant bits
-var bits0to11 = big.NewInt(0x7FF)
-
-// Count is the total number of words in the mnemonic list.
-const Count = 2048
-
 // MnemonicSentence is an array of mnemonic words, with extra utility methods
 // on top.
 type MnemonicSentence []string

@@ -1,11 +1,20 @@
 package mwords
 
+// Count is the total number of words in the mnemonic list.
+const Count = 2048
+
 func init() {
 	// initiate the lookup hashmap
 	mnemonicLookup = make(map[string]int)
 	for idx, word := range mnemonicWords {
 		mnemonicLookup[word] = idx
 	}
+}
+
+// IsValidWord checks if the given word is part of the mnemonic word list.
+func IsValidWord(word string) bool {
+	_, ok := mnemonicLookup[word]
+	return ok
 }
 
 // reverse lookup hash-map, the word is the key, the index from mnemonicWords

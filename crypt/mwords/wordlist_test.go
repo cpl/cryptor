@@ -11,6 +11,31 @@ const charCount = 11068
 // expected checksum
 const checksum = 2176441764
 
+var wordsValid = []string{
+	"apple", "approve", "canvas", "cruise", "fame",
+	"merry", "salad", "soda", "trust", "zoo",
+}
+
+var wordsInvalid = []string{
+	"applezoo", "", "", "søda", "sodaa", "sod", "01234", "salad_", ".salad",
+}
+
+func TestIsValidWord(t *testing.T) {
+	// test a set of valid words
+	for _, word := range wordsValid {
+		if !IsValidWord(word) {
+			t.Errorf("expected %s to be valid word\n", word)
+		}
+	}
+
+	// test a set of invalid words
+	for _, word := range wordsInvalid {
+		if IsValidWord(word) {
+			t.Errorf("expected %s to be invalid word\n", word)
+		}
+	}
+}
+
 func TestValidateWordlist(t *testing.T) {
 	// validate expected length
 	if len(mnemonicWords) != Count {
