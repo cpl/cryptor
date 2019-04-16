@@ -2,11 +2,19 @@ package tests
 
 import "testing"
 
-// AssertNil checks that the err is nil. If the "object" is something other
+// AssertNil checks that the "object" is nil. If the "object" is something other
 // than nil, then the test will fail and exit with the object.
 func AssertNil(t *testing.T, obj interface{}) {
 	if obj != nil {
 		t.Fatal(obj)
+	}
+}
+
+// AssertNotNil checks that the "object" is not nil. If the "object" is nil then
+// the test will fail and exit with the object.
+func AssertNotNil(t *testing.T, obj interface{}, msg string) {
+	if obj == nil {
+		t.Fatal(msg)
 	}
 }
 
