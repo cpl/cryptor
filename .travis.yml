@@ -12,4 +12,4 @@ before_install:
   - go get golang.org/x/tools/cmd/cover
 
 script:
-  - $GOPATH/bin/goveralls -repotoken eKBxWbATlhv8GvEEqEeBevUNIn8IybItw
+  - $GOPATH/bin/goveralls -v -race -repotoken $COVERALLS_TOKEN
