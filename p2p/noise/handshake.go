@@ -118,6 +118,9 @@ func Initialize(iSPub, rSPub ppk.PublicKey) (
 // This method will return both a Handshake and the response for the initializer.
 func Respond(msg *MessageInitializer, rSec ppk.PrivateKey) (
 	hs *Handshake, iSPub ppk.PublicKey, rmsg *MessageResponder, err error) {
+	if msg == nil {
+		return nil, iSPub, nil, errors.New("got nil message")
+	}
 
 	// create new handshake
 	hs = new(Handshake)
@@ -136,10 +139,7 @@ func Respond(msg *MessageInitializer, rSec ppk.PrivateKey) (
 	hkdf.HKDF(hs.c[:], ss[:], &hs.c, &hs.k)
 
 	// decrypt static initializer public key
-	cipher, err := chacha.New(hs.k[:])
-	if err != nil {
-		return nil, iSPub, rmsg, err
-	}
+	cipher, _ := chacha.New(hs.k[:])
 	_, err = cipher.Open(iSPub[:0], zeroNonce[:],
 		msg.EncryptedInitializerStaticPublicKey[:], hs.hash[:])
 	if err != nil {
@@ -188,6 +188,10 @@ func Respond(msg *MessageInitializer, rSec ppk.PrivateKey) (
 // Receive is the last action in the handshake protocol before being able to
 // generate transport keys on the initializer side.
 func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
+	if msg == nil {
+		return errors.New("got nil message")
+	}
+
 	// lock handshake
 	hs.Lock()
 	defer hs.Unlock()
@@ -196,6 +200,13 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 	if hs.state != stateInit {
 		return errors.New("invalid handshake state")
 	}
+
+	// save current handshake state
+	hsSnapshot := new(Handshake)
+	hsSnapshot.hash = hs.hash
+	hsSnapshot.c = hs.c
+	hsSnapshot.k = hs.k
+	hsSnapshot.t = hs.t
 
 	// update chaining key
 	hkdf.HKDF(hs.c[:], msg.PlaintextUniquePublic[:], &hs.c)
@@ -222,6 +233,12 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 	_, err := cipher.Open(nil, zeroNonce[:],
 		msg.EncryptedNothing[:], hs.hash[:])
 	if err != nil {
+		// return to initial state
+		hs.hash = hsSnapshot.hash
+		hs.c = hsSnapshot.c
+		hs.k = hsSnapshot.k
+		hs.t = hsSnapshot.t
+
 		return err
 	}
 
