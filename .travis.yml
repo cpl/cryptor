@@ -12,4 +12,5 @@ before_install:
   - go get golang.org/x/tools/cmd/cover
 
 script:
-  - $GOPATH/bin/goveralls -v -race -repotoken $COVERALLS_TOKEN
+  - make test
+  - $GOPATH/bin/goveralls -coverprofile=build/cover.out -service=travis-ci -repotoken $COVERALLS_TOKEN
