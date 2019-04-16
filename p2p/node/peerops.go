@@ -59,12 +59,10 @@ func (n *Node) PeerCount() int {
 }
 
 // PeerList prints all the peers public keys and address to the node logger.
-func (n *Node) PeerList() {
+func (n *Node) PeerList() error {
 	// check node is running
 	if !n.state.isRunning {
-		err := errors.New("can't get peer list, node is not running")
-		n.comm.err <- err
-		return
+		return errors.New("can't get peer list, node is not running")
 	}
 
 	// iterate peers
@@ -75,4 +73,6 @@ func (n *Node) PeerList() {
 
 		count++
 	}
+
+	return nil
 }
