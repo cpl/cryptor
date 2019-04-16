@@ -67,6 +67,11 @@ type Node struct {
 		dis chan interface{} // passing the disconnect signal
 	}
 
+	// metadata
+	meta struct {
+		errCount int
+	}
+
 	// TODO firewall
 	// firewall determines which hosts and ip ranges are allowed to connect
 	// if whitelist is used, only hosts defined in the list will be allowed
@@ -116,94 +121,118 @@ func NewNode(name string) *Node {
 }
 
 // Start enable the node to receive and parse commands locally.
-func (n *Node) Start() {
+func (n *Node) Start() error {
 	// lock state
 	n.state.Lock()
 	defer n.state.Unlock()
 
 	// ignore if node is already running
 	if n.state.isRunning {
-		return
+		n.meta.errCount++
+		return errors.New("can't start, node already running")
 	}
 
 	// set node as running
 	n.state.isRunning = true
-	n.logger.Println("started")
 
 	// start service
 	go n.run()
+	n.logger.Println("started")
+
+	return nil
 }
 
 // Stop attempts to safely shutdown the Cryptor Node and any active tasks. If
 // the Node is connected to the network, a Disconnect will run before stopping.
-func (n *Node) Stop() {
+func (n *Node) Stop() error {
 	// lock state
 	n.state.Lock()
 	defer n.state.Unlock()
 
 	// ignore if node is not running
 	if !n.state.isRunning {
-		return
+		n.meta.errCount++
+		return errors.New("can't stop, node not running")
 	}
 
 	// disconnect node if connected before continuing
 	if n.state.isConnected {
 		if err := n.disconnect(); err != nil {
-			n.comm.err <- err
-			return
+			// on error, cancel stopping routine
+			n.meta.errCount++
+			return err
 		}
 	}
 
 	// set node as stopped
+	n.comm.exi <- nil
 	n.state.isRunning = false
+
 	n.logger.Println("stopped")
 
-	// send stop signal
-	n.comm.exi <- nil
+	return nil
 }
 
 // Connect binds the current node to the machine network and Cryptor network.
-func (n *Node) Connect() {
+func (n *Node) Connect() error {
 	// lock state
 	n.state.Lock()
 	defer n.state.Unlock()
 
-	// ignore if node is already connected
-	if n.state.isConnected {
-		return
-	}
-
 	// ignore if node is not running
 	if !n.state.isRunning {
-		n.logger.Println("can't connect to network, node not running")
-		return
+		n.meta.errCount++
+		return errors.New("can't connect, node not running")
+	}
+
+	// ignore if node is already connected
+	if n.state.isConnected {
+		n.meta.errCount++
+		return errors.New("can't connect to network, already connected")
 	}
 
 	// create network bind
 	if err := n.connect(); err != nil {
-		n.comm.err <- err
-		return
+		return err
 	}
 
 	// set node as connected
 	n.state.isConnected = true
-	n.logger.Printf("connected on %s\n", n.net.conn.LocalAddr().String())
 
 	// start network listening
 	go n.listen()
+	n.logger.Printf("connected on %s\n", n.net.conn.LocalAddr().String())
+
+	return nil
 }
 
 // Disconnect stops the network communication capabilities of the node. This
 // does not stop the node from running and receiving local commands and config
 // updates.
-func (n *Node) Disconnect() {
+func (n *Node) Disconnect() error {
 	// lock state
 	n.state.Lock()
 	defer n.state.Unlock()
 
-	if err := n.disconnect(); err != nil {
-		n.comm.err <- err
+	// ignore if node is not running
+	if !n.state.isRunning {
+		n.meta.errCount++
+		return errors.New("can't disconnect, node not running")
 	}
+
+	// ignore if node is not connected
+	if !n.state.isConnected {
+		n.meta.errCount++
+		return errors.New("can't disconnect, node not connected")
+	}
+
+	// attempt disconnect
+	if err := n.disconnect(); err != nil {
+		n.meta.errCount++
+		return err
+	}
+
+	return nil
 }
 
 // PublicKey returns the node static public key.
@@ -257,4 +286,9 @@ func (n *Node) SetAddr(addr string) (err error) {
 	n.net.addr = newaddr
 
 	return nil
+}
+
+// ErrCount returns the number of errors which ocurred during runtime.
+func (n *Node) ErrCount() int {
+	return n.meta.errCount
 }

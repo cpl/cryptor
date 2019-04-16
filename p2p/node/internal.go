@@ -14,6 +14,7 @@ func (n *Node) run() {
 		// pick up and display errors
 		case err := <-n.comm.err:
 			if err != nil {
+				n.meta.errCount++
 				n.logger.Println("err", err)
 			}
 		// listen for exit signal
@@ -23,6 +24,7 @@ func (n *Node) run() {
 	}
 }
 
+// ! unsafe function, must be used only when the node state is defined & locked
 func (n *Node) connect() (err error) {
 	// lock network state
 	n.net.Lock()
@@ -34,29 +36,23 @@ func (n *Node) connect() (err error) {
 	return err
 }
 
+// ! unsafe function, must be used only when the node state is defined & locked
 func (n *Node) disconnect() error {
-	// ignore if node is not running
-	if !n.state.isRunning {
-		return nil
-	}
-
-	// ignore if node is not connected
-	if !n.state.isConnected {
-		return nil
-	}
+	// lock network state
+	n.net.Lock()
+	defer n.net.Unlock()
 
 	// set node as disconnected
 	n.state.isConnected = false
 
-	// disconnect network bind
-	if err := n.net.conn.Close(); err != nil {
-		// on error, set node back as connected
-		n.state.isConnected = true
-
+	// disconnect
+	err := n.net.conn.Close()
+	if err != nil {
 		return err
 	}
 
-	n.logger.Println("disconnected")
+	// signal disconnect
+	n.comm.dis <- nil
 
 	return nil
 }
@@ -71,37 +67,42 @@ func (n *Node) listen() {
 	defer crypt.ZeroBytes(buffer)
 
 	for {
-		// check if still connected
-		if !n.state.isConnected {
+		select {
+		// on disconnect
+		case <-n.comm.dis:
+			n.logger.Println("disconnected")
 			return
-		}
-
-		// read from network
-		r, addr, err := n.net.conn.ReadFromUDP(buffer)
-		if err != nil {
-			// if disconnected return without error
-			if !n.state.isConnected {
-				return
+		default:
+			// read from network
+			r, addr, err := n.net.conn.ReadFromUDP(buffer)
+			if err != nil {
+				// return if not connected anymore
+				if !n.state.isConnected {
+					continue
+				} else {
+					// attempt safe disconnect on failed connection
+					n.Disconnect()
+					continue
+				}
 			}
 
-			// send error to node and retry
-			n.comm.err <- err
-			continue
+			// ! DEBUG
+			n.logger.Printf("receive packet from %s\n", addr.String())
+
+			// check min size, drop packets if too small
+			if r < p2p.MinPayloadSize {
+				// ! DEBUG
+				n.logger.Printf("drop packet, size %d too small\n", r)
+				continue
+			}
+
+			// parse payload into packet
+			pack := new(packet.Packet)
+			pack.Address = addr
+			pack.Payload = buffer[:r]
+
+			// forward packet to handler
+			go n.recv(pack)
 		}
-
-		n.logger.Println("receive packet")
-
-		// check min size, drop packets if too small
-		if r < p2p.MinPayloadSize {
-			continue
-		}
-
-		// parse payload into packet
-		pack := new(packet.Packet)
-		pack.Address = addr
-		pack.Payload = buffer[:r]
-
-		// forward packet to handler
-		go n.recv(pack)
 	}
 }
