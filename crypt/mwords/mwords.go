@@ -18,7 +18,7 @@ import (
 type MnemonicSentence []string
 
 // String will return all the words composing the mnemonic sentence as a single
-// string of space seperated words.
+// string of space separated words.
 func (ms MnemonicSentence) String() string {
 	return strings.Join(ms, " ")
 }

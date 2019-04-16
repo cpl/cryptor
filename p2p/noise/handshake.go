@@ -36,7 +36,7 @@ const (
 	stateInit       byte = 1 // when a handshake request is sent (initializer)
 	stateResp       byte = 2 // when a handshake request is received (responder)
 	stateRecv       byte = 3 // when a initializer receives a response
-	stateSuccessful byte = 4 // final state of a successfull handshake
+	stateSuccessful byte = 4 // final state of a successful handshake
 )
 
 // Handshake contains all the information necessary for establishing a custom

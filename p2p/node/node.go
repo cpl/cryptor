@@ -48,7 +48,7 @@ type Node struct {
 		publicKey  ppk.PublicKey  // static public key (public identifier)
 	}
 
-	// maps which allow lookup of peers based on diffrent keys
+	// maps which allow lookup of peers based on different keys
 	lookup struct {
 		sync.RWMutex
 

@@ -10,7 +10,7 @@ func AssertNil(t *testing.T, obj interface{}) {
 	}
 }
 
-// AssertEqual makes sure that the two given "objects" are NOT diffrent (!=).
+// AssertEqual makes sure that the two given "objects" are NOT different (!=).
 func AssertEqual(t *testing.T, obj0 interface{}, obj1 interface{}) {
 	if obj0 != obj1 {
 		t.Fatalf("not equal, expected %v = %v\n", obj0, obj1)
