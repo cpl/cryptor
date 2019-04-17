@@ -4,41 +4,100 @@ import (
 	"testing"
 	"time"
 
+	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/node"
+	"cpl.li/go/cryptor/p2p/peer"
 	"cpl.li/go/cryptor/tests"
 )
 
-func TestNodeHandshakeDEBUG(t *testing.T) {
+func TestNodeHandshakeSimple(t *testing.T) {
+	// create node keys
+	sigmaKey, _ := ppk.NewPrivateKey()
+	omegaKey, _ := ppk.NewPrivateKey()
+
 	// create nodes
-	sigma := node.NewNode("sigma")
-	omega := node.NewNode("omega")
+	sigma := node.NewNode("sigma", sigmaKey)
+	omega := node.NewNode("omega", omegaKey)
 
 	// start nodes
-	sigma.Start()
+	tests.AssertNil(t, sigma.Start())
 	defer sigma.Stop()
-	omega.Start()
+	tests.AssertNil(t, omega.Start())
 	defer omega.Stop()
 
-	sigma.SetAddr("localhost:45000")
-	omega.SetAddr("localhost:45001")
+	tests.AssertNil(t, sigma.SetAddr("localhost:45000"))
+	tests.AssertNil(t, omega.SetAddr("localhost:45001"))
 
-	// add external peer
+	// add external peer omega
 	p, err := sigma.PeerAdd(omega.PublicKey(), omega.Addr())
 	tests.AssertNil(t, err)
 
 	// list peers
-	sigma.PeerList()
-	omega.PeerList()
+	tests.AssertNil(t, sigma.PeerList()) // 1 peers
+	tests.AssertNil(t, omega.PeerList()) // 0 peers
+
+	// check peer counts
+	if count := sigma.PeerCount(); count != 1 {
+		t.Fatalf("node sigma peer count != 1, got %d\n", count)
+	}
 
 	// connect
-	sigma.Connect()
-	omega.Connect()
+	tests.AssertNil(t, sigma.Connect())
+	tests.AssertNil(t, omega.Connect())
 
 	// attempt handshake with peer
-	sigma.Handshake(p)
+	tests.AssertNil(t, sigma.Handshake(p))
 
-	time.Sleep(5 * time.Second)
+	// ! DEBUG
+	// TODO better handshake finalization detection
+	// wait for handshake to complete
+	time.Sleep(2 * time.Second)
 
 	sigma.PeerList()
 	omega.PeerList()
+
+	// check peer counts
+	if count := sigma.PeerCount(); count != 1 {
+		t.Fatalf("node sigma peer count != 1, got %d\n", count)
+	}
+	// check peer counts
+	if count := omega.PeerCount(); count != 1 {
+		t.Fatalf("node omega peer count != 1, got %d\n", count)
+	}
+}
+
+func TestNodeHandshakeInvalid(t *testing.T) {
+	n := node.NewNode("test", zeroKey)
+	p := peer.NewPeer(zeroKey.PublicKey(), "")
+
+	// node not running or connected
+	tests.AssertNotNil(t, n.Handshake(p),
+		"handshake while node not connected") // err 1
+
+	// start and connect
+	tests.AssertNil(t, n.Start())
+	tests.AssertNil(t, n.Connect())
+
+	// invalid peer
+	tests.AssertNotNil(t, n.Handshake(nil), "peer is nil")       // err 2
+	tests.AssertNotNil(t, n.Handshake(p), "peer address is nil") // err 3
+
+	// valid peer
+	p = peer.NewPeer(zeroKey.PublicKey(), "localhost:")
+
+	// fake HasHandshake
+	p.HasHandshake = true
+	tests.AssertNotNil(t, n.Handshake(p), "peer has handshake") // err 4
+	p.HasHandshake = false
+
+	// attempt handshake
+	tests.AssertNil(t, n.Handshake(p))
+
+	// stop
+	tests.AssertNil(t, n.Stop())
+
+	// check error count
+	if count := n.ErrCount(); count != 4 {
+		t.Fatalf("expected 4 errors, got %d\n", count)
+	}
 }
