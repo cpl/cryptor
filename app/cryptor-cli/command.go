@@ -15,7 +15,7 @@ func init() {
 }
 
 // the command expected execution function
-type cmdFunc func(argv []string) error
+type cmdFunc func(argc int, argv []string) error
 
 type command struct {
 	description string

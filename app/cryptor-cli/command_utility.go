@@ -14,7 +14,7 @@ of nodes, peers keys and all other aspects of the Cryptor package.
 `
 
 // utility help function
-func help(argv []string) error {
+func help(argc int, argv []string) error {
 	// display help message
 	fmt.Println(helpMsg)
 
@@ -33,7 +33,7 @@ func help(argv []string) error {
 }
 
 // utility version function
-func version(argv []string) error {
+func version(argc int, argv []string) error {
 
 	fmt.Printf("    %-10s %s\n",
 		color.GreenString("cryptor pkg"),

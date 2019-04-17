@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"os"
 	"strings"
 )
 
@@ -29,6 +30,16 @@ func parseCommand(cmd string) error {
 		return errors.New("invalid command argument count")
 	}
 
+	// builtin simple commands
+	switch argv[0] {
+	case "exit":
+		os.Exit(0)
+	case "clear":
+		if _, err := os.Stdout.WriteString("\033[H\033[2J"); err != nil {
+			return err
+		}
+	}
+
 	// lookup command
 	c, ok := commands[argv[0]]
 	if !ok {
@@ -37,7 +48,7 @@ func parseCommand(cmd string) error {
 
 	// execute command
 	if argc == 1 {
-		return c.exec(nil)
+		return c.exec(0, nil)
 	}
-	return c.exec(argv[1:])
+	return c.exec(argc-1, argv[1:])
 }
