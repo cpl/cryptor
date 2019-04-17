@@ -11,6 +11,10 @@ func init() {
 			description: "display the cryptor-cli and cryptor pkg versions",
 			exec:        version,
 		},
+		"node": command{
+			description: "creation and management of cryptor nodes",
+			exec:        commandNode,
+		},
 	}
 }
 
