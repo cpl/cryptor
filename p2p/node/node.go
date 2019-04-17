@@ -253,23 +253,31 @@ func (n *Node) Addr() string {
 // SetAddr sets the nodes listening address and port. The expected address
 // must be "host:port".
 func (n *Node) SetAddr(addr string) (err error) {
-	n.net.Lock()
-	defer n.net.Unlock()
-
-	// ignore if node is not running
-	if !n.state.isRunning {
-		return errors.New("can't change address while node is not running")
-	}
+	// lock node state
+	n.state.Lock()
+	defer n.state.Unlock()
 
 	// ignore if node is connected
 	if n.state.isConnected {
-		return errors.New("can't change address while node is online")
+		n.meta.errCount++
+		return errors.New("can't change address while node is connected")
 	}
 
-	// set address
+	// lock network
+	n.net.Lock()
+	defer n.net.Unlock()
+
+	// resolve address (no change yet, validating and checking errors first)
 	newaddr, err := net.ResolveUDPAddr(p2p.Network, addr)
 	if err != nil {
+		n.meta.errCount++
 		return err
+	}
+
+	// reject change if address matches
+	if newaddr.String() == n.net.addr.String() {
+		n.meta.errCount++
+		return errors.New("can't change address, same as current address")
 	}
 
 	// announce address change

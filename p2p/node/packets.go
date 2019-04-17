@@ -71,6 +71,8 @@ func (n *Node) recv(pack *packet.Packet) {
 
 func (n *Node) send(pack *packet.Packet) {
 	// check node is connected
+	n.state.Lock()
+	defer n.state.Unlock()
 	if !n.state.isConnected {
 		return
 	}

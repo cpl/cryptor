@@ -3,13 +3,16 @@ package node
 import (
 	"testing"
 
+	"cpl.li/go/cryptor/crypt/ppk"
+
 	"cpl.li/go/cryptor/tests"
 )
 
 // TODO Add build tags to all test files for separating race cond risk tests
 
 func TestKillNetwork(t *testing.T) {
-	n := NewNode("test")
+	var zeroKey ppk.PrivateKey
+	n := NewNode("test", zeroKey)
 
 	tests.AssertNil(t, n.Start())
 	tests.AssertNil(t, n.Connect())
@@ -37,8 +40,8 @@ func TestKillNetwork(t *testing.T) {
 	tests.AssertNotNil(t, n.Start(), "start already running")
 
 	// check node address
-	if n.Addr() != "<nil>" {
-		t.Fatalf("unexpected node address, expected <nil>, got %s\n", n.Addr())
+	if addr := n.Addr(); addr != "<nil>" {
+		t.Fatalf("unexpected node address, expected <nil>, got %s\n", addr)
 	}
 
 	// attempt re-connect and disconnect

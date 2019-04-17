@@ -26,7 +26,7 @@ func parallelAdd(t *testing.T, n *node.Node, wg *sync.WaitGroup) {
 
 func TestPeerAddAndDel(t *testing.T) {
 	// create node
-	n := node.NewNode("test")
+	n := node.NewNode("test", zeroKey)
 
 	// attempt to add peer while not running
 	if _, err := n.PeerAdd(newRandomPublicKey(), ""); err == nil {
@@ -122,7 +122,7 @@ func TestPeerAddAndDel(t *testing.T) {
 
 func TestPeerList(t *testing.T) {
 	// create node
-	n := node.NewNode("test")
+	n := node.NewNode("test", zeroKey)
 
 	// attempt to list peers while not running
 	if err := n.PeerList(); err == nil {
