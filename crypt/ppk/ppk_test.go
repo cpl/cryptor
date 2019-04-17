@@ -2,7 +2,10 @@ package ppk_test
 
 import (
 	"encoding/hex"
+	"strings"
 	"testing"
+
+	"cpl.li/go/cryptor/crypt/mwords"
 
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/crypt/ppk"
@@ -118,4 +121,128 @@ func TestFromHexInvalidString(t *testing.T) {
 			t.Fatalf("decoded invalid key: %s\n", str)
 		}
 	}
+}
+
+func TestToMnemonic(t *testing.T) {
+	// generate key
+	sk, err := ppk.NewPrivateKey()
+	tests.AssertNil(t, err)
+
+	// generate mnemonic and check size
+	mnemonic := sk.ToMnemonic()
+	if l := len(mnemonic); l != ppk.MnemonicSize {
+		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
+	}
+
+	mnemonic = sk.PublicKey().ToMnemonic()
+	if l := len(mnemonic); l != ppk.MnemonicSize {
+		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
+	}
+
+	// generate mnemonic from zero key
+	var zeroKey ppk.PrivateKey
+	mnemonic = zeroKey.ToMnemonic()
+
+	// check last word
+	if mnemonic[ppk.MnemonicSize-1] != "art" {
+		t.Fatalf("expected word \"art\", got \"%s\" instead\n",
+			mnemonic[ppk.MnemonicSize-1])
+	}
+
+	// iterate all words but last
+	for _, word := range mnemonic[:ppk.MnemonicSize-2] {
+		if word != "abandon" {
+			t.Errorf("expected word \"abandon\", got \"%s\" instead\n", word)
+		}
+	}
+}
+
+func TestFromMnemonic(t *testing.T) {
+	// generate key
+	sk, err := ppk.NewPrivateKey()
+	tests.AssertNil(t, err)
+
+	// generate mnemonics and check sizes
+	mnemonicPrivate := sk.ToMnemonic()
+	if l := len(mnemonicPrivate); l != ppk.MnemonicSize {
+		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
+	}
+	mnemonicPublic := sk.PublicKey().ToMnemonic()
+	if l := len(mnemonicPublic); l != ppk.MnemonicSize {
+		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
+	}
+
+	// key generated from mnemonics
+	var skDecoded ppk.PrivateKey
+	var pkDecoded ppk.PublicKey
+
+	// decode private key
+	if err := skDecoded.FromMnemonic(mnemonicPrivate); err != nil {
+		t.Fatal(err)
+	}
+
+	// decode public key
+	if err := pkDecoded.FromMnemonic(mnemonicPublic); err != nil {
+		t.Fatal(err)
+	}
+
+	// verify key integrity
+	if !sk.Equals(skDecoded) {
+		t.Errorf("private keys do not match")
+	}
+	if !sk.PublicKey().Equals(pkDecoded) {
+		t.Errorf("public keys do not match")
+	}
+	if !skDecoded.PublicKey().Equals(pkDecoded) {
+		t.Errorf("decoded public key error")
+	}
+}
+
+func TestFromMnemonicZeroKey(t *testing.T) {
+	// zero key
+	var zeroKey ppk.PrivateKey
+
+	// import mnemonic for zero key
+	mnemonic, _ := mwords.MnemonicFromString(
+		"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art")
+
+	// generate random private key
+	sk, _ := ppk.NewPrivateKey()
+
+	// replace private key with key from mnemonic
+	if err := sk.FromMnemonic(mnemonic); err != nil {
+		t.Fatal(err)
+	}
+
+	// compare keys
+	if !zeroKey.Equals(sk) {
+		t.Fatal("zero keys do not match")
+	}
+}
+
+func TestFromMnemonicInvalid(t *testing.T) {
+	var key ppk.PrivateKey
+
+	// empty mnemonic
+	tests.AssertNotNil(t, key.FromMnemonic([]string{}), "empty mnemonic")
+
+	// invalid mnemonic size
+	tests.AssertNotNil(t,
+		key.FromMnemonic(
+			strings.Fields("legal year wave sausage worth useful legal winner thank yellow")), "invalid mnemonic size")
+
+	// short mnemonic (half the wanted size)
+	tests.AssertNotNil(t,
+		key.FromMnemonic(
+			strings.Fields("legal winner thank year wave sausage worth useful legal winner thank yellow")), "short mnemonic")
+
+	// mnemonic contains invalid words
+	tests.AssertNotNil(t,
+		key.FromMnemonic(
+			strings.Fields("beyond stage linux clip because twist token leaf atom foobarword genius food business side grid unable middle armed observe pair crouch tonight away coconut")), "invalid mnemonic")
+
+	// mnemonic checksum is not valid
+	tests.AssertNotNil(t,
+		key.FromMnemonic(
+			strings.Fields("zoo stage dog clip because twist token leaf atom about genius food business side grid unable middle armed observe pair crouch tonight away coconut")), "invalid mnemonic checksum")
 }
