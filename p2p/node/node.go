@@ -86,7 +86,7 @@ type Node struct {
 // NewNode creates a node running on the local machine. The default starting
 // state is NOT RUNNING and OFFLINE. Allowing the Node to be further configured
 // before starting and connecting to the Cryptor Network.
-func NewNode(name string) *Node {
+func NewNode(name string, key ppk.PrivateKey) *Node {
 	n := new(Node)
 
 	// initialize logger
@@ -106,10 +106,9 @@ func NewNode(name string) *Node {
 	n.state.isRunning = false
 	n.state.isConnected = false
 
-	// generate node keys
-	// TODO Implement PBKDF2 for this
-	n.identity.privateKey, _ = ppk.NewPrivateKey()
-	n.identity.publicKey = n.identity.privateKey.PublicKey()
+	// assign node keys
+	n.identity.privateKey = key
+	n.identity.publicKey = key.PublicKey()
 
 	// initialize lookup maps
 	n.lookup.peers = make(map[ppk.PublicKey]*peer.Peer)
@@ -238,11 +237,6 @@ func (n *Node) Disconnect() error {
 // PublicKey returns the node static public key.
 func (n *Node) PublicKey() ppk.PublicKey {
 	return n.identity.publicKey
-}
-
-// PrivateKey returns the node static private key.
-func (n *Node) PrivateKey() ppk.PrivateKey {
-	return n.identity.privateKey
 }
 
 // Addr returns the node listening address. If the node is running we return the
