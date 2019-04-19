@@ -97,7 +97,5 @@ func TestNodeHandshakeInvalid(t *testing.T) {
 	tests.AssertNil(t, n.Stop())
 
 	// check error count
-	if count := n.ErrCount(); count != 4 {
-		t.Fatalf("expected 4 errors, got %d\n", count)
-	}
+	assertErrCount(t, n, 4)
 }

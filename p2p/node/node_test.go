@@ -11,6 +11,13 @@ import (
 
 var zeroKey ppk.PrivateKey
 
+func assertErrCount(t *testing.T, n *node.Node, expected int) {
+	// check error count
+	if count := n.ErrCount(); count != expected {
+		t.Fatalf("expected %d errors, got %d\n", expected, count)
+	}
+}
+
 func TestNodeBasicRoutines(t *testing.T) {
 	n := node.NewNode("test", zeroKey)
 
@@ -27,9 +34,7 @@ func TestNodeBasicRoutines(t *testing.T) {
 	tests.AssertNil(t, n.Stop())
 
 	// check error count
-	if count := n.ErrCount(); count != 0 {
-		t.Fatalf("expected no errors, got %d\n", count)
-	}
+	assertErrCount(t, n, 0)
 }
 
 func TestNodeBasicInvalidRoutines(t *testing.T) {
@@ -50,9 +55,8 @@ func TestNodeBasicInvalidRoutines(t *testing.T) {
 	tests.AssertNil(t, n.Stop())
 
 	// check error count
-	if count := n.ErrCount(); count != 7 {
-		t.Fatalf("expected 7 errors, got %d\n", count)
-	}
+	assertErrCount(t, n, 7)
+
 }
 
 func TestNodeAddrSet(t *testing.T) {
@@ -120,9 +124,8 @@ func TestNodeAddrSet(t *testing.T) {
 	tests.AssertNil(t, n.Stop())
 
 	// check error count
-	if count := n.ErrCount(); count != 7 {
-		t.Fatalf("expected 7 errors, got %d\n", count)
-	}
+	assertErrCount(t, n, 7)
+
 }
 
 func TestConnectInvalidAddress(t *testing.T) {
