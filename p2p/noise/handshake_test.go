@@ -22,11 +22,17 @@ func TestHandshake(t *testing.T) {
 
 	// initializer begin protocol
 	iHandshake, msgI := noise.Initialize(iSPublic, rSPublic)
+	if state := iHandshake.State(); state != noise.StateInitialized {
+		t.Fatalf("invalid state, %d\n", state)
+	}
 
 	// responder receives handshake data
 	rHandshake, iSPublicR, msgR, err :=
 		noise.Respond(msgI, rSSecret)
 	tests.AssertNil(t, err)
+	if state := rHandshake.State(); state != noise.StateResponded {
+		t.Fatalf("invalid state, %d\n", state)
+	}
 
 	if !bytes.Equal(iSPublicR[:], iSPublic[:]) {
 		t.Fatalf("failed to match initializer public key")
@@ -36,10 +42,16 @@ func TestHandshake(t *testing.T) {
 	if err := iHandshake.Receive(msgR, iSSecret); err != nil {
 		t.Fatal(err)
 	}
+	if state := iHandshake.State(); state != noise.StateReceived {
+		t.Fatalf("invalid state, %d\n", state)
+	}
 
 	// both handshakes can compute transport keys
 	iSend, iRecv, err := iHandshake.Finalize()
 	tests.AssertNil(t, err)
+	if state := iHandshake.State(); state != noise.StateSuccessful {
+		t.Fatalf("invalid state, %d\n", state)
+	}
 
 	var zeroPubKey ppk.PublicKey
 
@@ -52,6 +64,9 @@ func TestHandshake(t *testing.T) {
 
 	rSend, rRecv, err := rHandshake.Finalize()
 	tests.AssertNil(t, err)
+	if state := rHandshake.State(); state != noise.StateSuccessful {
+		t.Fatalf("invalid state, %d\n", state)
+	}
 
 	// compare pub unique key with zero key
 	rPubKey := rHandshake.PublicKey()

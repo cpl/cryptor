@@ -19,21 +19,40 @@ import (
 // utility byte array containing NonceSize zeroes
 var zeroNonce [chacha.NonceSize]byte
 
-const (
-	stateEmpty      byte = 0 // handshake starting state
-	stateInit       byte = 1 // when a handshake request is sent (initializer)
-	stateResp       byte = 2 // when a handshake request is received (responder)
-	stateRecv       byte = 3 // when a initializer receives a response
-	stateSuccessful byte = 4 // final state of a successful handshake
-)
+// TODO Create state map representation for handshake protocol.
 
-// TODO Change Handshake state so that we can access it for reading
+// HandshakeState is an abstraction for the underlaying type used for representing
+// the handshake state.
+type HandshakeState byte
+
+const (
+	// StateEmpty can be on both initializer and responder sides. It's the
+	// default starting state for newly created handshakes.
+	StateEmpty HandshakeState = 0
+
+	// StateInitialized is for a handshake marked by the initializer after it's
+	// created using `noise.Initialize`.
+	StateInitialized HandshakeState = 1
+
+	// StateResponded is for a handshake marked by the responder after it
+	// received an initialization message. The handshake must be generated
+	// by using `noise.Respond`.
+	StateResponded HandshakeState = 2
+
+	// StateReceived is after the handshakes makes a round-trip from the
+	// initializer to the responder and back, where it's validated.
+	StateReceived HandshakeState = 3
+
+	// StateSuccessful is marked after `Finalize` is called on StateResponded
+	// for the responder or StateReceived for the initializer.
+	StateSuccessful HandshakeState = 4
+)
 
 // Handshake contains all the information necessary for establishing a custom
 // implementation of the Noise Protocol handshake.
 type Handshake struct {
 	// state or stage of the handshake
-	state byte
+	state HandshakeState
 
 	// for locking the handshake while performing any operation
 	sync.RWMutex
@@ -55,6 +74,13 @@ func (hs *Handshake) keygen() {
 	hs.tempKeys.secret, _ = ppk.NewPrivateKey()
 	hs.tempKeys.public = hs.tempKeys.secret.PublicKey()
 	hs.Unlock()
+}
+
+// State returns the handshake state.
+func (hs *Handshake) State() HandshakeState {
+	hs.Lock()
+	defer hs.Unlock()
+	return hs.state
 }
 
 // PublicKey returns the temporary handshake public key generated at creation.
@@ -96,7 +122,7 @@ func Initialize(iSPub, rSPub ppk.PublicKey) (
 		zeroNonce[:], iSPub[:], hs.hash[:])
 
 	// mark as initialized
-	hs.state = stateInit
+	hs.state = StateInitialized
 
 	return
 }
@@ -170,7 +196,7 @@ func Respond(msg *MessageInitializer, rSec ppk.PrivateKey) (
 	crypt.Hash(&hs.hash, rmsg.EncryptedNothing[:])
 
 	// mark as responded
-	hs.state = stateResp
+	hs.state = StateResponded
 
 	return
 }
@@ -187,7 +213,7 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 	defer hs.Unlock()
 
 	// check handshake state
-	if hs.state != stateInit {
+	if hs.state != StateInitialized {
 		return errors.New("invalid handshake state")
 	}
 
@@ -236,7 +262,7 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 	crypt.Hash(&hs.hash, msg.EncryptedNothing[:])
 
 	// mark as received
-	hs.state = stateRecv
+	hs.state = StateReceived
 
 	return nil
 }
@@ -255,13 +281,13 @@ func (hs *Handshake) Finalize() (send, recv [ppk.KeySize]byte, err error) {
 	// default case send, recv keys are all 0
 	switch hs.state {
 	// initializer
-	case stateRecv:
+	case StateReceived:
 		hkdf.HKDF(hs.c[:], nil, &send, &recv)
-		hs.state = stateSuccessful
+		hs.state = StateSuccessful
 	// receiver
-	case stateResp:
+	case StateResponded:
 		hkdf.HKDF(hs.c[:], nil, &recv, &send)
-		hs.state = stateSuccessful
+		hs.state = StateSuccessful
 	// invalid handshake state
 	default:
 		return send, recv, errors.New("invalid handshake state")
