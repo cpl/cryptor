@@ -7,6 +7,8 @@ import (
 	"cpl.li/go/cryptor/p2p/peer"
 )
 
+// TODO Remove running state check.
+
 // PeerAdd takes the public key of a peer and creates a new entry in the node
 // map. An optional string address can be passed.
 func (n *Node) PeerAdd(pk ppk.PublicKey, addr string) (*peer.Peer, error) {
@@ -75,4 +77,21 @@ func (n *Node) PeerList() error {
 	}
 
 	return nil
+}
+
+// PeerGet returns a peer from lookup if it exists. If the peer does not exist
+// a nil pointer is returned.
+func (n *Node) PeerGet(pk ppk.PublicKey) *peer.Peer {
+	// lock lookup
+	n.lookup.Lock()
+	defer n.lookup.Unlock()
+
+	// check if peer exists, return nil if not
+	p, ok := n.lookup.peers[pk]
+	if !ok {
+		return nil
+	}
+
+	// return peer
+	return p
 }

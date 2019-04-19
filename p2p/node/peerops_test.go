@@ -7,6 +7,7 @@ import (
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/node"
+	"cpl.li/go/cryptor/tests"
 )
 
 // generates a random public key for testing only
@@ -149,4 +150,41 @@ func TestPeerList(t *testing.T) {
 	if err := n.PeerList(); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestPeerGet(t *testing.T) {
+	// create and start node
+	n := node.NewNode("test", zeroKey)
+	tests.AssertNil(t, n.Start())
+
+	// generate keys and peers
+	keys := make([]ppk.PublicKey, 8)
+	for i := 0; i < 8; i++ {
+		keys[i] = newRandomPublicKey()
+		if _, err := n.PeerAdd(keys[i], ""); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// check count
+	if count := n.PeerCount(); count != 8 {
+		t.Fatalf("expected 8 peers, got %d\n", count)
+	}
+
+	// invalid gets
+	for i := 0; i < 8; i++ {
+		if p := n.PeerGet(newRandomPublicKey()); p != nil {
+			t.Errorf("got non-nil peer, expected non peer, %d\n", i)
+		}
+	}
+
+	// valid gets
+	for i := 0; i < 8; i++ {
+		if p := n.PeerGet(keys[i]); p == nil {
+			t.Errorf("got nil peer, expected non-nil peer, %d\n", i)
+		}
+	}
+
+	// stop
+	tests.AssertNil(t, n.Stop())
 }
