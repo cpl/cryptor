@@ -61,7 +61,7 @@ func (n *Node) disconnect() error {
 // and passes on valid packets only
 func (n *Node) listen() {
 	// incoming data buffer
-	buffer := make([]byte, p2p.MaxPayloadSize)
+	buffer := make([]byte, p2p.MaxPayloadSize+1)
 
 	// zero buffer on disconnect
 	defer crypt.ZeroBytes(buffer)
@@ -90,9 +90,9 @@ func (n *Node) listen() {
 			n.logger.Printf("receive packet from %s\n", addr.String())
 
 			// check min size, drop packets if too small
-			if r < p2p.MinPayloadSize {
+			if r < p2p.MinPayloadSize || r > p2p.MaxPayloadSize {
 				// ! DEBUG
-				n.logger.Printf("drop packet, size %d too small\n", r)
+				n.logger.Printf("drop packet, size %d outside bounds\n", r)
 				continue
 			}
 
