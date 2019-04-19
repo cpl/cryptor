@@ -39,6 +39,8 @@ const (
 	stateSuccessful byte = 4 // final state of a successful handshake
 )
 
+// TODO Change Handshake state so that we can access it for reading
+
 // Handshake contains all the information necessary for establishing a custom
 // implementation of the Noise Protocol handshake.
 type Handshake struct {

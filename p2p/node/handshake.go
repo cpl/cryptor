@@ -27,7 +27,7 @@ func (n *Node) Handshake(p *peer.Peer) (err error) {
 	defer p.Unlock()
 
 	// check if handshake is initialized
-	if p.HasHandshake {
+	if p.Handshake != nil {
 		n.meta.errCount++
 		return errors.New("peer handshake already exists")
 	}
@@ -58,6 +58,5 @@ func (n *Node) Handshake(p *peer.Peer) (err error) {
 	// send handshake
 	go n.send(pack)
 
-	p.HasHandshake = true
 	return nil
 }

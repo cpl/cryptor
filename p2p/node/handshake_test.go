@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"cpl.li/go/cryptor/p2p/noise"
+
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/node"
 	"cpl.li/go/cryptor/p2p/peer"
@@ -85,10 +87,10 @@ func TestNodeHandshakeInvalid(t *testing.T) {
 	// valid peer
 	p = peer.NewPeer(zeroKey.PublicKey(), "localhost:")
 
-	// fake HasHandshake
-	p.HasHandshake = true
+	// fake Handshake
+	p.Handshake = new(noise.Handshake)
 	tests.AssertNotNil(t, n.Handshake(p), "peer has handshake") // err 4
-	p.HasHandshake = false
+	p.Handshake = nil
 
 	// attempt handshake
 	tests.AssertNil(t, n.Handshake(p))
