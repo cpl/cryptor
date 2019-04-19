@@ -22,7 +22,7 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check size
-	if len(dataI) != noise.HandshakeSizeInitializer {
+	if len(dataI) != noise.SizeMessageInitializer {
 		t.Fatal("invalid binary form size")
 	}
 
@@ -62,7 +62,7 @@ func TestMarshalMessagesResponder(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check size
-	if len(dataI) != noise.HandshakeSizeResponder {
+	if len(dataI) != noise.SizeMessageResponder {
 		t.Fatal("invalid binary form size")
 	}
 

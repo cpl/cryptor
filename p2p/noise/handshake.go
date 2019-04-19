@@ -1,4 +1,8 @@
-package noise
+/*
+Package noise implements a custom version of the Noise Protocol Framework
+handshake protocol mixed with concepts from WireGuard VPN.
+*/
+package noise // import "cpl.li/go/cryptor/p2p/noise"
 
 import (
 	"errors"
@@ -14,22 +18,6 @@ import (
 
 // utility byte array containing NonceSize zeroes
 var zeroNonce [chacha.NonceSize]byte
-
-const (
-	// HandshakeSizeInitializer is the size of a handshake message sent by
-	// initializer to the responder.
-	HandshakeSizeInitializer = ppk.KeySize + sizeEncPub
-
-	// HandshakeSizeResponder is the size of the response message from the
-	// responder to the initializer.
-	HandshakeSizeResponder = ppk.KeySize + sizeEncNth
-)
-
-// encryption sizes
-const (
-	sizeEncPub = 48 // encrypted size of static public key
-	sizeEncNth = 16 // encrypted size of nothing (nil)
-)
 
 const (
 	stateEmpty      byte = 0 // handshake starting state

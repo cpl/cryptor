@@ -6,6 +6,22 @@ import (
 	"cpl.li/go/cryptor/crypt/ppk"
 )
 
+const (
+	// SizeMessageInitializer is the size of a handshake message sent by
+	// initializer to the responder.
+	SizeMessageInitializer = ppk.KeySize + sizeEncPub
+
+	// SizeMessageResponder is the size of the response message from the
+	// responder to the initializer.
+	SizeMessageResponder = ppk.KeySize + sizeEncNth
+)
+
+// encryption sizes
+const (
+	sizeEncPub = 48 // encrypted size of static public key
+	sizeEncNth = 16 // encrypted size of nothing (nil)
+)
+
 // MessageInitializer encapsulates the data which is sent by the initializer to
 // the responder.
 type MessageInitializer struct {
@@ -23,7 +39,7 @@ func (msg *MessageInitializer) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary can unmarshal the output of MarshalBinary back into itself.
 func (msg *MessageInitializer) UnmarshalBinary(data []byte) error {
 	// check data size
-	if len(data) != HandshakeSizeInitializer {
+	if len(data) != SizeMessageInitializer {
 		return errors.New("invalid message size")
 	}
 
@@ -50,7 +66,7 @@ func (msg *MessageResponder) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary can unmarshal the output of MarshalBinary back into itself.
 func (msg *MessageResponder) UnmarshalBinary(data []byte) error {
 	// check data size
-	if len(data) != HandshakeSizeResponder {
+	if len(data) != SizeMessageResponder {
 		return errors.New("invalid message size")
 	}
 

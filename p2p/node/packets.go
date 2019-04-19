@@ -31,7 +31,7 @@ func (n *Node) recv(pack *packet.Packet) {
 	// -> responder message
 	if ok && p.Handshake != nil {
 		// check payload size to match handshake responder size
-		if len(pack.Payload) != noise.HandshakeSizeResponder {
+		if len(pack.Payload) != noise.SizeMessageResponder {
 			// drop packet if not
 			return
 		}
@@ -68,7 +68,7 @@ func (n *Node) recv(pack *packet.Packet) {
 	// peer may or may not exist, expect initializer message
 
 	// check payload size to match handshake initializer size
-	if len(pack.Payload) != noise.HandshakeSizeInitializer {
+	if len(pack.Payload) != noise.SizeMessageInitializer {
 		// drop packet if not
 		return
 	}

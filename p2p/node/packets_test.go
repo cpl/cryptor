@@ -108,9 +108,9 @@ func TestNodePayloadUnknownValid(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check response
-	if r != noise.HandshakeSizeResponder {
+	if r != noise.SizeMessageResponder {
 		t.Fatalf("invalid handshake response size, expected %d, got %d\n",
-			noise.HandshakeSizeResponder, r)
+			noise.SizeMessageResponder, r)
 	}
 
 	// check peer count of node
@@ -164,7 +164,7 @@ func TestNodePayloadUnknownInvalid(t *testing.T) {
 
 	// send valid packet with invalid payloads
 	for i := 0; i < 5; i++ {
-		testSendPacket(t, nConn, noise.HandshakeSizeInitializer) // 5x err
+		testSendPacket(t, nConn, noise.SizeMessageInitializer) // 5x err
 	}
 
 	time.Sleep(2 * time.Second)
