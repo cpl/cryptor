@@ -2,6 +2,7 @@ package crypt // import "cpl.li/go/cryptor/crypt"
 
 import (
 	"crypto/rand"
+	"encoding/binary"
 )
 
 // ZeroBytes takes at least one array of bytes and sets each byte individually
@@ -27,4 +28,10 @@ func RandomBytes(size uint) []byte {
 	rand.Read(data)
 
 	return data
+}
+
+// RandomUint64 generate random unsigned integers in 64 bits (8 bytes) using
+// `crypto/rand`.
+func RandomUint64() uint64 {
+	return binary.LittleEndian.Uint64(RandomBytes(8))
 }

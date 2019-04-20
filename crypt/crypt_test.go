@@ -22,6 +22,14 @@ func TestRandomBytes(t *testing.T) {
 	}
 }
 
+func TestRandomUint64(t *testing.T) {
+	var val uint64
+	val = crypt.RandomUint64()
+	if val == 0 {
+		t.Fatal("unexpected 0 value")
+	}
+}
+
 func assertZero(t *testing.T, data []byte) {
 	if !bytes.Equal(data, make([]byte, len(data))) {
 		t.Fatalf("failed to erase bytes, %v\n", data)
