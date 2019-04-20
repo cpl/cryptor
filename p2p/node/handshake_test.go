@@ -2,6 +2,7 @@ package node_test
 
 import (
 	"testing"
+	"time"
 
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/node"
@@ -53,7 +54,9 @@ func TestNodeHandshakeSimple(t *testing.T) {
 	// attempt handshake with peer
 	tests.AssertNil(t, sigma.Handshake(p))
 
+	// wait for 100ms
 	for omega.PeerCount() != 1 {
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	// list peers

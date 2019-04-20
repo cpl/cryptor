@@ -128,6 +128,9 @@ func (n *Node) recv(pack *packet.Packet) {
 
 	go n.send(response)
 
+	// ! DEBUG
+	n.logger.Println("handshake with new peer")
+
 	return
 }
 
