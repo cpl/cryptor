@@ -8,7 +8,7 @@ package p2p // import "cpl.li/go/cryptor/p2p"
 // In this case we use "udp", allowing "udp4" and "udp6".
 const Network = "udp"
 
-// TODO Readup on UDP packet safe size, 1024 is for testing only
+// ! DEBUG
 const maxUDPSize = 1024
 
 const (

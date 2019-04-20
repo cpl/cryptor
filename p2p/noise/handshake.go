@@ -19,8 +19,6 @@ import (
 // utility byte array containing NonceSize zeroes
 var zeroNonce [chacha.NonceSize]byte
 
-// TODO Create state map representation for handshake protocol.
-
 // HandshakeState is an abstraction for the underlaying type used for representing
 // the handshake state.
 type HandshakeState byte
