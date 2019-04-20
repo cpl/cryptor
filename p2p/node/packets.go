@@ -1,6 +1,8 @@
 package node
 
 import (
+	"encoding/binary"
+
 	"cpl.li/go/cryptor/p2p/noise"
 	"cpl.li/go/cryptor/p2p/packet"
 )
@@ -11,9 +13,12 @@ import (
 // - handleResponse
 
 func (n *Node) recv(pack *packet.Packet) {
-	// perform peer lookup
+	// extract message ID
+	msgID := binary.LittleEndian.Uint64(pack.Payload)
+
+	// perform peer lookup based on ID
 	n.lookup.Lock()
-	p, ok := n.lookup.address[pack.Address.String()]
+	p, ok := n.lookup.table[msgID]
 	if ok {
 		p.Lock()
 		defer p.Unlock()

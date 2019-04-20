@@ -56,7 +56,7 @@ type Node struct {
 		peers map[ppk.PublicKey]*peer.Peer
 
 		// a key,value map of address/peer
-		address map[string]*peer.Peer
+		table map[uint64]*peer.Peer
 	}
 
 	// communication covers the channels used by the node to send information
@@ -112,7 +112,7 @@ func NewNode(name string, key ppk.PrivateKey) *Node {
 
 	// initialize lookup maps
 	n.lookup.peers = make(map[ppk.PublicKey]*peer.Peer)
-	n.lookup.address = make(map[string]*peer.Peer)
+	n.lookup.table = make(map[uint64]*peer.Peer)
 
 	n.logger.Println("created")
 

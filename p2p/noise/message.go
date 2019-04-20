@@ -1,6 +1,7 @@
 package noise
 
 import (
+	"encoding/binary"
 	"errors"
 
 	"cpl.li/go/cryptor/crypt/ppk"
@@ -9,31 +10,39 @@ import (
 const (
 	// SizeMessageInitializer is the size of a handshake message sent by
 	// initializer to the responder.
-	SizeMessageInitializer = ppk.KeySize + sizeEncPub
+	SizeMessageInitializer = sizeID + ppk.KeySize + sizeEncPub
 
 	// SizeMessageResponder is the size of the response message from the
 	// responder to the initializer.
-	SizeMessageResponder = ppk.KeySize + sizeEncNth
+	SizeMessageResponder = sizeID + ppk.KeySize + sizeEncNth
 )
 
 // encryption sizes
 const (
 	sizeEncPub = 48 // encrypted size of static public key
 	sizeEncNth = 16 // encrypted size of nothing (nil)
+	sizeID     = 8  // size of an int64 (64/8 = 8 bytes)
 )
 
 // MessageInitializer encapsulates the data which is sent by the initializer to
 // the responder.
 type MessageInitializer struct {
+	ID                                  uint64
 	PlaintextUniquePublic               ppk.PublicKey
 	EncryptedInitializerStaticPublicKey [sizeEncPub]byte
 }
 
 // MarshalBinary encodes the receiver into a binary form and returns the result.
 func (msg *MessageInitializer) MarshalBinary() ([]byte, error) {
-	return append(
-		msg.PlaintextUniquePublic[:],
-		msg.EncryptedInitializerStaticPublicKey[:]...), nil
+	// create output buffer
+	out := make([]byte, SizeMessageInitializer)
+
+	// write fields
+	binary.LittleEndian.PutUint64(out, msg.ID)
+	copy(out[sizeID:], msg.PlaintextUniquePublic[:])
+	copy(out[sizeID+ppk.KeySize:], msg.EncryptedInitializerStaticPublicKey[:])
+
+	return out, nil
 }
 
 // UnmarshalBinary can unmarshal the output of MarshalBinary back into itself.
@@ -43,8 +52,10 @@ func (msg *MessageInitializer) UnmarshalBinary(data []byte) error {
 		return errors.New("invalid message size")
 	}
 
-	copy(msg.PlaintextUniquePublic[:], data[:ppk.KeySize])
-	copy(msg.EncryptedInitializerStaticPublicKey[:], data[ppk.KeySize:])
+	// unpack fields
+	msg.ID = binary.LittleEndian.Uint64(data)
+	copy(msg.PlaintextUniquePublic[:], data[sizeID:sizeID+ppk.KeySize])
+	copy(msg.EncryptedInitializerStaticPublicKey[:], data[sizeID+ppk.KeySize:])
 
 	return nil
 }
@@ -52,15 +63,22 @@ func (msg *MessageInitializer) UnmarshalBinary(data []byte) error {
 // MessageResponder encapsulates the data which is sent by the responder to
 // the initializer.
 type MessageResponder struct {
+	ID                    uint64
 	PlaintextUniquePublic ppk.PublicKey
 	EncryptedNothing      [sizeEncNth]byte
 }
 
 // MarshalBinary encodes the receiver into a binary form and returns the result.
 func (msg *MessageResponder) MarshalBinary() ([]byte, error) {
-	return append(
-		msg.PlaintextUniquePublic[:],
-		msg.EncryptedNothing[:]...), nil
+	// create output buffer
+	out := make([]byte, SizeMessageResponder)
+
+	// write fields
+	binary.LittleEndian.PutUint64(out, msg.ID)
+	copy(out[sizeID:], msg.PlaintextUniquePublic[:])
+	copy(out[sizeID+ppk.KeySize:], msg.EncryptedNothing[:])
+
+	return out, nil
 }
 
 // UnmarshalBinary can unmarshal the output of MarshalBinary back into itself.
@@ -70,8 +88,10 @@ func (msg *MessageResponder) UnmarshalBinary(data []byte) error {
 		return errors.New("invalid message size")
 	}
 
-	copy(msg.PlaintextUniquePublic[:], data[:ppk.KeySize])
-	copy(msg.EncryptedNothing[:], data[ppk.KeySize:])
+	// unpack fields
+	msg.ID = binary.LittleEndian.Uint64(data)
+	copy(msg.PlaintextUniquePublic[:], data[sizeID:sizeID+ppk.KeySize])
+	copy(msg.EncryptedNothing[:], data[sizeID+ppk.KeySize:])
 
 	return nil
 }

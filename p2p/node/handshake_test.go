@@ -2,12 +2,10 @@ package node_test
 
 import (
 	"testing"
-	"time"
-
-	"cpl.li/go/cryptor/p2p/noise"
 
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/node"
+	"cpl.li/go/cryptor/p2p/noise"
 	"cpl.li/go/cryptor/p2p/peer"
 	"cpl.li/go/cryptor/tests"
 )
@@ -38,9 +36,14 @@ func TestNodeHandshakeSimple(t *testing.T) {
 	tests.AssertNil(t, sigma.PeerList()) // 1 peers
 	tests.AssertNil(t, omega.PeerList()) // 0 peers
 
-	// check peer counts
+	// check peer count
 	if count := sigma.PeerCount(); count != 1 {
 		t.Fatalf("node sigma peer count != 1, got %d\n", count)
+	}
+
+	// check peer count
+	if count := omega.PeerCount(); count != 0 {
+		t.Fatalf("node omega peer count != 0, got %d\n", count)
 	}
 
 	// connect
@@ -50,19 +53,18 @@ func TestNodeHandshakeSimple(t *testing.T) {
 	// attempt handshake with peer
 	tests.AssertNil(t, sigma.Handshake(p))
 
-	// ! DEBUG
-	// TODO better handshake finalization detection
-	// wait for handshake to complete
-	time.Sleep(2 * time.Second)
+	for omega.PeerCount() != 1 {
+	}
 
+	// list peers
 	sigma.PeerList()
 	omega.PeerList()
 
-	// check peer counts
+	// check peer count
 	if count := sigma.PeerCount(); count != 1 {
 		t.Fatalf("node sigma peer count != 1, got %d\n", count)
 	}
-	// check peer counts
+	// check peer count
 	if count := omega.PeerCount(); count != 1 {
 		t.Fatalf("node omega peer count != 1, got %d\n", count)
 	}

@@ -4,6 +4,8 @@ Package peer implements the representation of a foreign Cryptor node.
 package peer // import "cpl.li/go/cryptor/p2p/peer"
 
 import (
+	"crypto/rand"
+	"math/big"
 	"net"
 	"sync"
 
@@ -15,6 +17,7 @@ import (
 // Peer represents a foreign machine/node on the Cryptor network and all the
 // required information to establish a secure connection.
 type Peer struct {
+	id              uint64        // id used in network communication
 	addr            *net.UDPAddr  // address of foreign node
 	staticPublicKey ppk.PublicKey // static public key (identifier)
 
@@ -31,6 +34,8 @@ type Peer struct {
 	}
 }
 
+var maxInt64 = big.NewInt(9223372036854775807)
+
 // NewPeer creates a new peer with the given public key and optional address.
 func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 	// create peer
@@ -46,6 +51,10 @@ func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 	if addr != "" {
 		p.addr, _ = net.ResolveUDPAddr(p2p.Network, addr)
 	}
+
+	// assign random ID
+	bigInt, _ := rand.Int(rand.Reader, maxInt64)
+	p.id = bigInt.Uint64()
 
 	return p
 }

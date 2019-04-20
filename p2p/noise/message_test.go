@@ -22,13 +22,9 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check size
-	if len(dataI) != noise.SizeMessageInitializer {
-		t.Fatal("invalid binary form size")
-	}
-
-	// compare key
-	if !bytes.Equal(dataI[:ppk.KeySize], public[:]) {
-		t.Fatal("failed to find key in binary form")
+	if size := len(dataI); size != noise.SizeMessageInitializer {
+		t.Fatalf("invalid binary form size, expected %d, got %d\n",
+			noise.SizeMessageInitializer, size)
 	}
 
 	newMsgI := new(noise.MessageInitializer)
@@ -58,19 +54,14 @@ func TestMarshalMessagesResponder(t *testing.T) {
 	msgR.PlaintextUniquePublic = public
 
 	// marshal into binary
-	dataI, err := msgR.MarshalBinary()
+	dataR, err := msgR.MarshalBinary()
 	tests.AssertNil(t, err)
 
 	// check size
-	if len(dataI) != noise.SizeMessageResponder {
-		t.Fatal("invalid binary form size")
+	if size := len(dataR); size != noise.SizeMessageResponder {
+		t.Fatalf("invalid binary form size, expected %d, got %d\n",
+			noise.SizeMessageResponder, size)
 	}
-
-	// compare key
-	if !bytes.Equal(dataI[:ppk.KeySize], public[:]) {
-		t.Fatal("failed to find key in binary form")
-	}
-
 	newMsgR := new(noise.MessageResponder)
 
 	// unmarshal with invalid data
@@ -79,7 +70,7 @@ func TestMarshalMessagesResponder(t *testing.T) {
 	}
 
 	// unmarshal
-	if err := newMsgR.UnmarshalBinary(dataI); err != nil {
+	if err := newMsgR.UnmarshalBinary(dataR); err != nil {
 		t.Fatal(err)
 	}
 
