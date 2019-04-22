@@ -52,6 +52,9 @@ type Node struct {
 	lookup struct {
 		sync.RWMutex
 
+		// total number of peers
+		count int
+
 		// a key,value map of publicKey/peer
 		peers map[ppk.PublicKey]*peer.Peer
 
