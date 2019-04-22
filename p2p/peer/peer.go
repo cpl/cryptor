@@ -55,8 +55,8 @@ func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 // Addr returns the string of the address.
 func (p *Peer) Addr() string {
 	// lock peer
-	p.Lock()
-	defer p.Unlock()
+	p.RLock()
+	defer p.RUnlock()
 
 	return p.addr.String()
 }
@@ -64,8 +64,8 @@ func (p *Peer) Addr() string {
 // AddrUDP returns the UDP address of the peer.
 func (p *Peer) AddrUDP() *net.UDPAddr {
 	// lock peer
-	p.Lock()
-	defer p.Unlock()
+	p.RLock()
+	defer p.RUnlock()
 
 	return p.addr
 }
@@ -73,8 +73,8 @@ func (p *Peer) AddrUDP() *net.UDPAddr {
 // PublicKey returns the peer known static public key.
 func (p *Peer) PublicKey() ppk.PublicKey {
 	// lock keys
-	p.keys.Lock()
-	defer p.keys.Unlock()
+	p.keys.RLock()
+	defer p.keys.RUnlock()
 
 	// return
 	return p.keys.staticPublicKey
