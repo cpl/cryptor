@@ -7,7 +7,6 @@ import (
 	"net"
 	"sync"
 
-	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p"
 	"cpl.li/go/cryptor/p2p/noise"
@@ -16,20 +15,21 @@ import (
 // Peer represents a foreign machine/node on the Cryptor network and all the
 // required information to establish a secure connection.
 type Peer struct {
-	id              uint64        // id used in network communication
-	addr            *net.UDPAddr  // address of foreign node
-	staticPublicKey ppk.PublicKey // static public key (identifier)
+	ID   uint64       // id used in network communication
+	addr *net.UDPAddr // address of foreign node
 
 	// lock for operating on the peer
 	sync.RWMutex
 
-	HasHandshake bool
-	Handshake    *noise.Handshake // the current handshake status with this peer
+	Handshake *noise.Handshake // the current handshake with this peer
 
 	// transport keys generated from the finalization of the handshake
 	keys struct {
-		send [ppk.KeySize]byte
-		recv [ppk.KeySize]byte
+		sync.RWMutex
+
+		staticPublicKey ppk.PublicKey     // static public key (identifier)
+		send            [ppk.KeySize]byte // for sending transport messages
+		recv            [ppk.KeySize]byte // for receiving transport messages
 	}
 }
 
@@ -39,7 +39,7 @@ func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 	p := new(Peer)
 
 	// set public key
-	p.staticPublicKey = pk
+	p.keys.staticPublicKey = pk
 
 	// set handshake as nil
 	p.Handshake = nil
@@ -48,9 +48,6 @@ func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 	if addr != "" {
 		p.addr, _ = net.ResolveUDPAddr(p2p.Network, addr)
 	}
-
-	// assign random ID
-	p.id = crypt.RandomUint64()
 
 	return p
 }
@@ -67,5 +64,24 @@ func (p *Peer) AddrUDP() *net.UDPAddr {
 
 // PublicKey returns the peer known static public key.
 func (p *Peer) PublicKey() ppk.PublicKey {
-	return p.staticPublicKey
+	// lock keys
+	p.keys.Lock()
+	defer p.keys.Unlock()
+
+	// return
+	return p.keys.staticPublicKey
+}
+
+// SetTransportKeys sets the keys used for encryption and decryption of
+// outgoing and incoming transport messages.
+func (p *Peer) SetTransportKeys(send, recv [ppk.KeySize]byte) {
+	// lock keys
+	p.keys.Lock()
+	defer p.keys.Unlock()
+
+	// set keys
+	p.keys.send = send
+	p.keys.recv = recv
+
+	return
 }

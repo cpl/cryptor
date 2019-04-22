@@ -12,6 +12,12 @@ var zeroKey ppk.PublicKey
 func TestNewPeerNoAddr(t *testing.T) {
 	p := peer.NewPeer(zeroKey, "")
 
+	// check for ID 0
+	// peer ID is assigned during handshake and not creation
+	if p.ID != 0 {
+		t.Fatal("peer ID is not 0")
+	}
+
 	// validate key
 	if !p.PublicKey().Equals(zeroKey) {
 		t.Fatal("public key does not match")
