@@ -10,24 +10,24 @@ import (
 const (
 	// SizeMessageInitializer is the size of a handshake message sent by
 	// initializer to the responder.
-	SizeMessageInitializer = sizeID + ppk.KeySize + sizeEncPub
+	SizeMessageInitializer = sizePeerID + ppk.KeySize + sizeEncPub
 
 	// SizeMessageResponder is the size of the response message from the
 	// responder to the initializer.
-	SizeMessageResponder = sizeID + ppk.KeySize + sizeEncNth
+	SizeMessageResponder = sizePeerID + ppk.KeySize + sizeEncNth
 )
 
 // encryption sizes
 const (
 	sizeEncPub = 48 // encrypted size of static public key
 	sizeEncNth = 16 // encrypted size of nothing (nil)
-	sizeID     = 8  // size of an int64 (64/8 = 8 bytes)
+	sizePeerID = 8  // size of an int64 (64/8 = 8 bytes)
 )
 
 // MessageInitializer encapsulates the data which is sent by the initializer to
 // the responder.
 type MessageInitializer struct {
-	ID                                  uint64
+	PeerID                              uint64
 	PlaintextUniquePublic               ppk.PublicKey
 	EncryptedInitializerStaticPublicKey [sizeEncPub]byte
 }
@@ -38,9 +38,9 @@ func (msg *MessageInitializer) MarshalBinary() ([]byte, error) {
 	out := make([]byte, SizeMessageInitializer)
 
 	// write fields
-	binary.LittleEndian.PutUint64(out, msg.ID)
-	copy(out[sizeID:], msg.PlaintextUniquePublic[:])
-	copy(out[sizeID+ppk.KeySize:], msg.EncryptedInitializerStaticPublicKey[:])
+	binary.LittleEndian.PutUint64(out, msg.PeerID)
+	copy(out[sizePeerID:], msg.PlaintextUniquePublic[:])
+	copy(out[sizePeerID+ppk.KeySize:], msg.EncryptedInitializerStaticPublicKey[:])
 
 	return out, nil
 }
@@ -53,9 +53,9 @@ func (msg *MessageInitializer) UnmarshalBinary(data []byte) error {
 	}
 
 	// unpack fields
-	msg.ID = binary.LittleEndian.Uint64(data)
-	copy(msg.PlaintextUniquePublic[:], data[sizeID:sizeID+ppk.KeySize])
-	copy(msg.EncryptedInitializerStaticPublicKey[:], data[sizeID+ppk.KeySize:])
+	msg.PeerID = binary.LittleEndian.Uint64(data)
+	copy(msg.PlaintextUniquePublic[:], data[sizePeerID:sizePeerID+ppk.KeySize])
+	copy(msg.EncryptedInitializerStaticPublicKey[:], data[sizePeerID+ppk.KeySize:])
 
 	return nil
 }
@@ -63,7 +63,7 @@ func (msg *MessageInitializer) UnmarshalBinary(data []byte) error {
 // MessageResponder encapsulates the data which is sent by the responder to
 // the initializer.
 type MessageResponder struct {
-	ID                    uint64
+	PeerID                uint64
 	PlaintextUniquePublic ppk.PublicKey
 	EncryptedNothing      [sizeEncNth]byte
 }
@@ -74,9 +74,9 @@ func (msg *MessageResponder) MarshalBinary() ([]byte, error) {
 	out := make([]byte, SizeMessageResponder)
 
 	// write fields
-	binary.LittleEndian.PutUint64(out, msg.ID)
-	copy(out[sizeID:], msg.PlaintextUniquePublic[:])
-	copy(out[sizeID+ppk.KeySize:], msg.EncryptedNothing[:])
+	binary.LittleEndian.PutUint64(out, msg.PeerID)
+	copy(out[sizePeerID:], msg.PlaintextUniquePublic[:])
+	copy(out[sizePeerID+ppk.KeySize:], msg.EncryptedNothing[:])
 
 	return out, nil
 }
@@ -89,9 +89,9 @@ func (msg *MessageResponder) UnmarshalBinary(data []byte) error {
 	}
 
 	// unpack fields
-	msg.ID = binary.LittleEndian.Uint64(data)
-	copy(msg.PlaintextUniquePublic[:], data[sizeID:sizeID+ppk.KeySize])
-	copy(msg.EncryptedNothing[:], data[sizeID+ppk.KeySize:])
+	msg.PeerID = binary.LittleEndian.Uint64(data)
+	copy(msg.PlaintextUniquePublic[:], data[sizePeerID:sizePeerID+ppk.KeySize])
+	copy(msg.EncryptedNothing[:], data[sizePeerID+ppk.KeySize:])
 
 	return nil
 }
