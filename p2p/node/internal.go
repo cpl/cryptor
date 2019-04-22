@@ -1,10 +1,12 @@
 package node
 
 import (
+	"encoding/binary"
 	"net"
 
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/p2p"
+	"cpl.li/go/cryptor/p2p/noise"
 	"cpl.li/go/cryptor/p2p/packet"
 )
 
@@ -105,4 +107,66 @@ func (n *Node) listen() {
 			go n.recv(pack)
 		}
 	}
+}
+
+func (n *Node) recv(pack *packet.Packet) {
+	// extract message ID
+	peerID := binary.LittleEndian.Uint64(pack.Payload)
+
+	// ! DEBUG
+	n.logger.Printf("receive possible packet with peer ID: %d\n", peerID)
+
+	// perform peer lookup based on ID
+	n.lookup.RLock()
+	p, ok := n.lookup.table[peerID]
+	if ok {
+		p.Lock()
+		defer p.Unlock()
+	}
+	n.lookup.RUnlock()
+
+	// peer exists and has complete handshake
+	// -> transport message
+	if ok && p.Handshake != nil && p.Handshake.State() == noise.StateSuccessful {
+		n.handleTransport(p, pack)
+		return
+	}
+
+	// peer exists and has incomplete handshake (waiting for response)
+	// -> responder message
+	if ok && p.Handshake != nil && p.Handshake.State() == noise.StateInitialized {
+		n.handleResponse(p, pack)
+		return
+	}
+
+	// peer does not exist
+	// -> initializer message
+	if !ok {
+		n.handleInitialize(peerID, pack)
+		return
+	}
+
+	// drop packet
+	return
+}
+
+func (n *Node) send(pack *packet.Packet) {
+	// check node is connected
+	n.state.RLock()
+	defer n.state.RUnlock()
+	if !n.state.isConnected {
+		return
+	}
+
+	// ! DEBUG
+	n.logger.Printf("sent packet (%d) to (%s)\n",
+		len(pack.Payload), pack.Address.String())
+
+	// send packet payload to its address
+	n.net.RLock()
+	_, err := n.net.conn.WriteToUDP(pack.Payload, pack.Address)
+	if err != nil {
+		n.comm.err <- err
+	}
+	n.net.RUnlock()
 }
