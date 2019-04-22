@@ -245,6 +245,10 @@ func (n *Node) PublicKey() ppk.PublicKey {
 // Addr returns the node listening address. If the node is running we return the
 // live connection address, otherwise the pre-configured address.
 func (n *Node) Addr() string {
+	// lock
+	n.state.RLock()
+	defer n.state.RUnlock()
+
 	// if not connected, return addr
 	if !n.state.isConnected {
 		return n.net.addr.String()
@@ -257,8 +261,8 @@ func (n *Node) Addr() string {
 // must be "host:port".
 func (n *Node) SetAddr(addr string) (err error) {
 	// lock node state
-	n.state.Lock()
-	defer n.state.Unlock()
+	n.state.RLock()
+	defer n.state.RUnlock()
 
 	// ignore if node is connected
 	if n.state.isConnected {
