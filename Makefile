@@ -2,8 +2,8 @@
 
 
 clean:
-	@rm -rf build/
-	@rm -rf **/cover.out
+	rm -rf build/;
+	rm -f $(shell find . -name cover.out -type f);
 
 test:
 	@mkdir -p build/
