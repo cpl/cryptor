@@ -3,8 +3,7 @@
 
 clean:
 	@rm -rf build/
-
-
+	@rm -rf **/cover.out
 
 test:
 	@mkdir -p build/
