@@ -54,11 +54,19 @@ func NewPeer(pk ppk.PublicKey, addr string) *Peer {
 
 // Addr returns the string of the address.
 func (p *Peer) Addr() string {
+	// lock peer
+	p.Lock()
+	defer p.Unlock()
+
 	return p.addr.String()
 }
 
 // AddrUDP returns the UDP address of the peer.
 func (p *Peer) AddrUDP() *net.UDPAddr {
+	// lock peer
+	p.Lock()
+	defer p.Unlock()
+
 	return p.addr
 }
 
@@ -70,6 +78,30 @@ func (p *Peer) PublicKey() ppk.PublicKey {
 
 	// return
 	return p.keys.staticPublicKey
+}
+
+// SetAddr sets the remote network address of the peer.
+func (p *Peer) SetAddr(addr string) error {
+	// lock peer
+	p.Lock()
+	defer p.Unlock()
+
+	// set to nil
+	if addr == "" {
+		p.addr = nil
+		return nil
+	}
+
+	// resolve addr
+	newaddr, err := net.ResolveUDPAddr(p2p.Network, addr)
+	if err != nil {
+		return err
+	}
+
+	// set addr
+	p.addr = newaddr
+
+	return nil
 }
 
 // SetTransportKeys sets the keys used for encryption and decryption of

@@ -5,9 +5,46 @@ import (
 
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/peer"
+	"cpl.li/go/cryptor/tests"
 )
 
 var zeroKey ppk.PublicKey
+
+func testSetAddr(t *testing.T, p *peer.Peer, addr, expected string) {
+	tests.AssertNil(t, p.SetAddr(addr))
+	if p.Addr() != expected {
+		t.Fatalf("expected %s, got %s\n", expected, p.Addr())
+	}
+}
+
+func TestPeerSetAddr(t *testing.T) {
+	p := peer.NewPeer(zeroKey, "")
+
+	// valid tests
+	testSetAddr(t, p, "", "<nil>")
+	testSetAddr(t, p, "127.0.0.1:", "127.0.0.1:0")
+	testSetAddr(t, p, "192.168.1.1:", "192.168.1.1:0")
+	testSetAddr(t, p, ":", ":0")
+	testSetAddr(t, p, "", "<nil>")
+	testSetAddr(t, p, ":1234", ":1234")
+
+	// invalid
+	tests.AssertNotNil(t, p.SetAddr("1.1.1.1"), "set invalid address, no port")
+	tests.AssertNotNil(t, p.SetAddr("nosuchhost:"), "set invalid address, host")
+	tests.AssertNotNil(t, p.SetAddr("1.1.1.1:-1"), "set invalid address, invalid port")
+
+	// check unchanged valid address
+	if addr := p.Addr(); addr != ":1234" {
+		t.Fatalf("expected :1234, got %s\n", addr)
+	}
+}
+
+func TestSetTransportKeys(t *testing.T) {
+	var zeroPk ppk.PublicKey
+	var key1, key2 [ppk.KeySize]byte
+	p := peer.NewPeer(zeroPk, "")
+	p.SetTransportKeys(key1, key2)
+}
 
 func TestNewPeerNoAddr(t *testing.T) {
 	p := peer.NewPeer(zeroKey, "")
