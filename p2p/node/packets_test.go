@@ -5,15 +5,16 @@ import (
 	"testing"
 	"time"
 
-	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/crypt/ppk"
+
+	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/p2p"
 	"cpl.li/go/cryptor/p2p/node"
 	"cpl.li/go/cryptor/p2p/noise"
 	"cpl.li/go/cryptor/tests"
 )
 
-func testSendPacket(t *testing.T, conn *net.UDPConn, size uint) {
+func testRandomSendPacket(t *testing.T, conn *net.UDPConn, size uint) {
 	_, err := conn.Write(crypt.RandomBytes(size))
 	tests.AssertNil(t, err)
 }
@@ -44,127 +45,19 @@ func testSetupNode(t *testing.T) (*node.Node, *net.UDPConn) {
 	return n, nConn
 }
 
-/*
-
-TODO
-
-! While writing this test, realize that the protocol is lacking when an address
-! change detection mechanism. This will result in a diffrent approach to
-! developing the p2p package and accelerate the implementation of the Cryptor
-! transport layer protocol.
-
-func TestNodePayloadKnownValid(t *testing.T) {
-	// test setup
-	n, nConn := testSetupNode(t)
-
-	// initialize peer keys
-	secret, _ := ppk.NewPrivateKey()
-	public := secret.PublicKey()
-
-	// add peer to node and initialize handshake
-	p, err := n.PeerAdd(public, nConn.LocalAddr().String())
-	tests.AssertNil(t, err)
-	var msg *noise.MessageInitializer
-	p.Handshake, msg = noise.Initialize(n.PublicKey(), public)
-
-	// attempt handshake bypass with invalid packets
-	testSendPacket(t, nConn, p2p.MinPayloadSize-1)
-	testSendPacket(t, nConn, 0)
-	testSendPacket(t, nConn, 1)
-	testSendPacket(t, nConn, p2p.MaxPayloadSize*2)
-	testSendPacket(t, nConn, p2p.MinPayloadSize+1)
-
-	// check error count
-	assertErrCount(t, n, 0)
-
-	// wrap things up
-	tests.AssertNil(t, nConn.Close())
-	tests.AssertNil(t, n.Stop())
-
-	// check error count
-	assertErrCount(t, n, 0)
-}
-*/
-
-func TestNodePayloadUnknownValid(t *testing.T) {
-	// test setup
-	n, nConn := testSetupNode(t)
-
-	// initialize handshake message
-	secret, _ := ppk.NewPrivateKey()
-	public := secret.PublicKey()
-	_, msg := noise.Initialize(public, n.PublicKey())
-
-	// send msg
-	payload, err := msg.MarshalBinary()
-	tests.AssertNil(t, err)
-	if _, err := nConn.Write(payload); err != nil {
-		t.Fatal(err)
-	}
-
-	// wait for response
-	readBuffer := make([]byte, 1024)
-	r, _, err := nConn.ReadFrom(readBuffer)
-	tests.AssertNil(t, err)
-
-	// check response
-	if r != noise.SizeMessageResponder {
-		t.Fatalf("invalid handshake response size, expected %d, got %d\n",
-			noise.SizeMessageResponder, r)
-	}
-
-	// check peer count of node
-	if count := n.PeerCount(); count != 1 {
-		t.Fatalf("invalid peer count, expected %d, got %d\n", 1, count)
-	}
-
-	// check peer
-	p := n.PeerGet(public)
-	if p == nil {
-		t.Fatal("peer not found")
-	}
-
-	// check peer key
-	if !p.PublicKey().Equals(public) {
-		t.Fatal("peer public key does not match")
-	}
-
-	// check error count
-	assertErrCount(t, n, 0)
-
-	// attempt to duplicate peer from diffrent address
-	nConn = testDialUDP(t, n)
-	// send msg
-	if _, err := nConn.Write(payload); err != nil {
-		t.Fatal(err)
-	}
-
-	// wait
-	time.Sleep(2 * time.Second)
-	assertErrCount(t, n, 1)
-
-	// wrap things up
-	tests.AssertNil(t, nConn.Close())
-	tests.AssertNil(t, n.Stop())
-
-	// check error count
-	assertErrCount(t, n, 1)
-}
-
-func TestNodePayloadUnknownInvalid(t *testing.T) {
-	// test setup
+func TestPacketInvalidSimple(t *testing.T) {
 	n, nConn := testSetupNode(t)
 
 	// send invalid packets (not counted as errors)
-	testSendPacket(t, nConn, p2p.MinPayloadSize-1)
-	testSendPacket(t, nConn, 0)
-	testSendPacket(t, nConn, 1)
-	testSendPacket(t, nConn, p2p.MaxPayloadSize*2)
-	testSendPacket(t, nConn, p2p.MinPayloadSize+1)
+	testRandomSendPacket(t, nConn, p2p.MinPayloadSize-1)
+	testRandomSendPacket(t, nConn, 0)
+	testRandomSendPacket(t, nConn, 1)
+	testRandomSendPacket(t, nConn, p2p.MaxPayloadSize*2)
+	testRandomSendPacket(t, nConn, p2p.MinPayloadSize+1)
 
-	// send valid packet with invalid payloads
+	// send valid Initializer packets with invalid payloads
 	for i := 0; i < 5; i++ {
-		testSendPacket(t, nConn, noise.SizeMessageInitializer) // 5x err
+		testRandomSendPacket(t, nConn, noise.SizeMessageInitializer) // 5x err
 	}
 
 	time.Sleep(2 * time.Second)
@@ -178,4 +71,176 @@ func TestNodePayloadUnknownInvalid(t *testing.T) {
 
 	// check error count
 	assertErrCount(t, n, 5)
+}
+
+func TestPacketInvalidComplex(t *testing.T) {
+	n, nConn := testSetupNode(t)
+
+	// fake initializer
+	iPrivate, _ := ppk.NewPrivateKey()
+	iPublic := iPrivate.PublicKey()
+	_, iMsg := noise.Initialize(iPublic, n.PublicKey())
+
+	// send initializer message (id is 0) (invalid)
+	iMsg.PeerID = 0
+	iData0, _ := iMsg.MarshalBinary()
+	nConn.Write(iData0)
+	time.Sleep(2 * time.Second)
+
+	// send initializer message (id is 1) (valid)
+	iMsg.PeerID = 1
+	iData1, _ := iMsg.MarshalBinary()
+	nConn.Write(iData1)
+	time.Sleep(2 * time.Second)
+
+	// re-send same key (invalid)
+	iMsg.PeerID = 2
+	iData2, _ := iMsg.MarshalBinary()
+	nConn.Write(iData2)
+	time.Sleep(2 * time.Second)
+
+	// check error count
+	assertErrCount(t, n, 2)
+
+	// wrap things up
+	tests.AssertNil(t, nConn.Close())
+	tests.AssertNil(t, n.Stop())
+
+	// check error count
+	assertErrCount(t, n, 2)
+}
+
+func TestPacketValidSimple(t *testing.T) {
+	// setup test
+	n, nConn := testSetupNode(t)
+	addr, err := net.ResolveUDPAddr(p2p.Network, "localhost:")
+	tests.AssertNil(t, err)
+	pConn, err := net.ListenUDP(p2p.Network, addr)
+	tests.AssertNil(t, err)
+	buffer := make([]byte, p2p.MaxPayloadSize)
+
+	// fake responder
+	rPrivate, _ := ppk.NewPrivateKey()
+	rPublic := rPrivate.PublicKey()
+
+	// add peer to node
+	p, err := n.PeerAdd(rPublic, pConn.LocalAddr().String(), 1)
+	tests.AssertNil(t, err)
+
+	// perform handshake initialization
+	tests.AssertNil(t, n.Handshake(p))
+
+	// receive initializer message
+	r, err := pConn.Read(buffer)
+	tests.AssertNil(t, err)
+
+	// unpack initializer message
+	iMsg := new(noise.MessageInitializer)
+	tests.AssertNil(t, iMsg.UnmarshalBinary(buffer[:r]))
+
+	// validate message
+	if iMsg.PeerID != 1 {
+		t.Fatalf("unexpected peer ID, expected %d, got %d\n", 1, iMsg.PeerID)
+	}
+
+	// perform response
+	_, iPublic, rMsg, err := noise.Respond(iMsg, rPrivate)
+	tests.AssertNil(t, err)
+
+	// check matching initializer public key
+	if !iPublic.Equals(n.PublicKey()) {
+		t.Fatal("mismatch public key")
+	}
+
+	// assign ID
+	rMsg.PeerID = 1
+
+	// send message
+	rData, _ := rMsg.MarshalBinary()
+	if _, err := nConn.Write(rData); err != nil {
+		t.Fatal(err)
+	}
+
+	time.Sleep(2 * time.Second)
+
+	// check error count
+	assertErrCount(t, n, 0)
+
+	// wrap things up
+	tests.AssertNil(t, nConn.Close())
+	tests.AssertNil(t, n.Stop())
+
+	// check error count
+	assertErrCount(t, n, 0)
+}
+
+func TestPacketInvalidResponder(t *testing.T) {
+	// setup test
+	n, nConn := testSetupNode(t)
+	addr, err := net.ResolveUDPAddr(p2p.Network, "localhost:")
+	tests.AssertNil(t, err)
+	pConn, err := net.ListenUDP(p2p.Network, addr)
+	tests.AssertNil(t, err)
+	buffer := make([]byte, p2p.MaxPayloadSize)
+
+	// fake responder
+	rPrivate, _ := ppk.NewPrivateKey()
+	rPublic := rPrivate.PublicKey()
+
+	// add peer to node
+	p, err := n.PeerAdd(rPublic, pConn.LocalAddr().String(), 1)
+	tests.AssertNil(t, err)
+
+	// perform handshake initialization
+	tests.AssertNil(t, n.Handshake(p))
+
+	// receive initializer message
+	r, err := pConn.Read(buffer)
+	tests.AssertNil(t, err)
+
+	// unpack initializer message
+	iMsg := new(noise.MessageInitializer)
+	tests.AssertNil(t, iMsg.UnmarshalBinary(buffer[:r]))
+
+	// validate message
+	if iMsg.PeerID != 1 {
+		t.Fatalf("unexpected peer ID, expected %d, got %d\n", 1, iMsg.PeerID)
+	}
+
+	// perform bad response
+	rMsg := new(noise.MessageResponder)
+	rMsg.PeerID = 1
+
+	// send message
+	rData, _ := rMsg.MarshalBinary()
+	if _, err := nConn.Write(rData); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(2 * time.Second)
+
+	// invalid sizes messages
+	invalid0 := make([]byte, noise.SizeMessageResponder-1)
+	invalid0[0] = 1
+	invalid1 := make([]byte, noise.SizeMessageResponder+1)
+	invalid1[0] = 1
+
+	// send messages
+	if _, err := nConn.Write(invalid0); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := nConn.Write(invalid1); err != nil {
+		t.Fatal(err)
+	}
+
+	time.Sleep(2 * time.Second)
+
+	// check error count
+	assertErrCount(t, n, 1)
+
+	// wrap things up
+	tests.AssertNil(t, nConn.Close())
+	tests.AssertNil(t, n.Stop())
+
+	// check error count
+	assertErrCount(t, n, 1)
 }

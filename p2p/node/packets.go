@@ -1,77 +1,16 @@
 package node
 
 import (
-	"encoding/binary"
-
 	"cpl.li/go/cryptor/p2p/noise"
 	"cpl.li/go/cryptor/p2p/packet"
+	"cpl.li/go/cryptor/p2p/peer"
 )
 
-// TODO break down recv into multiple internal functions
-// - handleTransport
-// - handleInitialize
-// - handleResponse
+func (n *Node) handleTransport(p *peer.Peer, pack *packet.Packet) {
+	return
+}
 
-func (n *Node) recv(pack *packet.Packet) {
-	// extract message ID
-	msgID := binary.LittleEndian.Uint64(pack.Payload)
-
-	// perform peer lookup based on ID
-	n.lookup.Lock()
-	p, ok := n.lookup.table[msgID]
-	if ok {
-		p.Lock()
-		defer p.Unlock()
-	}
-	n.lookup.Unlock()
-
-	// peer exists and has complete handshake
-	// -> transport message
-	if ok && p.Handshake != nil && p.HasHandshake {
-		// TODO Transport message handling
-		return
-	}
-
-	// peer exists and has incomplete handshake
-	// -> responder message
-	if ok && p.Handshake != nil {
-		// check payload size to match handshake responder size
-		if len(pack.Payload) != noise.SizeMessageResponder {
-			// drop packet if not
-			return
-		}
-
-		// extract message from payload
-		message := new(noise.MessageResponder)
-		if err := message.UnmarshalBinary(pack.Payload); err != nil {
-			n.comm.err <- err
-			return
-		}
-
-		// validate handshake
-		if err := p.Handshake.Receive(message, n.identity.privateKey); err != nil {
-			// failed to validate packet
-			n.comm.err <- err
-			return
-		}
-
-		// update peer handshake and transport keys
-		p.HasHandshake = true
-
-		// finalize handshake to get transport keys
-		_, _, err := p.Handshake.Finalize()
-		if err != nil {
-			n.comm.err <- err
-			return
-		}
-
-		// TODO Set peer keys for encryption/decryption
-		// p.SetTransportKeys(send, recv [ppk.KeySize]byte)
-		return
-	}
-
-	// peer may or may not exist, expect initializer message
-
+func (n *Node) handleInitialize(peerID uint64, pack *packet.Packet) {
 	// check payload size to match handshake initializer size
 	if len(pack.Payload) != noise.SizeMessageInitializer {
 		// drop packet if not
@@ -95,30 +34,25 @@ func (n *Node) recv(pack *packet.Packet) {
 		return
 	}
 
-	// if peer does not exist, add peer to lookup table
-	if !ok {
-		p, err = n.PeerAdd(iSPub, pack.Address.String())
-		if err != nil {
-			n.comm.err <- err
-			return
-		}
-		p.Lock()
-		defer p.Unlock()
-	}
-
-	// update peer handshake and transport keys
-	p.Handshake = handshake
-	p.HasHandshake = true
-
-	// finalize handshake to get transport keys
-	_, _, err = p.Handshake.Finalize()
+	// add peer
+	p, err := n.PeerAdd(iSPub, pack.Address.String(), peerID)
 	if err != nil {
 		n.comm.err <- err
 		return
 	}
 
-	// TODO Set peer keys for encryption/decryption
-	// p.SetTransportKeys(send, recv [ppk.KeySize]byte)
+	// update peer handshake and transport keys
+	p.Handshake = handshake
+
+	// finalize handshake to get transport keys
+	send, recv, err := p.Handshake.Finalize()
+	if err != nil {
+		n.comm.err <- err
+		return
+	}
+
+	// set keys
+	p.SetTransportKeys(send, recv)
 
 	// send response to initializer
 	response := new(packet.Packet)
@@ -127,28 +61,37 @@ func (n *Node) recv(pack *packet.Packet) {
 	response.Payload, _ = rmsg.MarshalBinary()
 
 	go n.send(response)
-
-	// ! DEBUG
-	n.logger.Println("handshake with new peer")
-
-	return
 }
 
-func (n *Node) send(pack *packet.Packet) {
-	// check node is connected
-	n.state.Lock()
-	defer n.state.Unlock()
-	if !n.state.isConnected {
+func (n *Node) handleResponse(p *peer.Peer, pack *packet.Packet) {
+	// check payload size to match handshake responder size
+	if len(pack.Payload) != noise.SizeMessageResponder {
+		// drop packet if not
 		return
 	}
 
-	// ! DEBUG
-	n.logger.Printf("sent packet (%d) to (%s)\n",
-		len(pack.Payload), pack.Address.String())
+	// extract message from payload
+	message := new(noise.MessageResponder)
+	if err := message.UnmarshalBinary(pack.Payload); err != nil {
+		n.comm.err <- err
+		return
+	}
 
-	// send packet payload to its address
-	_, err := n.net.conn.WriteToUDP(pack.Payload, pack.Address)
+	// validate handshake
+	if err := p.Handshake.Receive(message, n.identity.privateKey); err != nil {
+		// failed to validate packet
+		n.comm.err <- err
+		return
+	}
+
+	// finalize handshake to get transport keys
+	send, recv, err := p.Handshake.Finalize()
 	if err != nil {
 		n.comm.err <- err
+		return
 	}
+
+	// set keys
+	p.SetTransportKeys(send, recv)
+	return
 }
