@@ -1,76 +1,65 @@
 package node_test
 
 import (
+	"net"
 	"testing"
-	"time"
 
 	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/p2p"
 	"cpl.li/go/cryptor/p2p/node"
 	"cpl.li/go/cryptor/p2p/noise"
 	"cpl.li/go/cryptor/p2p/peer"
 	"cpl.li/go/cryptor/tests"
 )
 
-func TestNodeHandshakeSimple(t *testing.T) {
+func TestNodeHandshake(t *testing.T) {
 	// create node keys
-	sigmaKey, _ := ppk.NewPrivateKey()
-	omegaKey, _ := ppk.NewPrivateKey()
+	peerPrivate, _ := ppk.NewPrivateKey()
+	peerPublic := peerPrivate.PublicKey()
 
 	// create nodes
-	sigma := node.NewNode("sigma", sigmaKey)
-	omega := node.NewNode("omega", omegaKey)
+	n := node.NewNode("test", zeroKey)
 
-	// start nodes
-	tests.AssertNil(t, sigma.Start())
-	defer sigma.Stop()
-	tests.AssertNil(t, omega.Start())
-	defer omega.Stop()
+	// start node
+	tests.AssertNil(t, n.Start())
 
-	tests.AssertNil(t, sigma.SetAddr("localhost:45000"))
-	tests.AssertNil(t, omega.SetAddr("localhost:45001"))
+	// set address
+	tests.AssertNil(t, n.SetAddr("localhost:"))
 
-	// add external peer omega
-	p, err := sigma.PeerAdd(omega.PublicKey(), omega.Addr())
+	// add external peer
+	p, err := n.PeerAdd(peerPublic, "", 1)
 	tests.AssertNil(t, err)
 
-	// list peers
-	tests.AssertNil(t, sigma.PeerList()) // 1 peers
-	tests.AssertNil(t, omega.PeerList()) // 0 peers
-
-	// check peer count
-	if count := sigma.PeerCount(); count != 1 {
-		t.Fatalf("node sigma peer count != 1, got %d\n", count)
-	}
-
-	// check peer count
-	if count := omega.PeerCount(); count != 0 {
-		t.Fatalf("node omega peer count != 0, got %d\n", count)
-	}
-
 	// connect
-	tests.AssertNil(t, sigma.Connect())
-	tests.AssertNil(t, omega.Connect())
+	tests.AssertNil(t, n.Connect())
+
+	// check peer count
+	if count := n.PeerCount(); count != 1 {
+		t.Fatalf("node peer count != 1, got %d\n", count)
+	}
+
+	// set peer addr
+	tests.AssertNil(t, p.SetAddr("localhost:12345"))
+
+	// simulate peer connection
+	pConn, err := net.ListenUDP(p2p.Network, p.AddrUDP())
+	tests.AssertNil(t, err)
 
 	// attempt handshake with peer
-	tests.AssertNil(t, sigma.Handshake(p))
+	tests.AssertNil(t, n.Handshake(p))
 
-	// wait for 100ms
-	for omega.PeerCount() != 1 {
-		time.Sleep(100 * time.Millisecond)
+	// read handshake
+	buffer := make([]byte, p2p.MaxPayloadSize)
+	r, err := pConn.Read(buffer)
+	tests.AssertNil(t, err)
+
+	// check size
+	if r != noise.SizeMessageInitializer {
+		t.Fatalf("expected message size %d, got %d\n",
+			noise.SizeMessageInitializer, r)
 	}
 
-	// list peers
-	sigma.PeerList()
-	omega.PeerList()
-
-	// check peer count
-	if count := sigma.PeerCount(); count != 1 {
-		t.Fatalf("node sigma peer count != 1, got %d\n", count)
-	}
-	// check peer count
-	if count := omega.PeerCount(); count != 1 {
-		t.Fatalf("node omega peer count != 1, got %d\n", count)
-	}
+	tests.AssertNil(t, n.Stop())
 }
 
 func TestNodeHandshakeInvalid(t *testing.T) {
