@@ -1,5 +1,27 @@
 # Cryptor Contributing Guide
 
+
+## Table of contents
+  - [Welcome](#welcome)
+  - [Things you'll need](#things-youll-need)
+  - [Before contributing](#before-contributing)
+  - [How to contribute?](#how-to-contribute)
+    - [Report bugs and issues](#report-bugs-and-issues)
+    - [Propose enhancement or optimizations](#propose-enhancement-or-optimizations)
+    - [Propose new features](#propose-new-features)
+    - [Propose tests](#propose-tests)
+    - [How to PR](#how-to-pr)
+  - [Non-code related contributions](#non-code-related-contributions)
+    - [Documentation](#documentation)
+    - [Network volunteer](#network-volunteer)
+  - [Continuous Integration](#continuous-integration)
+  - [Organization](#organization)
+    - [Labels](#labels)
+    - [Projects](#projects)
+  - [Styleguide](#styleguide)
+    - [Commit Messages](#commit-messages)
+    - [Golang Code](#golang-code)
+
 ## Welcome
 
 I am very happy to see you've taken the interest to look at the guidelines for contributing to [Cryptor](git.cpl.li/cryptor). The topics covered below are simple guidelines and nothing is set in stone, use your judgment to save everyone time, always ask yourself "is X something I would do?", before proposing it.
@@ -29,7 +51,7 @@ Please note this is not a *Development Guide* (an introduction to bits of code a
 ## Before contributing
 
 * Check the [F.A.Q.](https://github.com/cpl/cryptor/wiki/FAQ) over on the wiki
-* If you wish, reach out to the community over on [Discord](https://discord.gg/vGQ76Uz). 
+* If you wish, reach out to the community over on [Discord](https://discord.gg/vGQ76Uz).
 * Check the [issues](https://github.com/cpl/cryptor/issues), [projects](https://github.com/cpl/cryptor/projects) and [PRs](https://github.com/cpl/cryptor/pulls) for any existing materials
 * If in doubt, contact me `alexandru@cpl.li` (please use `Cryptor:` in your subject)
 * Make sure you have your development setup working and you can run the Cryptor tests (`make test`)
@@ -40,9 +62,9 @@ Please note this is not a *Development Guide* (an introduction to bits of code a
 
 In order to open new issues head over to the [GitHub issues page](https://github.com/cpl/cryptor/issues) and select "New Issue", use the "Bug report" template. Make sure the label `bug` is used and any other relevant labels (see below).
 
-### Propose enhancement or optimisations
+### Propose enhancement or optimizations
 
-Before proposing any enhancement or optimisations have some arguments and *demo/prototype/benchmark/...* to improve the chances of being considered. These proposals are also created on the [GitHub issues page](https://github.com/cpl/cryptor/issues) using the "Enhancement/Optimisations Proposal" template. Make sure the right label is used (`optimisation` or `enhancement`, see explination below)
+Before proposing any enhancement or optimizations have some arguments and *demo/prototype/benchmark/...* to improve the chances of being considered. These proposals are also created on the [GitHub issues page](https://github.com/cpl/cryptor/issues) using the "Enhancement/Optimizations Proposal" template. Make sure the right label is used (`optimization` or `enhancement`, see explanation below)
 
 ### Propose new features
 
@@ -50,7 +72,7 @@ Consider the security, privacy and costs of implementing the feature you dream o
 
 ### Propose tests
 
-Feel free to skip opening an issue for adding or chaning tests. You can skip straight to a PR.
+Feel free to skip opening an issue for adding or changing tests. You can skip straight to a PR.
 
 ### How to PR
 
@@ -64,7 +86,7 @@ New documentation, spell checking, overall layout improvements, etc, are all wel
 
 ### Network volunteer
 
-The Cryptor Network will requiere nodes to function and test the initial verions. Any node helps, no matter the hardware, it can be a Raspberry Pi, a supercomputer, a VPS or your home desktop/laptop.
+The Cryptor Network will require nodes to function and test the initial versions. Any node helps, no matter the hardware, it can be a Raspberry Pi, a supercomputer, a VPS or your home desktop/laptop.
 
 ## Continuous Integration
 
@@ -80,15 +102,15 @@ The current continuous integration pipeline is simple:
 * Travis-CI runs tests and pushes code coverage to coveralls
 * Coveralls detects any major drop in coverage
 
-## Organisation
+## Organization
 
 ### Labels
 
-All issues must be labeled accordingly. You can see the live list of issue labels over [here](https://github.com/cpl/cryptor/labels) with their respective descriptions. If in doubt don't worry, a colaborator will fix any misused labels.
+All issues must be labeled accordingly. You can see the live list of issue labels over [here](https://github.com/cpl/cryptor/labels) with their respective descriptions. If in doubt don't worry, a collaborator will fix any misused labels.
 
 ### Projects
 
-[Projects](https://github.com/cpl/cryptor/projects) and [milestones](https://github.com/cpl/cryptor/milestones_ give a sense of progress and direction to the overall Cryptor project. The boards are basic Kanbans with `Backlog` (todo), `In Progress` (doing) and `Done` for organising issues and other notes.
+[Projects](https://github.com/cpl/cryptor/projects) and [milestones](https://github.com/cpl/cryptor/milestones_ give a sense of progress and direction to the overall Cryptor project. The boards are basic Kanbans with `Backlog` (todo), `In Progress` (doing) and `Done` for organizing issues and other notes.
 
 ## Styleguide
 
