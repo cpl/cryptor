@@ -22,6 +22,12 @@ func init() {
 			helpMessage: color.GreenString("node") + " " +
 				color.YellowString("< new | list >"),
 		},
+		"key": command{
+			description: "operations for key derivation and creation",
+			exec:        commandKey,
+			helpMessage: color.GreenString("key") + " " +
+				color.YellowString("< gen | pass | bip39 >"),
+		},
 	}
 }
 
@@ -31,6 +37,7 @@ type cmdFunc func(argc int, argv []string) error
 type command struct {
 	description string
 	exec        cmdFunc
+	helpMessage string
 }
 
 // the lookup map containing all command structs and their command names as key
