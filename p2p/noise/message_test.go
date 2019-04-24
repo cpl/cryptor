@@ -11,6 +11,8 @@ import (
 )
 
 func TestMarshalMessagesInitializer(t *testing.T) {
+	t.Parallel()
+
 	// generate test message
 	secret, _ := ppk.NewPrivateKey()
 	public := secret.PublicKey()
@@ -47,6 +49,8 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 }
 
 func TestMarshalMessagesResponder(t *testing.T) {
+	t.Parallel()
+
 	// generate test message
 	secret, _ := ppk.NewPrivateKey()
 	public := secret.PublicKey()

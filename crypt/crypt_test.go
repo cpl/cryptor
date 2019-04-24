@@ -13,6 +13,8 @@ import (
 )
 
 func TestRandomBytes(t *testing.T) {
+	t.Parallel()
+
 	// go from 1 byte to 16k
 	for pow := 0.0; pow <= 14; pow++ {
 		gen := int(math.Pow(2, pow))
@@ -23,6 +25,8 @@ func TestRandomBytes(t *testing.T) {
 }
 
 func TestRandomUint64(t *testing.T) {
+	t.Parallel()
+
 	var val uint64
 	val = crypt.RandomUint64()
 	if val == 0 {
@@ -37,6 +41,8 @@ func assertZero(t *testing.T, data []byte) {
 }
 
 func TestZero(t *testing.T) {
+	t.Parallel()
+
 	// test data
 	data0 := []byte("password1234")
 	data1 := []byte("01234")
@@ -77,6 +83,8 @@ func assertHash(t *testing.T, data, expected string) {
 }
 
 func TestHash(t *testing.T) {
+	t.Parallel()
+
 	assertHash(t, "",
 		"69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9")
 	assertHash(t, "Hello, World!",
@@ -84,6 +92,8 @@ func TestHash(t *testing.T) {
 }
 
 func TestHashNil(t *testing.T) {
+	t.Parallel()
+
 	data := []byte("Hello, World!")
 
 	// request hash to be returned not passed in first argument
@@ -106,6 +116,8 @@ func TestHashNil(t *testing.T) {
 }
 
 func TestAEADEncryption(t *testing.T) {
+	t.Parallel()
+
 	msg := []byte("We attack at dawn")
 	key := crypt.RandomBytes(chacha.KeySize)
 

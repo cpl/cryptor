@@ -21,6 +21,8 @@ var wordsInvalid = []string{
 }
 
 func TestIsValidWord(t *testing.T) {
+	t.Parallel()
+
 	// test a set of valid words
 	for _, word := range wordsValid {
 		if !IsValidWord(word) {
@@ -37,6 +39,8 @@ func TestIsValidWord(t *testing.T) {
 }
 
 func TestValidateWordlist(t *testing.T) {
+	t.Parallel()
+
 	// validate expected length
 	if len(mnemonicWords) != Count {
 		t.Fatalf("invalid wordlist length, expected %d, got %d",

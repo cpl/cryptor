@@ -11,6 +11,8 @@ const password = "testing"
 const salt = ".-_cryptor,$"
 
 func TestPBKDF2(t *testing.T) {
+	t.Parallel()
+
 	expected :=
 		"28df0b93627d5b50ed4fef574e774a00ac634cbd3395d0a57e769581e806f82f"
 	expectedPub :=

@@ -13,6 +13,8 @@ import (
 )
 
 func TestHMAC(t *testing.T) {
+	t.Parallel()
+
 	// test data
 	data := []byte("We attack at dawn.")
 	invalidData := []byte("We attack at night.")

@@ -5,6 +5,8 @@ import (
 )
 
 func TestEntropyBits(t *testing.T) {
+	t.Parallel()
+
 	// invalid entropy bits
 	for bits := uint(0); bits < entropyMinBits; bits++ {
 		if isValidEntropy(bits) {

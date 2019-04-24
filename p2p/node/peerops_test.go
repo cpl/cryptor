@@ -26,6 +26,8 @@ func parallelAdd(t *testing.T, n *node.Node, wg *sync.WaitGroup) {
 }
 
 func TestPeeropsInvalid(t *testing.T) {
+	t.Parallel()
+
 	// create node
 	n := node.NewNode("test", zeroKey)
 
@@ -74,6 +76,8 @@ func TestPeeropsInvalid(t *testing.T) {
 }
 
 func TestPeerAddAndDel(t *testing.T) {
+	t.Parallel()
+
 	// create node
 	n := node.NewNode("test", zeroKey)
 
@@ -132,6 +136,8 @@ func TestPeerAddAndDel(t *testing.T) {
 }
 
 func TestPeerList(t *testing.T) {
+	t.Parallel()
+
 	// create node
 	n := node.NewNode("test", zeroKey)
 
@@ -154,6 +160,8 @@ func TestPeerList(t *testing.T) {
 }
 
 func TestPeerGet(t *testing.T) {
+	t.Parallel()
+
 	// create and start node
 	n := node.NewNode("test", zeroKey)
 
@@ -199,6 +207,8 @@ func TestPeerGet(t *testing.T) {
 }
 
 func TestPeerDel(t *testing.T) {
+	t.Parallel()
+
 	// create and start node
 	n := node.NewNode("test", zeroKey)
 

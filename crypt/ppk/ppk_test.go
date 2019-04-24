@@ -13,6 +13,8 @@ import (
 )
 
 func TestSharedSecretGeneration(t *testing.T) {
+	t.Parallel()
+
 	// generate two private keys
 	sk0, err := ppk.NewPrivateKey()
 	tests.AssertNil(t, err)
@@ -49,6 +51,8 @@ func TestSharedSecretGeneration(t *testing.T) {
 }
 
 func TestHexSaveLoad(t *testing.T) {
+	t.Parallel()
+
 	// create private key
 	sk, err := ppk.NewPrivateKey()
 	tests.AssertNil(t, err)
@@ -79,6 +83,8 @@ func TestHexSaveLoad(t *testing.T) {
 }
 
 func TestZeroingKey(t *testing.T) {
+	t.Parallel()
+
 	// generate secret key
 	sk, err := ppk.NewPrivateKey()
 	tests.AssertNil(t, err)
@@ -106,6 +112,8 @@ func TestZeroingKey(t *testing.T) {
 }
 
 func TestFromHexInvalidString(t *testing.T) {
+	t.Parallel()
+
 	// test data
 	invalidHexStrings := []string{
 		"deadbeeff1f0",
@@ -124,6 +132,8 @@ func TestFromHexInvalidString(t *testing.T) {
 }
 
 func TestToMnemonic(t *testing.T) {
+	t.Parallel()
+
 	// generate key
 	sk, err := ppk.NewPrivateKey()
 	tests.AssertNil(t, err)
@@ -158,6 +168,8 @@ func TestToMnemonic(t *testing.T) {
 }
 
 func TestFromMnemonic(t *testing.T) {
+	t.Parallel()
+
 	// generate key
 	sk, err := ppk.NewPrivateKey()
 	tests.AssertNil(t, err)
@@ -199,6 +211,8 @@ func TestFromMnemonic(t *testing.T) {
 }
 
 func TestFromMnemonicZeroKey(t *testing.T) {
+	t.Parallel()
+
 	// zero key
 	var zeroKey ppk.PrivateKey
 
@@ -221,6 +235,8 @@ func TestFromMnemonicZeroKey(t *testing.T) {
 }
 
 func TestFromMnemonicInvalid(t *testing.T) {
+	t.Parallel()
+
 	var key ppk.PrivateKey
 
 	// empty mnemonic

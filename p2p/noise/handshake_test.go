@@ -12,6 +12,8 @@ import (
 )
 
 func TestHandshake(t *testing.T) {
+	t.Parallel()
+
 	// initializer
 	iSSecret, _ := ppk.NewPrivateKey()
 	iSPublic := iSSecret.PublicKey()
@@ -88,6 +90,8 @@ func TestHandshake(t *testing.T) {
 }
 
 func TestHandshakePublicKey(t *testing.T) {
+	t.Parallel()
+
 	var zeroPrivateKey ppk.PrivateKey
 
 	// generate handshake
@@ -112,6 +116,8 @@ const (
 )
 
 func TestInvalidHandshake(t *testing.T) {
+	t.Parallel()
+
 	var zeroPrivateKey ppk.PrivateKey
 
 	// empty handshake

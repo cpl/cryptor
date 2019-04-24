@@ -19,6 +19,8 @@ func assertErrCount(t *testing.T, n *node.Node, expected int) {
 }
 
 func TestNodeBasicRoutines(t *testing.T) {
+	t.Parallel()
+
 	n := node.NewNode("test", zeroKey)
 
 	tests.AssertNil(t, n.Start())
@@ -38,6 +40,8 @@ func TestNodeBasicRoutines(t *testing.T) {
 }
 
 func TestNodeBasicInvalidRoutines(t *testing.T) {
+	t.Parallel()
+
 	n := node.NewNode("test", zeroKey)
 
 	tests.AssertNotNil(t, n.Stop(), "stop: not running")       // 1 err count
@@ -56,7 +60,6 @@ func TestNodeBasicInvalidRoutines(t *testing.T) {
 
 	// check error count
 	assertErrCount(t, n, 7)
-
 }
 
 func TestNodeAddrSet(t *testing.T) {
@@ -129,6 +132,8 @@ func TestNodeAddrSet(t *testing.T) {
 }
 
 func TestConnectInvalidAddress(t *testing.T) {
+	t.Parallel()
+
 	n := node.NewNode("test", zeroKey)
 	tests.AssertNil(t, n.SetAddr("example.com:80"))
 	tests.AssertNil(t, n.Start())

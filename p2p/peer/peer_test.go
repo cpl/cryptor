@@ -18,6 +18,8 @@ func testSetAddr(t *testing.T, p *peer.Peer, addr, expected string) {
 }
 
 func TestPeerSetAddr(t *testing.T) {
+	t.Parallel()
+
 	p := peer.NewPeer(zeroKey, "")
 
 	// valid tests
@@ -40,6 +42,8 @@ func TestPeerSetAddr(t *testing.T) {
 }
 
 func TestSetTransportKeys(t *testing.T) {
+	t.Parallel()
+
 	var zeroPk ppk.PublicKey
 	var key1, key2 [ppk.KeySize]byte
 	p := peer.NewPeer(zeroPk, "")
@@ -47,6 +51,8 @@ func TestSetTransportKeys(t *testing.T) {
 }
 
 func TestNewPeerNoAddr(t *testing.T) {
+	t.Parallel()
+
 	p := peer.NewPeer(zeroKey, "")
 
 	// check for ID 0
@@ -70,6 +76,8 @@ func TestNewPeerNoAddr(t *testing.T) {
 }
 
 func TestNewPeerWithAddr(t *testing.T) {
+	t.Parallel()
+
 	p := peer.NewPeer(zeroKey, "127.0.0.1:8080")
 
 	// validate key
@@ -87,6 +95,8 @@ func TestNewPeerWithAddr(t *testing.T) {
 }
 
 func TestPeerAddressParsing(t *testing.T) {
+	t.Parallel()
+
 	addresses := []struct {
 		addr string
 		expe string

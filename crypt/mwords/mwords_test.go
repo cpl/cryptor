@@ -19,6 +19,8 @@ var invalidMnemonics = []string{
 }
 
 func TestInvalidMnemonicFromString(t *testing.T) {
+	t.Parallel()
+
 	for _, str := range invalidMnemonics {
 		_, err := mwords.MnemonicFromString(str)
 		if err == nil {
@@ -28,6 +30,8 @@ func TestInvalidMnemonicFromString(t *testing.T) {
 }
 
 func TestInvalidMnemonicSentenceIsValid(t *testing.T) {
+	t.Parallel()
+
 	var ms mwords.MnemonicSentence
 	for _, str := range invalidMnemonics {
 		ms = strings.Fields(str)
@@ -38,6 +42,8 @@ func TestInvalidMnemonicSentenceIsValid(t *testing.T) {
 }
 
 func TestInvalidEntropyFromString(t *testing.T) {
+	t.Parallel()
+
 	for _, str := range invalidMnemonics {
 		if _, err := mwords.EntropyFromString(str); err == nil {
 			t.Errorf("validated invalid mnemonic, %s\n", str)
@@ -46,6 +52,8 @@ func TestInvalidEntropyFromString(t *testing.T) {
 }
 
 func TestInvalidEntropyFromMnemonic(t *testing.T) {
+	t.Parallel()
+
 	var ms mwords.MnemonicSentence
 	for _, str := range invalidMnemonics {
 		ms = strings.Fields(str)
@@ -56,6 +64,8 @@ func TestInvalidEntropyFromMnemonic(t *testing.T) {
 }
 
 func TestInvalidEntropyToMnemonic(t *testing.T) {
+	t.Parallel()
+
 	invalidEntropy := [][]byte{
 		nil,
 		[]byte{},
@@ -77,6 +87,8 @@ func TestInvalidEntropyToMnemonic(t *testing.T) {
 }
 
 func TestEntropyToMnemonic(t *testing.T) {
+	t.Parallel()
+
 	for _, vector := range testVectors {
 		entropy, err := hex.DecodeString(vector.entropy)
 		tests.AssertNil(t, err)
@@ -93,6 +105,8 @@ func TestEntropyToMnemonic(t *testing.T) {
 }
 
 func TestEntropyFromMnemonic(t *testing.T) {
+	t.Parallel()
+
 	for _, vector := range testVectors {
 		// extract and validate sentence
 		sentence, err := mwords.MnemonicFromString(vector.mnemonic)
@@ -116,6 +130,8 @@ func TestEntropyFromMnemonic(t *testing.T) {
 }
 
 func TestEntropyFromMnemonicInvalidChecksum(t *testing.T) {
+	t.Parallel()
+
 	_, err := mwords.EntropyFromString(
 		"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon yellow")
 	if err == nil {
