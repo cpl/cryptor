@@ -9,12 +9,22 @@ import (
 )
 
 const helpMsg = `
-cryptor-cli, The Cryptor command line interface allows for the management
+aegis is the main Cryptor command line interface that allows for the management
 of nodes, peers keys and all other aspects of the Cryptor package.
 `
 
 // utility help function
 func help(argc int, argv []string) error {
+	// check for usage instructions
+	if argc == 1 {
+		// check if usage exists
+		if msg, ok := commands[argv[0]]; ok && msg.helpMessage != "" {
+			fmt.Println(msg.helpMessage)
+		}
+
+		return nil
+	}
+
 	// display help message
 	fmt.Println(helpMsg)
 

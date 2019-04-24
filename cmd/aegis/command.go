@@ -1,11 +1,16 @@
 package main
 
+import "github.com/fatih/color"
+
 func init() {
 	// create the commands map
 	commands = map[string]command{
 		"help": command{
 			description: "provide this help message",
 			exec:        help,
+			helpMessage: color.GreenString("help") + " " +
+				color.YellowString("[command]") +
+				", provides descriptions and usage instructions of commands",
 		},
 		"version": command{
 			description: "display the cryptor-cli and cryptor pkg versions",
@@ -14,6 +19,8 @@ func init() {
 		"node": command{
 			description: "creation and management of cryptor nodes",
 			exec:        commandNode,
+			helpMessage: color.GreenString("node") + " " +
+				color.YellowString("< new | list >"),
 		},
 	}
 }

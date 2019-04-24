@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	cmdMinLen = 4
+	cmdMinLen = 3
 	cmdMaxLen = 100 // ! DEBUG
 
 	cmdMinArgc = 1
@@ -38,6 +38,7 @@ func parseCommand(cmd string) error {
 		if _, err := os.Stdout.WriteString("\033[H\033[2J"); err != nil {
 			return err
 		}
+		return nil
 	}
 
 	// lookup command

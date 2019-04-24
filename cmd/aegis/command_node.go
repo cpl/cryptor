@@ -34,10 +34,13 @@ func commandNode(argc int, argv []string) error {
 }
 
 func commandNodeList() {
+	// nodelist is empty
 	if len(nodeList) == 0 {
 		color.Blue("no nodes\n")
+		return
 	}
 
+	// list nodes
 	for idx, node := range nodeList {
 		color.Green("%d ", idx)
 		color.Yellow("%s ", node.PublicKey())
