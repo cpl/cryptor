@@ -7,6 +7,8 @@ import (
 	"syscall"
 	"unicode"
 
+	"cpl.li/go/cryptor/crypt/mwords"
+
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/crypt/ppk"
 	"github.com/fatih/color"
@@ -119,5 +121,44 @@ func commandKeyGen() error {
 }
 
 func commandKeyBip39() error {
+	color.Yellow("paste your hex key to export as bip39 or paste a mnemonic to get your key")
+
+	// get input
+	text, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+
+	// check for key
+	if len(text)-1 == 64 {
+		// decode key
+		if err := keyPrivate.FromHex(text[:64]); err != nil {
+			return err
+		}
+		defer crypt.ZeroBytes(keyPrivate[:])
+
+		// display mnemonic
+		color.Yellow("\nyour mnemonic are the 24 words bellow")
+		color.Blue(keyPrivate.ToMnemonic().String())
+
+		return nil
+	}
+
+	// check for mnemonic
+	mnemonic, err := mwords.MnemonicFromString(text)
+	if err != nil {
+		return err
+	}
+
+	// decode mnemonic to key
+	if err := keyPrivate.FromMnemonic(mnemonic); err != nil {
+		return err
+	}
+	defer crypt.ZeroBytes(keyPrivate[:])
+
+	// display key
+	color.Yellow("\nkey extracted from mnemonic is bellow as hex")
+	color.Blue(keyPrivate.ToHex())
+
 	return nil
 }
