@@ -39,17 +39,21 @@ func help(argc int, argv []string) error {
 	fmt.Printf("\nUse `%s` for more information about a command.\n",
 		color.YellowString("help <command>"))
 
+	// documentation website
+	fmt.Printf("\nFor the full Cryptor documentation visit %s.\n",
+		color.BlueString("https://cpl.li/cryptor"))
+
 	return nil
 }
 
 // utility version function
 func version(argc int, argv []string) error {
 
-	fmt.Printf("    %-10s %s\n",
-		color.GreenString("cryptor pkg"),
+	fmt.Printf("    %-16s %s\n",
+		color.GreenString("cryptor"),
 		color.YellowString(cryptor.Version))
-	fmt.Printf("    %-10s %s\n",
-		color.GreenString("cryptor cli"),
+	fmt.Printf("    %-16s %s\n",
+		color.GreenString("aegis"),
 		color.YellowString(Version))
 
 	return nil
