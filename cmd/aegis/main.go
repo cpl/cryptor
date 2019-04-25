@@ -11,9 +11,11 @@ import (
 // Version of the Cryptor CLI.
 const Version = "v0.0.1"
 
+var reader *bufio.Reader
+
 func main() {
 	// set input
-	reader := bufio.NewReader(os.Stdin)
+	reader = bufio.NewReader(os.Stdin)
 	defer reader.Reset(nil)
 
 	// interactive mode
