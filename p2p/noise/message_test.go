@@ -24,10 +24,8 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check size
-	if size := len(dataI); size != noise.SizeMessageInitializer {
-		t.Fatalf("invalid binary form size, expected %d, got %d\n",
-			noise.SizeMessageInitializer, size)
-	}
+	tests.AssertEqual(t, len(dataI), noise.SizeMessageInitializer,
+		"invalid binary form size")
 
 	newMsgI := new(noise.MessageInitializer)
 
@@ -37,9 +35,7 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 	}
 
 	// unmarshal
-	if err := newMsgI.UnmarshalBinary(dataI); err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, newMsgI.UnmarshalBinary(dataI))
 
 	// compare initial message with new message
 	if !bytes.Equal(
@@ -62,10 +58,7 @@ func TestMarshalMessagesResponder(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check size
-	if size := len(dataR); size != noise.SizeMessageResponder {
-		t.Fatalf("invalid binary form size, expected %d, got %d\n",
-			noise.SizeMessageResponder, size)
-	}
+	tests.AssertEqual(t, len(dataR), noise.SizeMessageResponder, "invalid binary form size")
 	newMsgR := new(noise.MessageResponder)
 
 	// unmarshal with invalid data
@@ -74,9 +67,7 @@ func TestMarshalMessagesResponder(t *testing.T) {
 	}
 
 	// unmarshal
-	if err := newMsgR.UnmarshalBinary(dataR); err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, newMsgR.UnmarshalBinary(dataR))
 
 	// compare initial message with new message
 	if !bytes.Equal(

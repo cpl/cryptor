@@ -13,9 +13,11 @@ var zeroKey ppk.PrivateKey
 
 func assertErrCount(t *testing.T, n *node.Node, expected int) {
 	// check error count
-	if count := n.ErrCount(); count != expected {
-		t.Fatalf("expected %d errors, got %d\n", expected, count)
-	}
+	tests.AssertEqual(t, n.ErrCount(), expected, "unexpected error count")
+}
+
+func assertNodeAddr(t *testing.T, n *node.Node, expected string) {
+	tests.AssertEqual(t, n.Addr(), expected, "unexpected node address")
 }
 
 func TestNodeBasicRoutines(t *testing.T) {
@@ -65,9 +67,7 @@ func TestNodeBasicInvalidRoutines(t *testing.T) {
 func TestNodeAddrSet(t *testing.T) {
 	// create node and check default address
 	n := node.NewNode("test", zeroKey)
-	if addr := n.Addr(); addr != "<nil>" {
-		t.Fatalf("unexpected node address, expected <nil>, got %s\n", addr)
-	}
+	assertNodeAddr(t, n, "<nil>")
 
 	// change address
 	tests.AssertNil(t, n.SetAddr("127.0.0.1:8000"))
@@ -109,19 +109,13 @@ func TestNodeAddrSet(t *testing.T) {
 	tests.AssertNil(t, n.SetAddr("127.0.0.1:40123"))
 
 	// check address while not connected
-	if addr := n.Addr(); addr != "127.0.0.1:40123" {
-		t.Fatalf(
-			"unexpected node address, expected 127.0.0.1:40123, got %s\n", addr)
-	}
+	assertNodeAddr(t, n, "127.0.0.1:40123")
 
 	// connect
 	tests.AssertNil(t, n.Connect())
 
 	// check address while connected
-	if addr := n.Addr(); addr != "127.0.0.1:40123" {
-		t.Fatalf(
-			"unexpected node address, expected 127.0.0.1:40123, got %s\n", addr)
-	}
+	assertNodeAddr(t, n, "127.0.0.1:40123")
 
 	// stop node
 	tests.AssertNil(t, n.Stop())

@@ -3,6 +3,8 @@ package mwords
 import (
 	"hash/crc32"
 	"testing"
+
+	"cpl.li/go/cryptor/tests"
 )
 
 // the total number of characters in the word list
@@ -42,10 +44,7 @@ func TestValidateWordlist(t *testing.T) {
 	t.Parallel()
 
 	// validate expected length
-	if len(mnemonicWords) != Count {
-		t.Fatalf("invalid wordlist length, expected %d, got %d",
-			Count, len(mnemonicWords))
-	}
+	tests.AssertEqual(t, len(mnemonicWords), Count, "invalid wordlist length")
 
 	// concat all words in a single byte array
 	totalData := make([]byte, charCount)
@@ -59,14 +58,13 @@ func TestValidateWordlist(t *testing.T) {
 			t.Fatalf("failed to find expected word %s in lookup map\n", word)
 		} else {
 			if mnemonicWords[idx] != word {
-				t.Fatalf("mismatch word at index %d, got %s but want %s\n",
+				t.Errorf("mismatch word at index %d, got %s but want %s\n",
 					idx, mnemonicWords[idx], word)
 			}
 		}
 	}
 
 	// perform CRC32 checksum on data
-	if crc32.ChecksumIEEE(totalData) != checksum {
-		t.Fatal("invalid checksum")
-	}
+	tests.AssertEqual(t, crc32.ChecksumIEEE(totalData), uint32(checksum),
+		"invalid wordlist checksum")
 }

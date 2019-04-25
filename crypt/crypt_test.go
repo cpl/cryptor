@@ -76,10 +76,7 @@ func TestZero(t *testing.T) {
 func assertHash(t *testing.T, data, expected string) {
 	var sum crypt.Blake2sHash
 	crypt.Hash(&sum, []byte(data))
-	if sum.ToHex() != expected {
-		t.Fatalf("non matching hashes, got %s for %s\n",
-			sum.ToHex(), expected)
-	}
+	tests.AssertEqual(t, sum.ToHex(), expected, "non matching hashes")
 }
 
 func TestHash(t *testing.T) {
@@ -98,10 +95,9 @@ func TestHashNil(t *testing.T) {
 
 	// request hash to be returned not passed in first argument
 	hash0 := crypt.Hash(nil, data)
-	if hash0.ToHex() !=
-		"ec9db904d636ef61f1421b2ba47112a4fa6b8964fd4a0a514834455c21df7812" {
-		t.Fatalf("failed to match hash from nil request\n")
-	}
+	tests.AssertEqual(t, hash0.ToHex(),
+		"ec9db904d636ef61f1421b2ba47112a4fa6b8964fd4a0a514834455c21df7812",
+		"failed to match returned hash")
 
 	// request hash to be passed in as argument
 	var sum crypt.Blake2sHash

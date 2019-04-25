@@ -96,11 +96,8 @@ func TestEntropyToMnemonic(t *testing.T) {
 		mnemonic, err := mwords.EntropyToMnemonic(entropy)
 		tests.AssertNil(t, err)
 
-		if vector.mnemonic != mnemonic.String() {
-			t.Error("mnemonic mismatch")
-			t.Error("got:", mnemonic)
-			t.Error("exp:", vector.mnemonic)
-		}
+		tests.AssertEqual(t, vector.mnemonic, mnemonic.String(),
+			"mnemonic mismatch")
 	}
 }
 
@@ -121,11 +118,8 @@ func TestEntropyFromMnemonic(t *testing.T) {
 		}
 
 		// validate expected entropy
-		if hex.EncodeToString(entropy) != vector.entropy {
-			t.Error("entropy mismatch")
-			t.Error("got:", hex.EncodeToString(entropy))
-			t.Error("exp:", vector.entropy)
-		}
+		tests.AssertEqual(t, hex.EncodeToString(entropy), vector.entropy,
+			"entropy mismatch")
 	}
 }
 

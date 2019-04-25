@@ -24,36 +24,30 @@ func TestHandshake(t *testing.T) {
 
 	// initializer begin protocol
 	iHandshake, msgI := noise.Initialize(iSPublic, rSPublic)
-	if state := iHandshake.State(); state != noise.StateInitialized {
-		t.Fatalf("invalid state, %d\n", state)
-	}
+	tests.AssertEqual(t, iHandshake.State(), noise.StateInitialized,
+		"unexpected handshake state")
 
 	// responder receives handshake data
 	rHandshake, iSPublicR, msgR, err :=
 		noise.Respond(msgI, rSSecret)
 	tests.AssertNil(t, err)
-	if state := rHandshake.State(); state != noise.StateResponded {
-		t.Fatalf("invalid state, %d\n", state)
-	}
+	tests.AssertEqual(t, rHandshake.State(), noise.StateResponded,
+		"unexpected handshake state")
 
 	if !bytes.Equal(iSPublicR[:], iSPublic[:]) {
 		t.Fatalf("failed to match initializer public key")
 	}
 
 	// responder sends response to initializer
-	if err := iHandshake.Receive(msgR, iSSecret); err != nil {
-		t.Fatal(err)
-	}
-	if state := iHandshake.State(); state != noise.StateReceived {
-		t.Fatalf("invalid state, %d\n", state)
-	}
+	tests.AssertNil(t, iHandshake.Receive(msgR, iSSecret))
+	tests.AssertEqual(t, iHandshake.State(), noise.StateReceived,
+		"unexpected handshake state")
 
 	// both handshakes can compute transport keys
 	iSend, iRecv, err := iHandshake.Finalize()
 	tests.AssertNil(t, err)
-	if state := iHandshake.State(); state != noise.StateSuccessful {
-		t.Fatalf("invalid state, %d\n", state)
-	}
+	tests.AssertEqual(t, iHandshake.State(), noise.StateSuccessful,
+		"unexpected handshake state")
 
 	var zeroPubKey ppk.PublicKey
 
@@ -66,9 +60,8 @@ func TestHandshake(t *testing.T) {
 
 	rSend, rRecv, err := rHandshake.Finalize()
 	tests.AssertNil(t, err)
-	if state := rHandshake.State(); state != noise.StateSuccessful {
-		t.Fatalf("invalid state, %d\n", state)
-	}
+	tests.AssertEqual(t, rHandshake.State(), noise.StateSuccessful,
+		"unexpected handshake state")
 
 	// compare pub unique key with zero key
 	rPubKey := rHandshake.PublicKey()
@@ -237,7 +230,5 @@ func TestInvalidHandshake(t *testing.T) {
 	}
 
 	// perform valid handshake
-	if err := hs.Receive(rmsg, zeroPrivateKey); err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, hs.Receive(rmsg, zeroPrivateKey))
 }

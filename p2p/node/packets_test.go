@@ -110,6 +110,14 @@ func TestPacketInvalidComplex(t *testing.T) {
 	assertErrCount(t, n, 2)
 }
 
+func assertConnWrite(t *testing.T, conn *net.UDPConn, data []byte, exp int) {
+	r, err := conn.Write(data)
+	tests.AssertNil(t, err)
+	if exp > -1 && exp != r {
+		tests.AssertEqual(t, r, exp, "invalid conn write count")
+	}
+}
+
 func TestPacketValidSimple(t *testing.T) {
 	// setup test
 	n, nConn := testSetupNode(t)
@@ -139,9 +147,7 @@ func TestPacketValidSimple(t *testing.T) {
 	tests.AssertNil(t, iMsg.UnmarshalBinary(buffer[:r]))
 
 	// validate message
-	if iMsg.PeerID != 1 {
-		t.Fatalf("unexpected peer ID, expected %d, got %d\n", 1, iMsg.PeerID)
-	}
+	tests.AssertEqual(t, iMsg.PeerID, uint64(1), "unexpected peer ID")
 
 	// perform response
 	_, iPublic, rMsg, err := noise.Respond(iMsg, rPrivate)
@@ -157,9 +163,7 @@ func TestPacketValidSimple(t *testing.T) {
 
 	// send message
 	rData, _ := rMsg.MarshalBinary()
-	if _, err := nConn.Write(rData); err != nil {
-		t.Fatal(err)
-	}
+	assertConnWrite(t, nConn, rData, len(rData))
 
 	time.Sleep(2 * time.Second)
 
@@ -203,9 +207,7 @@ func TestPacketInvalidResponder(t *testing.T) {
 	tests.AssertNil(t, iMsg.UnmarshalBinary(buffer[:r]))
 
 	// validate message
-	if iMsg.PeerID != 1 {
-		t.Fatalf("unexpected peer ID, expected %d, got %d\n", 1, iMsg.PeerID)
-	}
+	tests.AssertEqual(t, iMsg.PeerID, uint64(1), "unexpected peer ID")
 
 	// perform bad response
 	rMsg := new(noise.MessageResponder)
@@ -213,9 +215,8 @@ func TestPacketInvalidResponder(t *testing.T) {
 
 	// send message
 	rData, _ := rMsg.MarshalBinary()
-	if _, err := nConn.Write(rData); err != nil {
-		t.Fatal(err)
-	}
+	assertConnWrite(t, nConn, rData, len(rData))
+
 	time.Sleep(2 * time.Second)
 
 	// invalid sizes messages
@@ -225,12 +226,8 @@ func TestPacketInvalidResponder(t *testing.T) {
 	invalid1[0] = 1
 
 	// send messages
-	if _, err := nConn.Write(invalid0); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := nConn.Write(invalid1); err != nil {
-		t.Fatal(err)
-	}
+	assertConnWrite(t, nConn, invalid0, len(invalid0))
+	assertConnWrite(t, nConn, invalid1, len(invalid1))
 
 	time.Sleep(2 * time.Second)
 

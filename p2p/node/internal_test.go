@@ -19,9 +19,7 @@ func TestKillNetwork(t *testing.T) {
 
 	// external network close
 	n.net.Lock()
-	if err := n.net.conn.Close(); err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, n.net.conn.Close())
 	n.net.Unlock()
 
 	// wait for node to disconnect
@@ -40,9 +38,7 @@ func TestKillNetwork(t *testing.T) {
 	tests.AssertNotNil(t, n.Start(), "start already running")
 
 	// check node address
-	if addr := n.Addr(); addr != "<nil>" {
-		t.Fatalf("unexpected node address, expected <nil>, got %s\n", addr)
-	}
+	tests.AssertEqual(t, n.Addr(), "<nil>", "unexpected node address")
 
 	// attempt re-connect and disconnect
 	tests.AssertNil(t, n.Connect())

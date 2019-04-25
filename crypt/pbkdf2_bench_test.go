@@ -5,6 +5,7 @@ import (
 
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/tests"
 )
 
 const password = "testing"
@@ -23,23 +24,14 @@ func TestPBKDF2(t *testing.T) {
 	key = crypt.Key([]byte(password), []byte(salt))
 
 	// check len
-	if len(key) != ppk.KeySize {
-		t.Fatal("generated key is of invalid length")
-	}
+	tests.AssertEqual(t, len(key), ppk.KeySize, "invalid derived key length")
 
 	// check expected key
-	if key.ToHex() != expected {
-		t.Error("got", key.ToHex())
-		t.Error("expected", expected)
-		t.Fatal("derived key does not match expected key")
-	}
+	tests.AssertEqual(t, key.ToHex(), expected, "dervied key does not match")
 
 	// check expected public key
-	if key.PublicKey().ToHex() != expectedPub {
-		t.Error("got", key.PublicKey().ToHex())
-		t.Error("expected", expectedPub)
-		t.Fatal("derived key public key does not match expected public key")
-	}
+	tests.AssertEqual(t, key.PublicKey().ToHex(), expectedPub,
+		"derived key public does not match")
 
 	// check default salt is working
 	dKey := crypt.Key([]byte(password), nil)

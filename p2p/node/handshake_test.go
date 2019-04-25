@@ -34,9 +34,7 @@ func TestNodeHandshake(t *testing.T) {
 	tests.AssertNil(t, n.Connect())
 
 	// check peer count
-	if count := n.PeerCount(); count != 1 {
-		t.Fatalf("node peer count != 1, got %d\n", count)
-	}
+	assertPeerCount(t, n, 1)
 
 	// set peer addr
 	tests.AssertNil(t, p.SetAddr("localhost:12345"))
@@ -54,10 +52,8 @@ func TestNodeHandshake(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check size
-	if r != noise.SizeMessageInitializer {
-		t.Fatalf("expected message size %d, got %d\n",
-			noise.SizeMessageInitializer, r)
-	}
+	tests.AssertEqual(t, r, noise.SizeMessageInitializer,
+		"unexpected initializer message size")
 
 	tests.AssertNil(t, n.Stop())
 }

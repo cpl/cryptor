@@ -12,9 +12,7 @@ var zeroKey ppk.PublicKey
 
 func testSetAddr(t *testing.T, p *peer.Peer, addr, expected string) {
 	tests.AssertNil(t, p.SetAddr(addr))
-	if p.Addr() != expected {
-		t.Fatalf("expected %s, got %s\n", expected, p.Addr())
-	}
+	tests.AssertEqual(t, p.Addr(), expected, "unexpected address")
 }
 
 func TestPeerSetAddr(t *testing.T) {
@@ -36,9 +34,7 @@ func TestPeerSetAddr(t *testing.T) {
 	tests.AssertNotNil(t, p.SetAddr("1.1.1.1:-1"), "set invalid address, invalid port")
 
 	// check unchanged valid address
-	if addr := p.Addr(); addr != ":1234" {
-		t.Fatalf("expected :1234, got %s\n", addr)
-	}
+	tests.AssertEqual(t, p.Addr(), ":1234", "unexpected address")
 }
 
 func TestSetTransportKeys(t *testing.T) {
@@ -57,9 +53,7 @@ func TestNewPeerNoAddr(t *testing.T) {
 
 	// check for ID 0
 	// peer ID is assigned during handshake and not creation
-	if p.ID != 0 {
-		t.Fatal("peer ID is not 0")
-	}
+	tests.AssertEqual(t, p.ID, uint64(0), "invalid peer ID")
 
 	// validate key
 	if !p.PublicKey().Equals(zeroKey) {
@@ -67,12 +61,10 @@ func TestNewPeerNoAddr(t *testing.T) {
 	}
 
 	// validate default address
-	if p.AddrUDP() != nil {
-		t.Fatal("got non-nil udp address")
+	if addr := p.AddrUDP(); addr != nil {
+		t.Fatal("got non-nil udp address", addr)
 	}
-	if p.Addr() != "<nil>" {
-		t.Fatalf("got non-nil address as string, %s\n", p.Addr())
-	}
+	tests.AssertEqual(t, p.Addr(), "<nil>", "invalid peer address")
 }
 
 func TestNewPeerWithAddr(t *testing.T) {
@@ -89,9 +81,8 @@ func TestNewPeerWithAddr(t *testing.T) {
 	if p.AddrUDP() == nil {
 		t.Fatal("got nil udp address")
 	}
-	if p.Addr() != "127.0.0.1:8080" {
-		t.Fatalf("got an invalid address as string, %s\n", p.Addr())
-	}
+
+	tests.AssertEqual(t, p.Addr(), "127.0.0.1:8080", "unexpected peer address")
 }
 
 func TestPeerAddressParsing(t *testing.T) {
@@ -120,8 +111,6 @@ func TestPeerAddressParsing(t *testing.T) {
 
 	for _, addr := range addresses {
 		p := peer.NewPeer(zeroKey, addr.addr)
-		if p.Addr() != addr.expe {
-			t.Errorf("failed to match %s with %s\n", addr, p.Addr())
-		}
+		tests.AssertEqual(t, p.Addr(), addr.expe, "unexpected peer address")
 	}
 }

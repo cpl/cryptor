@@ -75,6 +75,10 @@ func TestPeeropsInvalid(t *testing.T) {
 	}
 }
 
+func assertPeerCount(t *testing.T, n *node.Node, expected int) {
+	tests.AssertEqual(t, n.PeerCount(), expected, "unexpected peer count")
+}
+
 func TestPeerAddAndDel(t *testing.T) {
 	t.Parallel()
 
@@ -89,9 +93,7 @@ func TestPeerAddAndDel(t *testing.T) {
 	}
 
 	// count peers
-	if count := n.PeerCount(); count != 100 {
-		t.Fatalf("expected 100 peers, got %d\n", count)
-	}
+	assertPeerCount(t, n, 100)
 
 	// add 100 new peers in parallel to test the mutex
 	// this should not happen in parallel, as the lookup map
@@ -104,9 +106,7 @@ func TestPeerAddAndDel(t *testing.T) {
 	wg.Wait()
 
 	// count peers
-	if count := n.PeerCount(); count != 200 {
-		t.Fatalf("expected 200 peers, got %d\n", count)
-	}
+	assertPeerCount(t, n, 200)
 
 	// create 100 keys, add them as peers
 	publicKeys := make([]ppk.PublicKey, 100)
@@ -118,21 +118,15 @@ func TestPeerAddAndDel(t *testing.T) {
 	}
 
 	// count peers
-	if count := n.PeerCount(); count != 300 {
-		t.Fatalf("expected 300 peers, got %d\n", count)
-	}
+	assertPeerCount(t, n, 300)
 
 	// remove the 100 peers
 	for _, key := range publicKeys {
-		if err := n.PeerDel(key); err != nil {
-			t.Fatal(err)
-		}
+		tests.AssertNil(t, n.PeerDel(key))
 	}
 
 	// count peers
-	if count := n.PeerCount(); count != 200 {
-		t.Fatalf("expected 200 peers, got %d\n", count)
-	}
+	assertPeerCount(t, n, 200)
 }
 
 func TestPeerList(t *testing.T) {
@@ -149,14 +143,10 @@ func TestPeerList(t *testing.T) {
 	}
 
 	// count peers
-	if count := n.PeerCount(); count != 8 {
-		t.Fatalf("expected 8 peers, got %d\n", count)
-	}
+	assertPeerCount(t, n, 8)
 
 	// peer list
-	if err := n.PeerList(); err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, n.PeerList())
 }
 
 func TestPeerGet(t *testing.T) {
@@ -177,19 +167,17 @@ func TestPeerGet(t *testing.T) {
 	}
 
 	// check count
-	if count := n.PeerCount(); count != 8 {
-		t.Fatalf("expected 8 peers, got %d\n", count)
-	}
+	assertPeerCount(t, n, 8)
 
 	// invalid gets
 	for i := 0; i < 8; i++ {
 		if p := n.PeerGet(0, newRandomPublicKey()); p != nil {
-			t.Errorf("got non-nil peer, expected non peer, %d\n", i)
+			t.Errorf("got non-nil peer, expected nil, %d\n", i)
 		}
 	}
 	for i := 0; i < 8; i++ {
 		if p := n.PeerGet(crypt.RandomUint64(), newRandomPublicKey()); p != nil {
-			t.Errorf("got non-nil peer, expected non peer, %d\n", i)
+			t.Errorf("got non-nil peer, expected nil, %d\n", i)
 		}
 	}
 
@@ -219,9 +207,7 @@ func TestPeerDel(t *testing.T) {
 	tests.AssertNil(t, err)
 
 	// check id and public key
-	if p.ID != id {
-		t.Fatalf("invalid id, expected %d, got %d\n", id, p.ID)
-	}
+	tests.AssertEqual(t, p.ID, id, "invalid peer id")
 	if !p.PublicKey().Equals(key) {
 		t.Fatalf("mismatch public keys")
 	}

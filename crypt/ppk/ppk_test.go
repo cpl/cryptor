@@ -98,10 +98,9 @@ func TestZeroingKey(t *testing.T) {
 	}
 
 	// check key as hex string
-	hex0 := "0000000000000000000000000000000000000000000000000000000000000000"
-	if sk.ToHex() != hex0 {
-		t.Fatalf("failed to match hex key to all 0 hex string")
-	}
+	tests.AssertEqual(t, sk.ToHex(),
+		"0000000000000000000000000000000000000000000000000000000000000000",
+		"failed to match hex key to all 0 hex string")
 
 	// apply similar test for public key
 	pk := sk.PublicKey()
@@ -140,30 +139,24 @@ func TestToMnemonic(t *testing.T) {
 
 	// generate mnemonic and check size
 	mnemonic := sk.ToMnemonic()
-	if l := len(mnemonic); l != ppk.MnemonicSize {
-		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
-	}
-
+	tests.AssertEqual(t, len(mnemonic), ppk.MnemonicSize,
+		"invalid mnemonic length")
 	mnemonic = sk.PublicKey().ToMnemonic()
-	if l := len(mnemonic); l != ppk.MnemonicSize {
-		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
-	}
+	tests.AssertEqual(t, len(mnemonic), ppk.MnemonicSize,
+		"invalid mnemonic length")
 
 	// generate mnemonic from zero key
 	var zeroKey ppk.PrivateKey
 	mnemonic = zeroKey.ToMnemonic()
 
 	// check last word
-	if mnemonic[ppk.MnemonicSize-1] != "art" {
-		t.Fatalf("expected word \"art\", got \"%s\" instead\n",
-			mnemonic[ppk.MnemonicSize-1])
-	}
+	tests.AssertEqual(t, mnemonic[ppk.MnemonicSize-1], "art",
+		"got unexpected word")
 
 	// iterate all words but last
 	for _, word := range mnemonic[:ppk.MnemonicSize-2] {
-		if word != "abandon" {
-			t.Errorf("expected word \"abandon\", got \"%s\" instead\n", word)
-		}
+		tests.AssertEqual(t, word, "abandon",
+			"got unexpected word")
 	}
 }
 
@@ -176,27 +169,22 @@ func TestFromMnemonic(t *testing.T) {
 
 	// generate mnemonics and check sizes
 	mnemonicPrivate := sk.ToMnemonic()
-	if l := len(mnemonicPrivate); l != ppk.MnemonicSize {
-		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
-	}
+
+	tests.AssertEqual(t, len(mnemonicPrivate), ppk.MnemonicSize,
+		"invalid mnemonic length")
 	mnemonicPublic := sk.PublicKey().ToMnemonic()
-	if l := len(mnemonicPublic); l != ppk.MnemonicSize {
-		t.Fatalf("expected mnemonic len %d, got %d\n", ppk.MnemonicSize, l)
-	}
+	tests.AssertEqual(t, len(mnemonicPublic), ppk.MnemonicSize,
+		"invalid mnemonic length")
 
 	// key generated from mnemonics
 	var skDecoded ppk.PrivateKey
 	var pkDecoded ppk.PublicKey
 
 	// decode private key
-	if err := skDecoded.FromMnemonic(mnemonicPrivate); err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, skDecoded.FromMnemonic(mnemonicPrivate))
 
 	// decode public key
-	if err := pkDecoded.FromMnemonic(mnemonicPublic); err != nil {
-		t.Fatal(err)
-	}
+	tests.AssertNil(t, pkDecoded.FromMnemonic(mnemonicPublic))
 
 	// verify key integrity
 	if !sk.Equals(skDecoded) {

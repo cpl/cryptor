@@ -19,8 +19,8 @@ func AssertNotNil(t *testing.T, obj interface{}, msg string) {
 }
 
 // AssertEqual makes sure that the two given "objects" are NOT different (!=).
-func AssertEqual(t *testing.T, obj0 interface{}, obj1 interface{}) {
+func AssertEqual(t *testing.T, obj0 interface{}, obj1 interface{}, msg string) {
 	if obj0 != obj1 {
-		t.Fatalf("not equal, expected %v = %v\n", obj0, obj1)
+		t.Fatalf("%s, expected %v, got %v\n", msg, obj0, obj1)
 	}
 }
