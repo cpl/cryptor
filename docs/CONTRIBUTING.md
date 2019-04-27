@@ -39,8 +39,7 @@ Please note this is not a *Development Guide* (an introduction to bits of code a
 * [Go](https://golang.org) programming language
   * Installation instructions, source code and releases for the major operating system can be found [here](https://golang.org/doc/install)
   * Check your version by running `go version` in your terminal
-    * Cryptor is being developed to work using the latest version (`v1.12`)
-    * Soon, I'll post the oldest Go version Cryptor can run on
+    * Cryptor is being developed to work using `v1.12` or later
   * To get started with Go I recommend the [Go Tour](https://tour.golang.org/), an interactive tutorial
   * You can work from any IDE you prefer, there are no IDE dependencies
     * Certain [IDEs](https://golang.org/doc/editors.html) are recommended (or certain plugins for your favourite IDE)
