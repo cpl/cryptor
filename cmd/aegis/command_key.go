@@ -39,6 +39,22 @@ func commandKey(argc int, argv []string) error {
 	}
 }
 
+func commandKeyHelp() {
+	fmt.Printf("%s %s\n\n",
+		color.GreenString("%s", "key"),
+		color.YellowString("%s", "[ gen | pass | bip39 ]"))
+
+	helpPrint("%-12s %-16s %-20s %s\n",
+		"key", "gen", "[prefix]",
+		"generate a new set of private/public keys, with an optional public key prefix")
+	helpPrint("%-12s %-16s %-20s %s\n",
+		"key", "pass", "",
+		"derive a new key from a passphrase of 8 chars minimum")
+	helpPrint("%-12s %-16s %-20s %s\n",
+		"key", "gen", "[prefix]",
+		"export or import keys to and from mnemonic sentences")
+}
+
 func commandKeyPass() error {
 	// read password
 	pass, err := terminal.ReadPassword(syscall.Stdin)

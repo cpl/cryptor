@@ -18,8 +18,8 @@ func help(argc int, argv []string) error {
 	// check for usage instructions
 	if argc == 1 {
 		// check if usage exists
-		if msg, ok := commands[argv[0]]; ok && msg.helpMessage != "" {
-			fmt.Println(msg.helpMessage)
+		if msg, ok := commands[argv[0]]; ok {
+			msg.helpMessage()
 		}
 
 		return nil
@@ -44,6 +44,11 @@ func help(argc int, argv []string) error {
 		color.BlueString("https://cpl.li/cryptor"))
 
 	return nil
+}
+
+func helpPrint(fmtString, cmd, subcmd, args, msg string) {
+	fmt.Printf(fmtString, color.GreenString(cmd), color.YellowString(subcmd),
+		color.HiYellowString(args), msg)
 }
 
 // utility version function

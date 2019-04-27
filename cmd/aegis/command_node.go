@@ -26,7 +26,7 @@ func commandNode(argc int, argv []string) error {
 			return errors.New("invalid argument count")
 		}
 		return commandNodeNew(argv[1], argv[2])
-	case "list":
+	case "list", "ls":
 		commandNodeList()
 	case "start":
 		var name string
@@ -64,7 +64,7 @@ func commandNode(argc int, argv []string) error {
 			}
 		}
 		return commandNodeConn(name, addr)
-	case "disc", "disconnect":
+	case "disc", "disconnect", "dc":
 		var name string
 		if argc != 2 {
 			if nodeSelectName == "" {
@@ -96,6 +96,37 @@ func commandNode(argc int, argv []string) error {
 	}
 
 	return nil
+}
+
+func commandNodeHelp() {
+	fmt.Printf("%s %s\n\n",
+		color.GreenString("%s", "node"),
+		color.YellowString("%s", "[ new | del | sel | list | start | stop | conn | disc ]"))
+
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "new", "[name] [private key]",
+		"create a new node with the given name and private hexadecimal key")
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "del", "[name]",
+		"delete a node given its name, (also aliased as: delete, rm, remove)")
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "sel", "[name]",
+		"select a node for quicker or special operations (marked as -> in list), (also aliased as: select)")
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "list", "",
+		"list all created nodes and some information regarding them, (also aliased as: ls)")
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "start", "[name]",
+		"start the node and set state as running")
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "stop", "[name]",
+		"stop the node from running and disconnect if connected")
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "conn", "[name] [address]",
+		"connect the node to the network, listening on the given address (use current node address if none is given)")
+	helpPrint("%-13s %-14s %-30s %s\n",
+		"node", "disc", "[name]",
+		"disconnect the node from the network (also aliased as: disconnect, dc)")
 }
 
 func commandNodeList() {
