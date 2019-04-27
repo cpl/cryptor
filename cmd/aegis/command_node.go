@@ -138,22 +138,37 @@ func commandNodeList() {
 
 	// list nodes
 	var padding string
-	for name, node := range nodeList {
+	for name, n := range nodeList {
 		// check for selected node
-		if node == nodeSelect {
+		if n == nodeSelect {
 			padding = " -> "
 		} else {
 			padding = "    "
 		}
 
-		fmt.Printf("%s%s %s %s %-16s %s %s\n",
+		// format state string with right color
+		var stateString string
+		nState := n.State()
+
+		switch nState {
+		case node.StateStopped:
+			stateString = color.RedString(nState.String())
+		case node.StateRunning:
+			stateString = color.HiGreenString(nState.String())
+		case node.StateConnected:
+			stateString = color.CyanString(nState.String())
+		}
+
+		fmt.Printf("%s%s %s %s %-18s %s %-16s %s %s\n",
 			padding,
 			color.GreenString("public key"),
-			color.YellowString(node.PublicKey().ToHex()),
+			color.YellowString(n.PublicKey().ToHex()),
+			color.GreenString("state"),
+			stateString,
 			color.GreenString("name"),
 			color.YellowString(name),
 			color.GreenString("addr"),
-			color.YellowString(node.Addr()),
+			color.YellowString(n.Addr()),
 		)
 	}
 }
