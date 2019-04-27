@@ -4,15 +4,16 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"syscall"
 	"unicode"
 
-	"cpl.li/go/cryptor/crypt/mwords"
-
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/ppk"
 	"github.com/fatih/color"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"cpl.li/go/cryptor/crypt"
+	"cpl.li/go/cryptor/crypt/mwords"
+	"cpl.li/go/cryptor/crypt/ppk"
 )
 
 var keyPrivate ppk.PrivateKey
@@ -25,7 +26,10 @@ func commandKey(argc int, argv []string) error {
 
 	switch argv[0] {
 	case "gen":
-		return commandKeyGen()
+		if argc == 2 {
+			return commandKeyGen(argv[1])
+		}
+		return commandKeyGen("")
 	case "pass":
 		return commandKeyPass()
 	case "bip39":
@@ -62,7 +66,6 @@ func commandKeyPass() error {
 
 	// display password strength and derived key
 	fmt.Println()
-	commandKeyRatePassword(pass)
 	color.Red("[never share your password or private key]")
 
 	return nil
@@ -103,11 +106,25 @@ func commandKeyRatePassword(pass []byte) {
 	}
 }
 
-func commandKeyGen() error {
+func commandKeyGen(search string) (err error) {
+	search = strings.ToLower(search)
+
 	// generate key
-	keyPrivate, err := ppk.NewPrivateKey()
-	if err != nil {
-		return err
+	for {
+		keyPrivate, err = ppk.NewPrivateKey()
+		if err != nil {
+			return err
+		}
+
+		// if no search arg, done
+		if search == "" {
+			break
+		}
+
+		// check for starting string
+		if strings.HasPrefix(keyPrivate.PublicKey().ToHex(), search) {
+			break
+		}
 	}
 
 	// remove key from memory
