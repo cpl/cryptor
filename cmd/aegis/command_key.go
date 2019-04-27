@@ -43,8 +43,16 @@ func commandKeyPass() error {
 	}
 	defer crypt.ZeroBytes(pass)
 
+	// check for minimum required len, reject if not met
+	if len(pass) < 8 {
+		return errors.New("password len is bellow 8")
+	}
+
 	// derive key
 	key := crypt.Key(pass, nil)
+
+	fmt.Println()
+	commandKeyRatePassword(pass)
 
 	// display key
 	fmt.Println()
