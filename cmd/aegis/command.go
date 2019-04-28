@@ -32,6 +32,11 @@ func init() {
 			exec:        commandKey,
 			helpMessage: commandKeyHelp,
 		},
+		"peer": {
+			description: "command for managing node peers and their connections",
+			exec:        commandPeer,
+			helpMessage: commandPeerHelp,
+		},
 	}
 }
 
