@@ -19,38 +19,38 @@ import (
 // utility byte array containing NonceSize zeroes
 var zeroNonce [chacha.NonceSize]byte
 
-// HandshakeState is an abstraction for the underlaying type used for representing
+// StateHandshake is an abstraction for the underlaying type used for representing
 // the handshake state.
-type HandshakeState byte
+type StateHandshake byte
 
 const (
 	// StateEmpty can be on both initializer and responder sides. It's the
 	// default starting state for newly created handshakes.
-	StateEmpty HandshakeState = 0
+	StateEmpty StateHandshake = 0
 
 	// StateInitialized is for a handshake marked by the initializer after it's
 	// created using `noise.Initialize`.
-	StateInitialized HandshakeState = 1
+	StateInitialized StateHandshake = 1
 
 	// StateResponded is for a handshake marked by the responder after it
 	// received an initialization message. The handshake must be generated
 	// by using `noise.Respond`.
-	StateResponded HandshakeState = 2
+	StateResponded StateHandshake = 2
 
 	// StateReceived is after the handshakes makes a round-trip from the
 	// initializer to the responder and back, where it's validated.
-	StateReceived HandshakeState = 3
+	StateReceived StateHandshake = 3
 
 	// StateSuccessful is marked after `Finalize` is called on StateResponded
 	// for the responder or StateReceived for the initializer.
-	StateSuccessful HandshakeState = 4
+	StateSuccessful StateHandshake = 4
 )
 
 // Handshake contains all the information necessary for establishing a custom
 // implementation of the Noise Protocol handshake.
 type Handshake struct {
 	// state or stage of the handshake
-	state HandshakeState
+	state StateHandshake
 
 	// for locking the handshake while performing any operation
 	sync.RWMutex
@@ -75,9 +75,9 @@ func (hs *Handshake) keygen() {
 }
 
 // State returns the handshake state.
-func (hs *Handshake) State() HandshakeState {
-	hs.Lock()
-	defer hs.Unlock()
+func (hs *Handshake) State() StateHandshake {
+	hs.RLock()
+	defer hs.RUnlock()
 	return hs.state
 }
 
