@@ -21,7 +21,7 @@ var keyPrivate ppk.PrivateKey
 func commandKey(argc int, argv []string) error {
 	// expect arguments
 	if argc == 0 {
-		return errors.New("invalid argument count")
+		return ErrArgumentCount
 	}
 
 	switch argv[0] {

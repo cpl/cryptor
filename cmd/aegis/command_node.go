@@ -17,13 +17,13 @@ var nodeSelectName string
 func commandNode(argc int, argv []string) error {
 	// expect arguments
 	if argc == 0 {
-		return errors.New("invalid argument count")
+		return ErrArgumentCount
 	}
 
 	switch argv[0] {
 	case "new":
 		if argc != 3 {
-			return errors.New("invalid argument count")
+			return ErrArgumentCount
 		}
 		return commandNodeNew(argv[1], argv[2])
 	case "list", "ls":
@@ -32,7 +32,7 @@ func commandNode(argc int, argv []string) error {
 		var name string
 		if argc != 2 {
 			if nodeSelectName == "" {
-				return errors.New("invalid argument count")
+				return ErrArgumentCount
 			}
 			name = nodeSelectName
 		} else {
@@ -43,7 +43,7 @@ func commandNode(argc int, argv []string) error {
 		var name string
 		if argc != 2 {
 			if nodeSelectName == "" {
-				return errors.New("invalid argument count")
+				return ErrArgumentCount
 			}
 			name = nodeSelectName
 		} else {
@@ -68,7 +68,7 @@ func commandNode(argc int, argv []string) error {
 		var name string
 		if argc != 2 {
 			if nodeSelectName == "" {
-				return errors.New("invalid argument count")
+				return ErrArgumentCount
 			}
 			name = nodeSelectName
 		} else {
@@ -79,7 +79,7 @@ func commandNode(argc int, argv []string) error {
 		var name string
 		if argc != 2 {
 			if nodeSelectName == "" {
-				return errors.New("invalid argument count")
+				return ErrArgumentCount
 			}
 			name = nodeSelectName
 		} else {
@@ -88,7 +88,7 @@ func commandNode(argc int, argv []string) error {
 		return commandNodeDel(name)
 	case "sel", "select":
 		if argc != 2 {
-			return errors.New("invalid argument count")
+			return ErrArgumentCount
 		}
 		return commandNodeSelect(argv[1])
 	default:
