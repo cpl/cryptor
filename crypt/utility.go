@@ -1,4 +1,4 @@
-package crypt // import "cpl.li/go/cryptor/crypt"
+package crypt
 
 import (
 	"crypto/rand"

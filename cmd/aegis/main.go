@@ -1,4 +1,4 @@
-package main // import "cpl.li/go/cryptor/cmd/aegis"
+package main
 
 import (
 	"bufio"
