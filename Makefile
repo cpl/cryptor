@@ -1,5 +1,6 @@
-.PHONY: test clean
+.PHONY: test clean test-color cover
 
+TEST_FLAGS := -coverprofile=build/cover.out -covermode=atomic -v -timeout 30s -count=1 -parallel 8
 
 clean:
 	rm -rf build/;
@@ -7,11 +8,11 @@ clean:
 
 test:
 	@mkdir -p build/
-	@go test -coverprofile=build/cover.out -v -timeout 30s -count=1 -parallel 8 ./...
+	@go test $(TEST_FLAGS) ./...
 
 test-color:
 	@mkdir -p build/
-	@go test -coverprofile=build/cover.out -v -timeout 30s -count=1 -parallel 8 ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/'';
+	@go test $(TEST_FLAGS) ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/'';
 
 
 build/cover.out: test
