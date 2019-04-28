@@ -50,11 +50,13 @@ func TestZero(t *testing.T) {
 	data3 := crypt.RandomBytes(4096)
 
 	var data4 [40]byte
-	rand.Read(data4[:])
+	_, err := rand.Read(data4[:])
+	tests.AssertNil(t, err)
 
 	var data5 []byte
 	data5 = make([]byte, 50)
-	rand.Read(data5)
+	_, err = rand.Read(data5)
+	tests.AssertNil(t, err)
 
 	// zero data
 	crypt.ZeroBytes(data0, data1, data2)

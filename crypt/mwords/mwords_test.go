@@ -67,8 +67,7 @@ func TestInvalidEntropyToMnemonic(t *testing.T) {
 	t.Parallel()
 
 	invalidEntropy := [][]byte{
-		nil,
-		[]byte{},
+		nil, {},
 		crypt.RandomBytes(1),
 		crypt.RandomBytes(10),
 		crypt.RandomBytes(17),

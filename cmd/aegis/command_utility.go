@@ -10,8 +10,7 @@ import (
 
 const helpMsg = `
 aegis is the main Cryptor command line interface that allows for the management
-of nodes, peers keys and all other aspects of the Cryptor package.
-`
+of nodes, peers keys and all other aspects of the Cryptor package.`
 
 // utility help function
 func help(argc int, argv []string) error {
@@ -29,7 +28,7 @@ func help(argc int, argv []string) error {
 	fmt.Println(helpMsg)
 
 	// list commands
-	fmt.Printf("The commands are:\n\n")
+	fmt.Printf("\nThe commands are:\n\n")
 	for name, cmd := range commands {
 		color.New(color.FgGreen).Fprintf(os.Stdout, "    %-10s", name)
 		color.New(color.FgYellow).Fprintf(os.Stdout, "%s\n", cmd.description)

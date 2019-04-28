@@ -12,22 +12,22 @@ func init() {
 
 	// create the commands map
 	commands = map[string]command{
-		"help": command{
+		"help": {
 			description: "provide this help message or usage of other commands",
 			exec:        help,
 			helpMessage: defaultHelp,
 		},
-		"version": command{
+		"version": {
 			description: "display the aegis and cryptor package versions",
 			exec:        version,
 			helpMessage: defaultHelp,
 		},
-		"node": command{
+		"node": {
 			description: "creation and management of cryptor nodes",
 			exec:        commandNode,
 			helpMessage: commandNodeHelp,
 		},
-		"key": command{
+		"key": {
 			description: "operations for key derivation and creation",
 			exec:        commandKey,
 			helpMessage: commandKeyHelp,
