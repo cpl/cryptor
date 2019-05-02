@@ -62,13 +62,10 @@ func (n *Node) disconnect() error {
 // listen checks the network for incoming connections, extracts the data
 // and passes on valid packets only
 func (n *Node) listen() {
-	// incoming data buffer
-	buffer := make([]byte, p2p.MaxPayloadSize+1)
-
-	// zero buffer on disconnect
-	defer crypt.ZeroBytes(buffer)
-
 	for {
+		// incoming data buffer
+		buffer := make([]byte, p2p.MaxPayloadSize+1)
+
 		select {
 		// on disconnect
 		case <-n.comm.dis:
