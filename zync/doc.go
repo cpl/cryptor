@@ -6,4 +6,4 @@ packages are very good in general.
 Structures and functions will get removed from this package if Go gets similar
 or better implementations.
 */
-package zync
+package zync // import "cpl.li/go/cryptor/zync"
