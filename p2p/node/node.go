@@ -70,16 +70,6 @@ type Node struct {
 	meta struct {
 		errCount int
 	}
-
-	// TODO firewall
-	// firewall determines which hosts and ip ranges are allowed to connect
-	// if whitelist is used, only hosts defined in the list will be allowed
-	// if blacklist is used, all hosts that are NOT in the list are allowed
-	// only use one list, the other should be empty, whitelist has priority
-	firewall struct {
-		whitelist []string // list of allowed hosts
-		blacklist []string // list of banned  hosts
-	}
 }
 
 // NewNode creates a node running on the local machine. The default starting
