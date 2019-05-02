@@ -11,7 +11,7 @@ import (
 
 var zeroKey ppk.PrivateKey
 
-func assertErrCount(t *testing.T, n *node.Node, expected int) {
+func assertErrCount(t *testing.T, n *node.Node, expected uint32) {
 	// check error count
 	tests.AssertEqual(t, n.ErrCount(), expected, "unexpected error count")
 }

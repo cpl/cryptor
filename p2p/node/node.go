@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"sync/atomic"
 
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p"
@@ -68,7 +69,7 @@ type Node struct {
 
 	// metadata
 	meta struct {
-		errCount int
+		errCount uint32
 	}
 }
 
@@ -118,7 +119,7 @@ func (n *Node) Start() error {
 
 	// ignore if node is already running
 	if n.state.isRunning {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't start, node already running")
 	}
 
@@ -141,7 +142,7 @@ func (n *Node) Stop() error {
 
 	// ignore if node is not running
 	if !n.state.isRunning {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't stop, node not running")
 	}
 
@@ -149,7 +150,7 @@ func (n *Node) Stop() error {
 	if n.state.isConnected {
 		if err := n.disconnect(); err != nil {
 			// on error, cancel stopping routine
-			n.meta.errCount++
+			atomic.AddUint32(&n.meta.errCount, 1)
 			return err
 		}
 	}
@@ -171,13 +172,13 @@ func (n *Node) Connect() error {
 
 	// ignore if node is not running
 	if !n.state.isRunning {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't connect to network, node not running")
 	}
 
 	// ignore if node is already connected
 	if n.state.isConnected {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't connect to network, already connected")
 	}
 
@@ -206,19 +207,19 @@ func (n *Node) Disconnect() error {
 
 	// ignore if node is not running
 	if !n.state.isRunning {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't disconnect, node not running")
 	}
 
 	// ignore if node is not connected
 	if !n.state.isConnected {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't disconnect, node not connected")
 	}
 
 	// attempt disconnect
 	if err := n.disconnect(); err != nil {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return err
 	}
 
@@ -254,7 +255,7 @@ func (n *Node) SetAddr(addr string) (err error) {
 
 	// ignore if node is connected
 	if n.state.isConnected {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't change address while node is connected")
 	}
 
@@ -265,13 +266,13 @@ func (n *Node) SetAddr(addr string) (err error) {
 	// resolve address (no change yet, validating and checking errors first)
 	newaddr, err := net.ResolveUDPAddr(p2p.Network, addr)
 	if err != nil {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return err
 	}
 
 	// reject change if address matches
 	if newaddr.String() == n.net.addr.String() {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't change address, same as current address")
 	}
 
@@ -286,6 +287,6 @@ func (n *Node) SetAddr(addr string) (err error) {
 }
 
 // ErrCount returns the number of errors which occurred during runtime.
-func (n *Node) ErrCount() int {
-	return n.meta.errCount
+func (n *Node) ErrCount() uint32 {
+	return atomic.LoadUint32(&n.meta.errCount)
 }

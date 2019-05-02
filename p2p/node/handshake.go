@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+	"sync/atomic"
 
 	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/p2p/noise"
@@ -15,20 +16,20 @@ func (n *Node) Handshake(p *peer.Peer) (err error) {
 	n.state.RLock()
 	if !n.state.isConnected {
 		n.state.RUnlock()
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("can't handshake peer, node not connected")
 	}
 	n.state.RUnlock()
 
 	// check for nil peer
 	if p == nil {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("peer is nil")
 	}
 
 	// check if peer is missing address
 	if p.AddrUDP() == nil {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("peer address is nil")
 	}
 
@@ -37,7 +38,7 @@ func (n *Node) Handshake(p *peer.Peer) (err error) {
 	p.RLock()
 	if p.Handshake != nil {
 		p.RUnlock()
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return errors.New("peer handshake already exists")
 	}
 	p.RUnlock()
@@ -67,7 +68,7 @@ func (n *Node) Handshake(p *peer.Peer) (err error) {
 	// prepare handshake message
 	pack.Payload, err = msg.MarshalBinary()
 	if err != nil {
-		n.meta.errCount++
+		atomic.AddUint32(&n.meta.errCount, 1)
 		return err
 	}
 

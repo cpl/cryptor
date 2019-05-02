@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/binary"
 	"net"
+	"sync/atomic"
 
 	"cpl.li/go/cryptor/p2p"
 	"cpl.li/go/cryptor/p2p/noise"
@@ -15,7 +16,7 @@ func (n *Node) run() {
 		// pick up and display errors
 		case err := <-n.comm.err:
 			if err != nil {
-				n.meta.errCount++
+				atomic.AddUint32(&n.meta.errCount, 1)
 				n.logger.Println("err", err)
 			}
 		// listen for exit signal
@@ -85,7 +86,7 @@ func (n *Node) listen() {
 					continue
 				} else {
 					// attempt safe disconnect on failed connection
-					n.Disconnect()
+					n.comm.err <- n.Disconnect()
 					continue
 				}
 			}
