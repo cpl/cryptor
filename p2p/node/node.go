@@ -82,14 +82,16 @@ func NewNode(name string, key ppk.PrivateKey) *Node {
 	// TODO Add logger configuration
 	n.logger = log.New(os.Stdout, name+": ", log.Ldate|log.Ltime)
 
+	// ! DEBUG, buffer sizes, will add configuration later
+
 	// initialize communication channels
-	n.comm.err = make(chan error)
+	n.comm.err = make(chan error, 20)
 	n.comm.exi = make(chan interface{})
 	n.comm.dis = make(chan interface{})
 
 	// initialize network forwarding channels
-	n.net.recv = make(chan *packet.Packet)
-	n.net.send = make(chan *packet.Packet)
+	n.net.recv = make(chan *packet.Packet, 20)
+	n.net.send = make(chan *packet.Packet, 20)
 
 	// default state
 	n.state.isRunning = false
@@ -170,7 +172,7 @@ func (n *Node) Connect() error {
 	// ignore if node is not running
 	if !n.state.isRunning {
 		n.meta.errCount++
-		return errors.New("can't connect, node not running")
+		return errors.New("can't connect to network, node not running")
 	}
 
 	// ignore if node is already connected

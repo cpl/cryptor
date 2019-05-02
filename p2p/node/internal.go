@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"net"
 
-	"cpl.li/go/cryptor/crypt"
 	"cpl.li/go/cryptor/p2p"
 	"cpl.li/go/cryptor/p2p/noise"
 	"cpl.li/go/cryptor/p2p/packet"
@@ -22,6 +21,12 @@ func (n *Node) run() {
 		// listen for exit signal
 		case <-n.comm.exi:
 			return
+		// packet forwarding (send)
+		case pack := <-n.net.send:
+			go n.send(pack)
+		// packet forwarding (recv)
+		case pack := <-n.net.recv:
+			go n.recv(pack)
 		}
 	}
 }
@@ -100,8 +105,12 @@ func (n *Node) listen() {
 			pack.Address = addr
 			pack.Payload = buffer[:r]
 
-			// forward packet to handler
-			go n.recv(pack)
+			// forward packet pointer
+			// this will block the listener if the receiving channel is full,
+			// this ensures we don't get overloaded and should be fine if it
+			// happens to lose a few packets + some packets will get cached by
+			// the OS/network
+			n.net.recv <- pack
 		}
 	}
 }

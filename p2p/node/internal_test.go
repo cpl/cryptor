@@ -11,8 +11,7 @@ import (
 // TODO Add build tags to all test files for separating race cond risk tests
 
 func TestKillNetwork(t *testing.T) {
-	var zeroKey ppk.PrivateKey
-	n := NewNode("test", zeroKey)
+	n := NewNode("test", ppk.PrivateKey{})
 
 	tests.AssertNil(t, n.Start())
 	tests.AssertNil(t, n.Connect())
