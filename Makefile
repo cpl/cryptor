@@ -1,5 +1,7 @@
 .PHONY: test clean test-color cover fmt
 
+export GO111MODULE := on
+
 TEST_FLAGS := -coverprofile=build/cover.out -covermode=atomic -v -timeout 30s -count=1 -parallel 8
 
 clean:
