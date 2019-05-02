@@ -15,7 +15,7 @@ const (
 	TypeHandshakeResponder byte = 2
 )
 
-// Packet contains the necessary info for sending and receiveing messages over
+// Packet contains the necessary info for sending and receiving messages over
 // the network and handling them internally.
 type Packet struct {
 	Type    byte

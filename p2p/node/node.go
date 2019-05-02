@@ -293,12 +293,12 @@ func (n *Node) SetAddr(addr string) (err error) {
 	return nil
 }
 
-// ErrCount returns the number of errors which ocurred during runtime.
+// ErrCount returns the number of errors which occurred during runtime.
 func (n *Node) ErrCount() int {
 	return n.meta.errCount
 }
 
-// StateNode defines an alias of the underlaying type used for enumerating
+// StateNode defines an alias of the underlying type used for enumerating
 // the possible node states.
 type StateNode byte
 

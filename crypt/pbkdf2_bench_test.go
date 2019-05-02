@@ -27,7 +27,7 @@ func TestPBKDF2(t *testing.T) {
 	tests.AssertEqual(t, len(key), ppk.KeySize, "invalid derived key length")
 
 	// check expected key
-	tests.AssertEqual(t, key.ToHex(), expected, "dervied key does not match")
+	tests.AssertEqual(t, key.ToHex(), expected, "derived key does not match")
 
 	// check expected public key
 	tests.AssertEqual(t, key.PublicKey().ToHex(), expectedPub,

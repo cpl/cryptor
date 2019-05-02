@@ -1,8 +1,8 @@
 /*
-Package cryptor is an overlay P2P network that values your privacy and anonymity above all else. When faced with a tradeoff between the user’s privacy and convenience, privacy comes on top.
+Package cryptor is an overlay P2P network that values your privacy and anonymity above all else. When faced with a trade-off between the user’s privacy and convenience, privacy comes on top.
 
 To achieve it’s level of security and privacy, a few key concepts are enforced:
-* **Obscurity is not security**. Do not assume that you’re secure because somebody doesn’t know the *rules you play by*.
+* **Obscurity is not security**. Do not assume that you’re secure because somebody does not know the *rules you play by*.
 * **Silence is a virtue**. Do not respond to any invalid or unexpected requests, this allows you to hide from mass scanning attempts and some other *attacks*.
 * **Less is more**. The less information you have to send, the better. The protocol only needs to send as little as possible.
 * **Deceive**. Sending only requested data to your peers puts you at risk. Cryptor nodes will send random and decoy packets across the network to make the real ones harder to detect.

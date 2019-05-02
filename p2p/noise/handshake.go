@@ -15,7 +15,7 @@ import (
 // utility byte array containing NonceSize zeroes
 var zeroNonce [chacha.NonceSize]byte
 
-// StateHandshake is an abstraction for the underlaying type used for representing
+// StateHandshake is an abstraction for the underlying type used for representing
 // the handshake state.
 type StateHandshake byte
 
