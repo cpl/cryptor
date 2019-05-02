@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -106,7 +107,11 @@ func NewNode(name string, key ppk.PrivateKey) *Node {
 	n.lookup.peers = make(map[ppk.PublicKey]*peer.Peer)
 	n.lookup.table = make(map[uint64]*peer.Peer)
 
-	n.logger.Println("created")
+	// meta
+	// ! DEBUG for future concurrency upgrades
+	maxProcs := runtime.NumCPU()
+
+	n.logger.Printf("created node with %d procs\n", maxProcs)
 
 	return n
 }
