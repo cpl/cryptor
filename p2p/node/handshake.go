@@ -73,7 +73,7 @@ func (n *Node) Handshake(p *peer.Peer) (err error) {
 	}
 
 	// send handshake
-	go n.send(pack)
+	n.comm.send <- pack
 
 	return nil
 }

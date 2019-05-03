@@ -27,14 +27,14 @@ type Node struct {
 
 		addr *net.UDPAddr // address for listening and receiving
 		conn *net.UDPConn // bind/connection for listening and receiving
-
-		recv chan *packet.Packet // receive network traffic
-		send chan *packet.Packet // send network responses
 	}
 
 	// state of the node
 	state struct {
 		sync.RWMutex
+
+		starting sync.WaitGroup
+		stopping sync.WaitGroup
 
 		isRunning   bool // if running, the node is open to taking commands
 		isConnected bool // if online, the node is available on the network
@@ -66,11 +66,15 @@ type Node struct {
 		err chan error       // passing errors from other routines
 		exi chan interface{} // passing the exit/stop signal
 		dis chan interface{} // passing the disconnect signal
+
+		recv chan *packet.Packet // receive network traffic
+		send chan *packet.Packet // send network responses
 	}
 
 	// metadata
 	meta struct {
 		errCount uint32
+		cpuCount int
 	}
 }
 
@@ -92,8 +96,8 @@ func NewNode(name string, key ppk.PrivateKey) *Node {
 	n.comm.dis = make(chan interface{})
 
 	// initialize network forwarding channels
-	n.net.recv = make(chan *packet.Packet, 20)
-	n.net.send = make(chan *packet.Packet, 20)
+	n.comm.recv = make(chan *packet.Packet, 20)
+	n.comm.send = make(chan *packet.Packet, 20)
 
 	// default state
 	n.state.isRunning = false
@@ -108,10 +112,9 @@ func NewNode(name string, key ppk.PrivateKey) *Node {
 	n.lookup.table = make(map[uint64]*peer.Peer)
 
 	// meta
-	// ! DEBUG for future concurrency upgrades
-	maxProcs := runtime.NumCPU()
+	n.meta.cpuCount = runtime.NumCPU()*2 + 1
 
-	n.logger.Printf("created node with %d procs\n", maxProcs)
+	n.logger.Printf("created node [%s - %d]\n", name, n.meta.cpuCount)
 
 	return n
 }
@@ -128,11 +131,19 @@ func (n *Node) Start() error {
 		return errors.New("can't start, node already running")
 	}
 
+	// start service routines
+	n.state.starting.Add(n.meta.cpuCount)
+	go n.run()
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go n.recv()
+		go n.send()
+	}
+
+	// wait for all routines to start
+	n.state.starting.Wait()
+
 	// set node as running
 	n.state.isRunning = true
-
-	// start service
-	go n.run()
 	n.logger.Println("started")
 
 	return nil
@@ -160,10 +171,17 @@ func (n *Node) Stop() error {
 		}
 	}
 
-	// set node as stopped
-	n.comm.exi <- nil
-	n.state.isRunning = false
+	// stop service routines
+	n.state.stopping.Add(n.meta.cpuCount)
+	for i := 0; i < n.meta.cpuCount; i++ {
+		n.comm.exi <- nil
+	}
 
+	// wait for all routines to stop
+	n.state.stopping.Wait()
+
+	// set node as stopped
+	n.state.isRunning = false
 	n.logger.Println("stopped")
 
 	return nil
@@ -294,4 +312,12 @@ func (n *Node) SetAddr(addr string) (err error) {
 // ErrCount returns the number of errors which occurred during runtime.
 func (n *Node) ErrCount() uint32 {
 	return atomic.LoadUint32(&n.meta.errCount)
+}
+
+// Wait will block until any state operations are done.
+func (n *Node) Wait() {
+	n.state.RLock()
+	n.state.starting.Wait()
+	n.state.stopping.Wait()
+	n.state.RUnlock()
 }

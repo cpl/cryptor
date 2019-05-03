@@ -60,7 +60,7 @@ func (n *Node) handleInitialize(peerID uint64, pack *packet.Packet) {
 	response.Address = pack.Address
 	response.Payload, _ = rmsg.MarshalBinary()
 
-	go n.send(response)
+	n.comm.send <- response
 }
 
 func (n *Node) handleResponse(p *peer.Peer, pack *packet.Packet) {

@@ -134,3 +134,20 @@ func TestConnectInvalidAddress(t *testing.T) {
 	tests.AssertNotNil(t, n.Connect(), "connect on invalid address")
 	tests.AssertNil(t, n.Stop())
 }
+
+func TestNodeWait(t *testing.T) {
+	t.Parallel()
+
+	n := node.NewNode("test", zeroKey)
+	go tests.AssertNil(t, n.Start())
+	n.Wait()
+	go tests.AssertNil(t, n.Stop())
+	n.Wait()
+	go tests.AssertNil(t, n.Start())
+	n.Wait()
+	go tests.AssertNotNil(t, n.Start(), "did not fail to start again")
+	n.Wait()
+	go tests.AssertNil(t, n.Stop())
+	n.Wait()
+	tests.AssertNotNil(t, n.Stop(), "did not fail to stop non-running node")
+}
