@@ -6,9 +6,11 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"sync/atomic"
 
+	"cpl.li/go/cryptor/crypt/mwords"
 	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p"
 	"cpl.li/go/cryptor/p2p/packet"
@@ -20,6 +22,9 @@ import (
 type Node struct {
 	// a custom logger
 	logger *log.Logger
+
+	// node name
+	name string
 
 	// network aspect of a node
 	net struct {
@@ -86,6 +91,10 @@ func NewNode(name string, key ppk.PrivateKey) *Node {
 
 	// initialize logger
 	// TODO Add logger configuration
+	if name == "" {
+		name = strings.Join(mwords.RandomWords(3), "-")
+	}
+	n.name = name
 	n.logger = log.New(os.Stdout, name+": ", log.Ldate|log.Ltime)
 
 	// ! DEBUG, buffer sizes, will add configuration later
@@ -320,4 +329,9 @@ func (n *Node) Wait() {
 	n.state.starting.Wait()
 	n.state.stopping.Wait()
 	n.state.RUnlock()
+}
+
+// Name will return the node name assigned at creation (either given or random).
+func (n *Node) Name() string {
+	return n.name
 }

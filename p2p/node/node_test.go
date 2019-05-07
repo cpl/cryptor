@@ -151,3 +151,25 @@ func TestNodeWait(t *testing.T) {
 	n.Wait()
 	tests.AssertNotNil(t, n.Stop(), "did not fail to stop non-running node")
 }
+
+func assertNodeName(t *testing.T, name string) {
+	n := node.NewNode(name, zeroKey)
+	tests.AssertEqual(t, n.Name(), name, "node name does not match")
+}
+
+func TestNodeName(t *testing.T) {
+	t.Parallel()
+
+	assertNodeName(t, "test")
+	assertNodeName(t, " ")
+	assertNodeName(t, "1234$$$$")
+	assertNodeName(t, " multi   name  ")
+	assertNodeName(t, "-==--")
+	assertNodeName(t, "s")
+
+	n := node.NewNode("", zeroKey)
+	if n.Name() == "" {
+		t.Fatal("expected mnemonic name, got nothing")
+	}
+	t.Log(n.Name())
+}
