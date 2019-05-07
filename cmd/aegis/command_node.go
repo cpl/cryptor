@@ -3,10 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/fatih/color"
 
 	"cpl.li/go/cryptor/crypt"
+	"cpl.li/go/cryptor/crypt/mwords"
+	"cpl.li/go/cryptor/crypt/ppk"
 	"cpl.li/go/cryptor/p2p/node"
 )
 
@@ -22,10 +25,20 @@ func commandNode(argc int, argv []string) error {
 
 	switch argv[0] {
 	case "new":
-		if argc != 3 {
+		switch argc {
+		case 1:
+			keyPrivate, _ = ppk.NewPrivateKey()
+			defer crypt.ZeroBytes(keyPrivate[:])
+			return commandNodeNew(
+				strings.Join(mwords.RandomWords(3), "-"), keyPrivate.ToHex())
+		case 2:
+			return commandNodeNew(
+				strings.Join(mwords.RandomWords(3), "-"), argv[2])
+		case 3:
+			return commandNodeNew(argv[2], argv[1])
+		default:
 			return ErrArgumentCount
 		}
-		return commandNodeNew(argv[1], argv[2])
 	case "list", "ls":
 		commandNodeList()
 	case "start":
@@ -104,7 +117,7 @@ func commandNodeHelp() {
 		color.YellowString("%s", "[ new | del | sel | list | start | stop | conn | disc ]"))
 
 	helpPrint("%-13s %-14s %-30s %s\n",
-		"node", "new", "[name] [private key]",
+		"node", "new", "[private key] [name]",
 		"create a new node with the given name and private hexadecimal key")
 	helpPrint("%-13s %-14s %-30s %s\n",
 		"node", "del", "[name]",
@@ -159,7 +172,7 @@ func commandNodeList() {
 			stateString = color.CyanString(nState.String())
 		}
 
-		fmt.Printf("%s%s %s %s %-18s %s %-16s %s %s\n",
+		fmt.Printf("%s%s %s %s %-18s %s %-40s %s %s\n",
 			padding,
 			color.GreenString("public key"),
 			color.YellowString(n.PublicKey().ToHex()),
