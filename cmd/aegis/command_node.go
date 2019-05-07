@@ -14,8 +14,8 @@ import (
 )
 
 var nodeList map[string]*node.Node
+var nodeKeyMap map[string]bool
 var nodeSelect *node.Node
-var nodeSelectName string
 
 func commandNode(argc int, argv []string) error {
 	// expect arguments
@@ -33,7 +33,7 @@ func commandNode(argc int, argv []string) error {
 				strings.Join(mwords.RandomWords(3), "-"), keyPrivate.ToHex())
 		case 2:
 			return commandNodeNew(
-				strings.Join(mwords.RandomWords(3), "-"), argv[2])
+				strings.Join(mwords.RandomWords(3), "-"), argv[1])
 		case 3:
 			return commandNodeNew(argv[2], argv[1])
 		default:
@@ -44,10 +44,10 @@ func commandNode(argc int, argv []string) error {
 	case "start":
 		var name string
 		if argc != 2 {
-			if nodeSelectName == "" {
+			if nodeSelect == nil {
 				return ErrArgumentCount
 			}
-			name = nodeSelectName
+			name = nodeSelect.Name()
 		} else {
 			name = argv[1]
 		}
@@ -55,10 +55,10 @@ func commandNode(argc int, argv []string) error {
 	case "stop":
 		var name string
 		if argc != 2 {
-			if nodeSelectName == "" {
+			if nodeSelect == nil {
 				return ErrArgumentCount
 			}
-			name = nodeSelectName
+			name = nodeSelect.Name()
 		} else {
 			name = argv[1]
 		}
@@ -72,18 +72,20 @@ func commandNode(argc int, argv []string) error {
 			addr = ""
 			if argc == 2 {
 				name = argv[1]
+			} else if nodeSelect != nil {
+				name = nodeSelect.Name()
 			} else {
-				name = nodeSelectName
+				return ErrArgumentCount
 			}
 		}
 		return commandNodeConn(name, addr)
 	case "disc", "disconnect", "dc":
 		var name string
 		if argc != 2 {
-			if nodeSelectName == "" {
+			if nodeSelect == nil {
 				return ErrArgumentCount
 			}
-			name = nodeSelectName
+			name = nodeSelect.Name()
 		} else {
 			name = argv[1]
 		}
@@ -91,10 +93,10 @@ func commandNode(argc int, argv []string) error {
 	case "del", "delete", "rm", "remove":
 		var name string
 		if argc != 2 {
-			if nodeSelectName == "" {
+			if nodeSelect == nil {
 				return ErrArgumentCount
 			}
-			name = nodeSelectName
+			name = nodeSelect.Name()
 		} else {
 			name = argv[1]
 		}
@@ -252,10 +254,10 @@ func commandNodeDel(name string) error {
 	// remove select node ref
 	if n == nodeSelect {
 		nodeSelect = nil
-		nodeSelectName = ""
 	}
 
 	// delete node
+	delete(nodeKeyMap, n.PublicKey().ToHex())
 	n = nil
 	delete(nodeList, name)
 	return nil
@@ -273,6 +275,14 @@ func commandNodeNew(name, key string) error {
 	}
 	defer crypt.ZeroBytes(keyPrivate[:])
 
+	// get public key and check for existing node
+	pubkey := keyPrivate.PublicKey().ToHex()
+	if _, ok := nodeKeyMap[pubkey]; ok {
+		return errors.New("node already exists with key " +
+			pubkey)
+	}
+	nodeKeyMap[pubkey] = true
+
 	// create and assign node
 	nodeList[name] = node.NewNode(name, keyPrivate)
 
@@ -287,6 +297,5 @@ func commandNodeSelect(name string) error {
 	}
 
 	nodeSelect = n
-	nodeSelectName = name
 	return nil
 }

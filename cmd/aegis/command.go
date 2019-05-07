@@ -9,6 +9,7 @@ func defaultHelp() {
 func init() {
 	// initiate other misc
 	nodeList = make(map[string]*node.Node)
+	nodeKeyMap = make(map[string]bool)
 
 	// create the commands map
 	commands = map[string]command{
