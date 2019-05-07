@@ -2,6 +2,8 @@ package mwords
 
 import (
 	"testing"
+
+	"cpl.li/go/cryptor/tests"
 )
 
 func TestEntropyBits(t *testing.T) {
@@ -24,5 +26,15 @@ func TestEntropyBits(t *testing.T) {
 		if isValidEntropy(bits) && bits%entropyMultiple != 0 {
 			t.Errorf("validated invalid number of bits %d\n", bits)
 		}
+	}
+}
+
+func assertRandomWords(t *testing.T, num uint) {
+	tests.AssertEqual(t, uint(len(RandomWords(num))), num, "invalid word count")
+}
+
+func TestRandomWords(t *testing.T) {
+	for i := uint(0); i < 100; i++ {
+		assertRandomWords(t, i)
 	}
 }

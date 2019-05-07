@@ -1,6 +1,10 @@
 package mwords
 
-import "math/big"
+import (
+	"math/big"
+	"math/rand"
+	"time"
+)
 
 // bit mask for 11 least significant bits
 var bits0to11 = big.NewInt(0x7FF)
@@ -45,4 +49,21 @@ func isValidEntropy(bits uint) bool {
 		return false
 	}
 	return true
+}
+
+// RandomWords will return n random words from the wordlist.
+func RandomWords(n uint) []string {
+	// seed RNG
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	// return slice
+	ret := make([]string, n)
+
+	// get n random words
+	for n > 0 {
+		ret[n-1] = mnemonicWords[rand.Int()%Count]
+		n--
+	}
+
+	return ret
 }
