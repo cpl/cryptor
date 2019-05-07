@@ -264,7 +264,7 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 // Finalize can be called after the handshake protocol is completed either the
 // initializer or receiver. In this step the transport keys are derived from
 // the final shared state of the handshake, while other unused fields are
-// zeroed. The keypair generated on each side of the protocol must matchs.
+// zeroed. The keypair generated on each side of the protocol must matches.
 // initializerRecv = responderSend and initializerSend = responderRecv
 func (hs *Handshake) Finalize() (send, recv [ppk.KeySize]byte, err error) {
 	// lock handshake

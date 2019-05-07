@@ -24,7 +24,7 @@
 
 ## Welcome
 
-I am very happy to see you've taken the interest to look at the guidelines for contributing to [Cryptor](git.cpl.li/cryptor). The topics covered below are simple guidelines and nothing is set in stone, use your judgment to save everyone time, always ask yourself "is X something I would do?", before proposing it.
+I am very happy to see you've taken the interest to look at the guidelines for contributing to [Cryptor](https://git.cpl.li/cryptor). The topics covered below are simple guidelines and nothing is set in stone, use your judgment to save everyone time, always ask yourself "is X something I would do?", before proposing it.
 
 Please note this is not a *Development Guide* (an introduction to bits of code and how to handle the project), but a set of instructions and recommendations for getting started with adding changes to the codebase and community. A Developer Guide will be provided on the [wiki](https://github.com/cpl/cryptor/wiki).
 
