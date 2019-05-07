@@ -51,7 +51,7 @@ func commandKeyHelp() {
 		"key", "pass", "",
 		"derive a new key from a passphrase of 8 chars minimum")
 	helpPrint("%-12s %-16s %-20s %s\n",
-		"key", "gen", "[prefix]",
+		"key", "bip39", "",
 		"export or import keys to and from mnemonic sentences")
 }
 

@@ -32,9 +32,9 @@ func parseCommand(cmd string) error {
 
 	// builtin simple commands
 	switch argv[0] {
-	case "exit":
+	case "exit", "quit":
 		os.Exit(0)
-	case "clear":
+	case "clear", "cls":
 		if _, err := os.Stdout.WriteString("\033[H\033[2J"); err != nil {
 			return err
 		}
