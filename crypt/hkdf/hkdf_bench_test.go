@@ -6,8 +6,9 @@ import (
 	"math/rand"
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
 	"golang.org/x/crypto/blake2s"
+
+	"cpl.li/go/cryptor/crypt"
 )
 
 func BenchmarkBLAKE(b *testing.B) {

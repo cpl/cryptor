@@ -1,8 +1,9 @@
 package crypt
 
 import (
-	"cpl.li/go/cryptor/crypt/ppk"
 	"golang.org/x/crypto/pbkdf2"
+
+	"cpl.li/go/cryptor/crypt/ppk"
 )
 
 const staticSalt = ".-_cryptor,$"
