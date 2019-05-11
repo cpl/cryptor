@@ -65,3 +65,7 @@ The main Cryptor client is `aegis`.
 * [Noise Protocol Framework](https://noiseprotocol.org/noise.pdf)
 * [Tor](https://www.torproject.org)
 * [Freenet](https://freenetproject.org)
+
+<p align=center>
+  <img src="https://imgs.xkcd.com/comics/privacy_opinions.png">
+</p>
