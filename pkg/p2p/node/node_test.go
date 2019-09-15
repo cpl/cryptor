@@ -3,21 +3,21 @@ package node_test
 import (
 	"testing"
 
-	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p/node"
 
-	"cpl.li/go/cryptor/p2p/node"
-	"cpl.li/go/cryptor/tests"
+	"github.com/stretchr/testify/assert"
 )
 
 var zeroKey ppk.PrivateKey
 
 func assertErrCount(t *testing.T, n *node.Node, expected uint32) {
 	// check error count
-	tests.AssertEqual(t, n.ErrCount(), expected, "unexpected error count")
+	assert.Equal(t, n.ErrCount(), expected, "unexpected error count")
 }
 
 func assertNodeAddr(t *testing.T, n *node.Node, expected string) {
-	tests.AssertEqual(t, n.Addr(), expected, "unexpected node address")
+	assert.Equal(t, n.Addr(), expected, "unexpected node address")
 }
 
 func TestNodeBasicRoutines(t *testing.T) {
@@ -25,17 +25,17 @@ func TestNodeBasicRoutines(t *testing.T) {
 
 	n := node.NewNode("test", zeroKey)
 
-	tests.AssertNil(t, n.Start())
-	tests.AssertNil(t, n.Stop())
+	assert.Nil(t, n.Start())
+	assert.Nil(t, n.Stop())
 
-	tests.AssertNil(t, n.Start())
-	tests.AssertNil(t, n.Connect())
-	tests.AssertNil(t, n.Disconnect())
-	tests.AssertNil(t, n.Stop())
+	assert.Nil(t, n.Start())
+	assert.Nil(t, n.Connect())
+	assert.Nil(t, n.Disconnect())
+	assert.Nil(t, n.Stop())
 
-	tests.AssertNil(t, n.Start())
-	tests.AssertNil(t, n.Connect())
-	tests.AssertNil(t, n.Stop())
+	assert.Nil(t, n.Start())
+	assert.Nil(t, n.Connect())
+	assert.Nil(t, n.Stop())
 
 	// check error count
 	assertErrCount(t, n, 0)
@@ -46,19 +46,19 @@ func TestNodeBasicInvalidRoutines(t *testing.T) {
 
 	n := node.NewNode("test", zeroKey)
 
-	tests.AssertNotNil(t, n.Stop(), "stop: not running")       // 1 err count
-	tests.AssertNotNil(t, n.Disconnect(), "disc: not running") // 2
-	tests.AssertNotNil(t, n.Connect(), "conn: not running")    // 3
+	assert.NotNil(t, n.Stop(), "stop: not running")       // 1 err count
+	assert.NotNil(t, n.Disconnect(), "disc: not running") // 2
+	assert.NotNil(t, n.Connect(), "conn: not running")    // 3
 
-	tests.AssertNil(t, n.Start())
-	tests.AssertNotNil(t, n.Disconnect(), "disc: running") // 4
-	tests.AssertNotNil(t, n.Start(), "start: running")     // 5
+	assert.Nil(t, n.Start())
+	assert.NotNil(t, n.Disconnect(), "disc: running") // 4
+	assert.NotNil(t, n.Start(), "start: running")     // 5
 
-	tests.AssertNil(t, n.Connect())
-	tests.AssertNotNil(t, n.Start(), "start: running connected")  // 6
-	tests.AssertNotNil(t, n.Connect(), "conn: running connected") // 7
+	assert.Nil(t, n.Connect())
+	assert.NotNil(t, n.Start(), "start: running connected")  // 6
+	assert.NotNil(t, n.Connect(), "conn: running connected") // 7
 
-	tests.AssertNil(t, n.Stop())
+	assert.Nil(t, n.Stop())
 
 	// check error count
 	assertErrCount(t, n, 7)
@@ -70,23 +70,23 @@ func TestNodeAddrSet(t *testing.T) {
 	assertNodeAddr(t, n, "<nil>")
 
 	// change address
-	tests.AssertNil(t, n.SetAddr("127.0.0.1:8000"))
+	assert.Nil(t, n.SetAddr("127.0.0.1:8000"))
 
 	// start node
-	tests.AssertNil(t, n.Start())
+	assert.Nil(t, n.Start())
 
 	// change address while node is running
-	tests.AssertNil(t, n.SetAddr(":"))
+	assert.Nil(t, n.SetAddr(":"))
 
 	// connect to random port on [::]/0.0.0.0
-	tests.AssertNil(t, n.Connect())
+	assert.Nil(t, n.Connect())
 
 	// change address while node is running and connected
-	tests.AssertNotNil(t, n.SetAddr("127.0.0.2:8001"),
+	assert.NotNil(t, n.SetAddr("127.0.0.2:8001"),
 		"changed addr while connected") // err 1
 
 	// disconnect node
-	tests.AssertNil(t, n.Disconnect())
+	assert.Nil(t, n.Disconnect())
 
 	// attempt change to invalid addresses
 	invalidAddresses := []string{ // + 5 err
@@ -97,28 +97,28 @@ func TestNodeAddrSet(t *testing.T) {
 		"127.0.0.1:noport",
 	}
 	for _, addr := range invalidAddresses {
-		tests.AssertNotNil(t, n.SetAddr(addr), "changed address to "+addr)
+		assert.NotNil(t, n.SetAddr(addr), "changed address to "+addr)
 	}
 
 	// change address
-	tests.AssertNil(t, n.SetAddr("127.0.0.2:8001"))
-	tests.AssertNotNil(t, n.SetAddr("127.0.0.2:8001"),
+	assert.Nil(t, n.SetAddr("127.0.0.2:8001"))
+	assert.NotNil(t, n.SetAddr("127.0.0.2:8001"),
 		"change addr to same addr") // err 7
 
 	// change address
-	tests.AssertNil(t, n.SetAddr("127.0.0.1:40123"))
+	assert.Nil(t, n.SetAddr("127.0.0.1:40123"))
 
 	// check address while not connected
 	assertNodeAddr(t, n, "127.0.0.1:40123")
 
 	// connect
-	tests.AssertNil(t, n.Connect())
+	assert.Nil(t, n.Connect())
 
 	// check address while connected
 	assertNodeAddr(t, n, "127.0.0.1:40123")
 
 	// stop node
-	tests.AssertNil(t, n.Stop())
+	assert.Nil(t, n.Stop())
 
 	// check error count
 	assertErrCount(t, n, 7)
@@ -129,32 +129,32 @@ func TestConnectInvalidAddress(t *testing.T) {
 	t.Parallel()
 
 	n := node.NewNode("test", zeroKey)
-	tests.AssertNil(t, n.SetAddr("example.com:80"))
-	tests.AssertNil(t, n.Start())
-	tests.AssertNotNil(t, n.Connect(), "connect on invalid address")
-	tests.AssertNil(t, n.Stop())
+	assert.Nil(t, n.SetAddr("example.com:80"))
+	assert.Nil(t, n.Start())
+	assert.NotNil(t, n.Connect(), "connect on invalid address")
+	assert.Nil(t, n.Stop())
 }
 
 func TestNodeWait(t *testing.T) {
 	t.Parallel()
 
 	n := node.NewNode("test", zeroKey)
-	go tests.AssertNil(t, n.Start())
+	go assert.Nil(t, n.Start())
 	n.Wait()
-	go tests.AssertNil(t, n.Stop())
+	go assert.Nil(t, n.Stop())
 	n.Wait()
-	go tests.AssertNil(t, n.Start())
+	go assert.Nil(t, n.Start())
 	n.Wait()
-	go tests.AssertNotNil(t, n.Start(), "did not fail to start again")
+	go assert.NotNil(t, n.Start(), "did not fail to start again")
 	n.Wait()
-	go tests.AssertNil(t, n.Stop())
+	go assert.Nil(t, n.Stop())
 	n.Wait()
-	tests.AssertNotNil(t, n.Stop(), "did not fail to stop non-running node")
+	assert.NotNil(t, n.Stop(), "did not fail to stop non-running node")
 }
 
 func assertNodeName(t *testing.T, name string) {
 	n := node.NewNode(name, zeroKey)
-	tests.AssertEqual(t, n.Name(), name, "node name does not match")
+	assert.Equal(t, n.Name(), name, "node name does not match")
 }
 
 func TestNodeName(t *testing.T) {

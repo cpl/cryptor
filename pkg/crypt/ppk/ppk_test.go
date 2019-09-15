@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"cpl.li/go/cryptor/crypt/mwords"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/mwords"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/tests"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSharedSecretGeneration(t *testing.T) {
@@ -17,9 +17,9 @@ func TestSharedSecretGeneration(t *testing.T) {
 
 	// generate two private keys
 	sk0, err := ppk.NewPrivateKey()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 	sk1, err := ppk.NewPrivateKey()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// generate their respective public keys
 	pk0 := sk0.PublicKey()
@@ -55,7 +55,7 @@ func TestHexSaveLoad(t *testing.T) {
 
 	// create private key
 	sk, err := ppk.NewPrivateKey()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// generate hex from key
 	hexSk := sk.ToHex()
@@ -63,7 +63,7 @@ func TestHexSaveLoad(t *testing.T) {
 	// decode hex string into new key
 	var newSk ppk.PrivateKey
 	err = newSk.FromHex(hexSk)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// compare the two keys
 	if !newSk.Equals(sk) {
@@ -75,7 +75,7 @@ func TestHexSaveLoad(t *testing.T) {
 	hexPk := pk.ToHex()
 	var newPk ppk.PublicKey
 	err = newPk.FromHex(hexPk)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	if !newPk.Equals(pk) {
 		t.Fatalf("failed to match keys after hex save, load")
@@ -87,7 +87,7 @@ func TestZeroingKey(t *testing.T) {
 
 	// generate secret key
 	sk, err := ppk.NewPrivateKey()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// zero key
 	crypt.ZeroBytes(sk[:])
@@ -98,7 +98,7 @@ func TestZeroingKey(t *testing.T) {
 	}
 
 	// check key as hex string
-	tests.AssertEqual(t, sk.ToHex(),
+	assert.Equal(t, sk.ToHex(),
 		"0000000000000000000000000000000000000000000000000000000000000000",
 		"failed to match hex key to all 0 hex string")
 
@@ -135,14 +135,14 @@ func TestToMnemonic(t *testing.T) {
 
 	// generate key
 	sk, err := ppk.NewPrivateKey()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// generate mnemonic and check size
 	mnemonic := sk.ToMnemonic()
-	tests.AssertEqual(t, len(mnemonic), ppk.MnemonicSize,
+	assert.Equal(t, len(mnemonic), ppk.MnemonicSize,
 		"invalid mnemonic length")
 	mnemonic = sk.PublicKey().ToMnemonic()
-	tests.AssertEqual(t, len(mnemonic), ppk.MnemonicSize,
+	assert.Equal(t, len(mnemonic), ppk.MnemonicSize,
 		"invalid mnemonic length")
 
 	// generate mnemonic from zero key
@@ -150,12 +150,12 @@ func TestToMnemonic(t *testing.T) {
 	mnemonic = zeroKey.ToMnemonic()
 
 	// check last word
-	tests.AssertEqual(t, mnemonic[ppk.MnemonicSize-1], "art",
+	assert.Equal(t, mnemonic[ppk.MnemonicSize-1], "art",
 		"got unexpected word")
 
 	// iterate all words but last
 	for _, word := range mnemonic[:ppk.MnemonicSize-2] {
-		tests.AssertEqual(t, word, "abandon",
+		assert.Equal(t, word, "abandon",
 			"got unexpected word")
 	}
 }
@@ -165,15 +165,15 @@ func TestFromMnemonic(t *testing.T) {
 
 	// generate key
 	sk, err := ppk.NewPrivateKey()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// generate mnemonics and check sizes
 	mnemonicPrivate := sk.ToMnemonic()
 
-	tests.AssertEqual(t, len(mnemonicPrivate), ppk.MnemonicSize,
+	assert.Equal(t, len(mnemonicPrivate), ppk.MnemonicSize,
 		"invalid mnemonic length")
 	mnemonicPublic := sk.PublicKey().ToMnemonic()
-	tests.AssertEqual(t, len(mnemonicPublic), ppk.MnemonicSize,
+	assert.Equal(t, len(mnemonicPublic), ppk.MnemonicSize,
 		"invalid mnemonic length")
 
 	// key generated from mnemonics
@@ -181,10 +181,10 @@ func TestFromMnemonic(t *testing.T) {
 	var pkDecoded ppk.PublicKey
 
 	// decode private key
-	tests.AssertNil(t, skDecoded.FromMnemonic(mnemonicPrivate))
+	assert.Nil(t, skDecoded.FromMnemonic(mnemonicPrivate))
 
 	// decode public key
-	tests.AssertNil(t, pkDecoded.FromMnemonic(mnemonicPublic))
+	assert.Nil(t, pkDecoded.FromMnemonic(mnemonicPublic))
 
 	// verify key integrity
 	if !sk.Equals(skDecoded) {
@@ -228,25 +228,25 @@ func TestFromMnemonicInvalid(t *testing.T) {
 	var key ppk.PrivateKey
 
 	// empty mnemonic
-	tests.AssertNotNil(t, key.FromMnemonic([]string{}), "empty mnemonic")
+	assert.NotNil(t, key.FromMnemonic([]string{}), "empty mnemonic")
 
 	// invalid mnemonic size
-	tests.AssertNotNil(t,
+	assert.NotNil(t,
 		key.FromMnemonic(
 			strings.Fields("legal year wave sausage worth useful legal winner thank yellow")), "invalid mnemonic size")
 
 	// short mnemonic (half the wanted size)
-	tests.AssertNotNil(t,
+	assert.NotNil(t,
 		key.FromMnemonic(
 			strings.Fields("legal winner thank year wave sausage worth useful legal winner thank yellow")), "short mnemonic")
 
 	// mnemonic contains invalid words
-	tests.AssertNotNil(t,
+	assert.NotNil(t,
 		key.FromMnemonic(
 			strings.Fields("beyond stage linux clip because twist token leaf atom foobarword genius food business side grid unable middle armed observe pair crouch tonight away coconut")), "invalid mnemonic")
 
 	// mnemonic checksum is not valid
-	tests.AssertNotNil(t,
+	assert.NotNil(t,
 		key.FromMnemonic(
 			strings.Fields("zoo stage dog clip because twist token leaf atom about genius food business side grid unable middle armed observe pair crouch tonight away coconut")), "invalid mnemonic checksum")
 }

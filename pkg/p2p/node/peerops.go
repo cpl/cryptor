@@ -3,8 +3,8 @@ package node
 import (
 	"errors"
 
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p/peer"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p/peer"
 )
 
 // PeerAdd takes the public key of a peer and creates a new entry in the node

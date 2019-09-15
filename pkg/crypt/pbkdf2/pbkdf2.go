@@ -1,9 +1,9 @@
-package crypt
+package pbkdf2
 
 import (
+	"cpl.li/go/cryptor/pkg/crypt/hashing"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
 	"golang.org/x/crypto/pbkdf2"
-
-	"cpl.li/go/cryptor/crypt/ppk"
 )
 
 const staticSalt = ".-_cryptor,$"
@@ -20,6 +20,6 @@ func Key(password, salt []byte) (key [ppk.KeySize]byte) {
 
 	copy(
 		key[:],
-		pbkdf2.Key(password, salt, iter, ppk.KeySize, HashFunction))
+		pbkdf2.Key(password, salt, iter, ppk.KeySize, hashing.HashFunction))
 	return
 }

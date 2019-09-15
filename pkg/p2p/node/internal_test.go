@@ -3,9 +3,9 @@ package node
 import (
 	"testing"
 
-	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
 
-	"cpl.li/go/cryptor/tests"
+	"github.com/stretchr/testify/assert"
 )
 
 // TODO Add build tags to all test files for separating race cond risk tests
@@ -13,12 +13,12 @@ import (
 func TestKillNetwork(t *testing.T) {
 	n := NewNode("test", ppk.PrivateKey{})
 
-	tests.AssertNil(t, n.Start())
-	tests.AssertNil(t, n.Connect())
+	assert.Nil(t, n.Start())
+	assert.Nil(t, n.Connect())
 
 	// external network close
 	n.net.Lock()
-	tests.AssertNil(t, n.net.conn.Close())
+	assert.Nil(t, n.net.conn.Close())
 	n.net.Unlock()
 
 	// wait for node to disconnect
@@ -31,19 +31,19 @@ func TestKillNetwork(t *testing.T) {
 	}
 
 	// attempt node disconnect
-	tests.AssertNotNil(t, n.Disconnect(), "disc not connected")
+	assert.NotNil(t, n.Disconnect(), "disc not connected")
 
 	// attempt node start
-	tests.AssertNotNil(t, n.Start(), "start already running")
+	assert.NotNil(t, n.Start(), "start already running")
 
 	// check node address
-	tests.AssertEqual(t, n.Addr(), "<nil>", "unexpected node address")
+	assert.Equal(t, n.Addr(), "<nil>", "unexpected node address")
 
 	// attempt re-connect and disconnect
-	tests.AssertNil(t, n.Connect())
-	tests.AssertNil(t, n.Disconnect())
+	assert.Nil(t, n.Connect())
+	assert.Nil(t, n.Disconnect())
 
-	tests.AssertNil(t, n.Stop())
+	assert.Nil(t, n.Stop())
 
-	tests.AssertEqual(t, n.ErrCount(), uint32(4), "unexpected error count")
+	assert.Equal(t, n.ErrCount(), uint32(4), "unexpected error count")
 }

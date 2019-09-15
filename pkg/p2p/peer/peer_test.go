@@ -3,16 +3,16 @@ package peer_test
 import (
 	"testing"
 
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p/peer"
-	"cpl.li/go/cryptor/tests"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p/peer"
+	"github.com/stretchr/testify/assert"
 )
 
 var zeroKey ppk.PublicKey
 
 func testSetAddr(t *testing.T, p *peer.Peer, addr, expected string) {
-	tests.AssertNil(t, p.SetAddr(addr))
-	tests.AssertEqual(t, p.Addr(), expected, "unexpected address")
+	assert.Nil(t, p.SetAddr(addr))
+	assert.Equal(t, p.Addr(), expected, "unexpected address")
 }
 
 func TestPeerSetAddr(t *testing.T) {
@@ -29,12 +29,12 @@ func TestPeerSetAddr(t *testing.T) {
 	testSetAddr(t, p, ":1234", ":1234")
 
 	// invalid
-	tests.AssertNotNil(t, p.SetAddr("1.1.1.1"), "set invalid address, no port")
-	tests.AssertNotNil(t, p.SetAddr("nosuchhost:"), "set invalid address, host")
-	tests.AssertNotNil(t, p.SetAddr("1.1.1.1:-1"), "set invalid address, invalid port")
+	assert.NotNil(t, p.SetAddr("1.1.1.1"), "set invalid address, no port")
+	assert.NotNil(t, p.SetAddr("nosuchhost:"), "set invalid address, host")
+	assert.NotNil(t, p.SetAddr("1.1.1.1:-1"), "set invalid address, invalid port")
 
 	// check unchanged valid address
-	tests.AssertEqual(t, p.Addr(), ":1234", "unexpected address")
+	assert.Equal(t, p.Addr(), ":1234", "unexpected address")
 }
 
 func TestSetTransportKeys(t *testing.T) {
@@ -53,7 +53,7 @@ func TestNewPeerNoAddr(t *testing.T) {
 
 	// check for ID 0
 	// peer ID is assigned during handshake and not creation
-	tests.AssertEqual(t, p.ID, uint64(0), "invalid peer ID")
+	assert.Equal(t, p.ID, uint64(0), "invalid peer ID")
 
 	// validate key
 	if !p.PublicKey().Equals(zeroKey) {
@@ -64,7 +64,7 @@ func TestNewPeerNoAddr(t *testing.T) {
 	if addr := p.AddrUDP(); addr != nil {
 		t.Fatal("got non-nil udp address", addr)
 	}
-	tests.AssertEqual(t, p.Addr(), "<nil>", "invalid peer address")
+	assert.Equal(t, p.Addr(), "<nil>", "invalid peer address")
 }
 
 func TestNewPeerWithAddr(t *testing.T) {
@@ -82,7 +82,7 @@ func TestNewPeerWithAddr(t *testing.T) {
 		t.Fatal("got nil udp address")
 	}
 
-	tests.AssertEqual(t, p.Addr(), "127.0.0.1:8080", "unexpected peer address")
+	assert.Equal(t, p.Addr(), "127.0.0.1:8080", "unexpected peer address")
 }
 
 func TestPeerAddressParsing(t *testing.T) {
@@ -111,6 +111,6 @@ func TestPeerAddressParsing(t *testing.T) {
 
 	for _, addr := range addresses {
 		p := peer.NewPeer(zeroKey, addr.addr)
-		tests.AssertEqual(t, p.Addr(), addr.expe, "unexpected peer address")
+		assert.Equal(t, p.Addr(), addr.expe, "unexpected peer address")
 	}
 }

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/mwords"
-	"cpl.li/go/cryptor/tests"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/mwords"
+	"github.com/stretchr/testify/assert"
 )
 
 var invalidMnemonics = []string{
@@ -90,12 +90,12 @@ func TestEntropyToMnemonic(t *testing.T) {
 
 	for _, vector := range testVectors {
 		entropy, err := hex.DecodeString(vector.entropy)
-		tests.AssertNil(t, err)
+		assert.Nil(t, err)
 
 		mnemonic, err := mwords.EntropyToMnemonic(entropy)
-		tests.AssertNil(t, err)
+		assert.Nil(t, err)
 
-		tests.AssertEqual(t, vector.mnemonic, mnemonic.String(),
+		assert.Equal(t, vector.mnemonic, mnemonic.String(),
 			"mnemonic mismatch")
 	}
 }
@@ -106,7 +106,7 @@ func TestEntropyFromMnemonic(t *testing.T) {
 	for _, vector := range testVectors {
 		// extract and validate sentence
 		sentence, err := mwords.MnemonicFromString(vector.mnemonic)
-		tests.AssertNil(t, err)
+		assert.Nil(t, err)
 
 		// extract initial entropy
 		entropy, err := mwords.EntropyFromMnemonic(sentence)
@@ -117,7 +117,7 @@ func TestEntropyFromMnemonic(t *testing.T) {
 		}
 
 		// validate expected entropy
-		tests.AssertEqual(t, hex.EncodeToString(entropy), vector.entropy,
+		assert.Equal(t, hex.EncodeToString(entropy), vector.entropy,
 			"entropy mismatch")
 	}
 }

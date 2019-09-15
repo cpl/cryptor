@@ -4,10 +4,10 @@ import (
 	"errors"
 	"sync/atomic"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/p2p/noise"
-	"cpl.li/go/cryptor/p2p/packet"
-	"cpl.li/go/cryptor/p2p/peer"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/p2p/noise"
+	"cpl.li/go/cryptor/pkg/p2p/packet"
+	"cpl.li/go/cryptor/pkg/p2p/peer"
 )
 
 // Handshake will initialize the handshake protocol with the given peer.

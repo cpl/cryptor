@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/crypto/blake2s"
 
-	"cpl.li/go/cryptor/crypt"
+	"cpl.li/go/cryptor/pkg/crypt"
 )
 
 func BenchmarkBLAKE(b *testing.B) {

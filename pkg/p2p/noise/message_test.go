@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p/noise"
-	"cpl.li/go/cryptor/tests"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p/noise"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMarshalMessagesInitializer(t *testing.T) {
@@ -21,10 +21,10 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 
 	// marshal into binary
 	dataI, err := msgI.MarshalBinary()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// check size
-	tests.AssertEqual(t, len(dataI), noise.SizeMessageInitializer,
+	assert.Equal(t, len(dataI), noise.SizeMessageInitializer,
 		"invalid binary form size")
 
 	newMsgI := new(noise.MessageInitializer)
@@ -35,7 +35,7 @@ func TestMarshalMessagesInitializer(t *testing.T) {
 	}
 
 	// unmarshal
-	tests.AssertNil(t, newMsgI.UnmarshalBinary(dataI))
+	assert.Nil(t, newMsgI.UnmarshalBinary(dataI))
 
 	// compare initial message with new message
 	if !bytes.Equal(
@@ -55,10 +55,10 @@ func TestMarshalMessagesResponder(t *testing.T) {
 
 	// marshal into binary
 	dataR, err := msgR.MarshalBinary()
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// check size
-	tests.AssertEqual(t, len(dataR), noise.SizeMessageResponder, "invalid binary form size")
+	assert.Equal(t, len(dataR), noise.SizeMessageResponder, "invalid binary form size")
 	newMsgR := new(noise.MessageResponder)
 
 	// unmarshal with invalid data
@@ -67,7 +67,7 @@ func TestMarshalMessagesResponder(t *testing.T) {
 	}
 
 	// unmarshal
-	tests.AssertNil(t, newMsgR.UnmarshalBinary(dataR))
+	assert.Nil(t, newMsgR.UnmarshalBinary(dataR))
 
 	// compare initial message with new message
 	if !bytes.Equal(

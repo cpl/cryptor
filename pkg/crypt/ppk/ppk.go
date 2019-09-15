@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"cpl.li/go/cryptor/crypt/mwords"
+	"cpl.li/go/cryptor/pkg/crypt/mwords"
 )
 
 // KeySize is the size (in bytes) of both the public and private keys.

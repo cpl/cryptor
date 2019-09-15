@@ -4,10 +4,11 @@ import (
 	"sync"
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p/node"
-	"cpl.li/go/cryptor/tests"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p/node"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // generates a random public key for testing only
@@ -76,7 +77,7 @@ func TestPeeropsInvalid(t *testing.T) {
 }
 
 func assertPeerCount(t *testing.T, n *node.Node, expected int) {
-	tests.AssertEqual(t, n.PeerCount(), expected, "unexpected peer count")
+	assert.Equal(t, n.PeerCount(), expected, "unexpected peer count")
 }
 
 func TestPeerAddAndDel(t *testing.T) {
@@ -122,7 +123,7 @@ func TestPeerAddAndDel(t *testing.T) {
 
 	// remove the 100 peers
 	for _, key := range publicKeys {
-		tests.AssertNil(t, n.PeerDel(key))
+		assert.Nil(t, n.PeerDel(key))
 	}
 
 	// count peers
@@ -146,7 +147,7 @@ func TestPeerList(t *testing.T) {
 	assertPeerCount(t, n, 8)
 
 	// peer list
-	tests.AssertNil(t, n.PeerList())
+	assert.Nil(t, n.PeerList())
 }
 
 func TestPeerGet(t *testing.T) {
@@ -204,21 +205,21 @@ func TestPeerDel(t *testing.T) {
 	key := newRandomPublicKey()
 	id := crypt.RandomUint64()
 	p, err := n.PeerAdd(key, "", id)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// check id and public key
-	tests.AssertEqual(t, p.ID, id, "invalid peer id")
+	assert.Equal(t, p.ID, id, "invalid peer id")
 	if !p.PublicKey().Equals(key) {
 		t.Fatalf("mismatch public keys")
 	}
 
 	// delete with public key
-	tests.AssertNil(t, n.PeerDel(key))
+	assert.Nil(t, n.PeerDel(key))
 
 	// add again
 	p, err = n.PeerAdd(key, "", id)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// delete with id
-	tests.AssertNil(t, n.PeerDelID(id))
+	assert.Nil(t, n.PeerDelID(id))
 }

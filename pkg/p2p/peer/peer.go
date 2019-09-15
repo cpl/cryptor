@@ -4,9 +4,9 @@ import (
 	"net"
 	"sync"
 
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p"
-	"cpl.li/go/cryptor/p2p/noise"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p"
+	"cpl.li/go/cryptor/pkg/p2p/noise"
 )
 
 // Peer represents a foreign machine/node on the Cryptor network and all the

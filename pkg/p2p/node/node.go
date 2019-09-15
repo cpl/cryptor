@@ -10,11 +10,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"cpl.li/go/cryptor/crypt/mwords"
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p"
-	"cpl.li/go/cryptor/p2p/packet"
-	"cpl.li/go/cryptor/p2p/peer"
+	"cpl.li/go/cryptor/pkg/crypt/mwords"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p"
+	"cpl.li/go/cryptor/pkg/p2p/packet"
+	"cpl.li/go/cryptor/pkg/p2p/peer"
 )
 
 // Node represents the local machine running and/or connected to the Cryptor

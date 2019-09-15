@@ -5,13 +5,14 @@ import (
 
 	"golang.org/x/crypto/blake2s"
 
-	"cpl.li/go/cryptor/crypt"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/hashing"
 )
 
 // HMAC generates the "key-hash message authentication code" using BLAKE2s hash.
 func HMAC(sum *[blake2s.Size]byte, key []byte, data ...[]byte) {
 	// generate MAC
-	mac := hmac.New(crypt.HashFunction, key)
+	mac := hmac.New(hashing.HashFunction, key)
 
 	// iterate byte arrays
 	for _, set := range data {

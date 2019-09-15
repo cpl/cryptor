@@ -1,11 +1,11 @@
-package crypt_test
+package pbkdf2_test
 
 import (
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/tests"
+	"cpl.li/go/cryptor/pkg/crypt/pbkdf2"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"github.com/stretchr/testify/assert"
 )
 
 const password = "testing"
@@ -21,20 +21,20 @@ func TestPBKDF2(t *testing.T) {
 
 	// derive key
 	var key ppk.PrivateKey
-	key = crypt.Key([]byte(password), []byte(salt))
+	key = pbkdf2.Key([]byte(password), []byte(salt))
 
 	// check len
-	tests.AssertEqual(t, len(key), ppk.KeySize, "invalid derived key length")
+	assert.Equal(t, len(key), ppk.KeySize, "invalid derived key length")
 
 	// check expected key
-	tests.AssertEqual(t, key.ToHex(), expected, "derived key does not match")
+	assert.Equal(t, key.ToHex(), expected, "derived key does not match")
 
 	// check expected public key
-	tests.AssertEqual(t, key.PublicKey().ToHex(), expectedPub,
+	assert.Equal(t, key.PublicKey().ToHex(), expectedPub,
 		"derived key public does not match")
 
 	// check default salt is working
-	dKey := crypt.Key([]byte(password), nil)
+	dKey := pbkdf2.Key([]byte(password), nil)
 	if !key.Equals(dKey) {
 		t.Fatal("default salt failed, keys don't match")
 	}
@@ -42,6 +42,6 @@ func TestPBKDF2(t *testing.T) {
 
 func BenchmarkPBKDF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		crypt.Key([]byte(password), []byte(salt))
+		pbkdf2.Key([]byte(password), []byte(salt))
 	}
 }

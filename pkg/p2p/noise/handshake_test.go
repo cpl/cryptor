@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/p2p/noise"
 
-	"cpl.li/go/cryptor/crypt/ppk"
-	"cpl.li/go/cryptor/p2p/noise"
-	"cpl.li/go/cryptor/tests"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHandshake(t *testing.T) {
@@ -24,14 +24,14 @@ func TestHandshake(t *testing.T) {
 
 	// initializer begin protocol
 	iHandshake, msgI := noise.Initialize(iSPublic, rSPublic)
-	tests.AssertEqual(t, iHandshake.State(), noise.StateInitialized,
+	assert.Equal(t, iHandshake.State(), noise.StateInitialized,
 		"unexpected handshake state")
 
 	// responder receives handshake data
 	rHandshake, iSPublicR, msgR, err :=
 		noise.Respond(msgI, rSSecret)
-	tests.AssertNil(t, err)
-	tests.AssertEqual(t, rHandshake.State(), noise.StateResponded,
+	assert.Nil(t, err)
+	assert.Equal(t, rHandshake.State(), noise.StateResponded,
 		"unexpected handshake state")
 
 	if !bytes.Equal(iSPublicR[:], iSPublic[:]) {
@@ -39,14 +39,14 @@ func TestHandshake(t *testing.T) {
 	}
 
 	// responder sends response to initializer
-	tests.AssertNil(t, iHandshake.Receive(msgR, iSSecret))
-	tests.AssertEqual(t, iHandshake.State(), noise.StateReceived,
+	assert.Nil(t, iHandshake.Receive(msgR, iSSecret))
+	assert.Equal(t, iHandshake.State(), noise.StateReceived,
 		"unexpected handshake state")
 
 	// both handshakes can compute transport keys
 	iSend, iRecv, err := iHandshake.Finalize()
-	tests.AssertNil(t, err)
-	tests.AssertEqual(t, iHandshake.State(), noise.StateSuccessful,
+	assert.Nil(t, err)
+	assert.Equal(t, iHandshake.State(), noise.StateSuccessful,
 		"unexpected handshake state")
 
 	var zeroPubKey ppk.PublicKey
@@ -59,8 +59,8 @@ func TestHandshake(t *testing.T) {
 	}
 
 	rSend, rRecv, err := rHandshake.Finalize()
-	tests.AssertNil(t, err)
-	tests.AssertEqual(t, rHandshake.State(), noise.StateSuccessful,
+	assert.Nil(t, err)
+	assert.Equal(t, rHandshake.State(), noise.StateSuccessful,
 		"unexpected handshake state")
 
 	// compare pub unique key with zero key
@@ -230,5 +230,5 @@ func TestInvalidHandshake(t *testing.T) {
 	}
 
 	// perform valid handshake
-	tests.AssertNil(t, hs.Receive(rmsg, zeroPrivateKey))
+	assert.Nil(t, hs.Receive(rmsg, zeroPrivateKey))
 }

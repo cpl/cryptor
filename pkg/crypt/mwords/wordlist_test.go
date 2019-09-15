@@ -4,7 +4,7 @@ import (
 	"hash/crc32"
 	"testing"
 
-	"cpl.li/go/cryptor/tests"
+	"github.com/stretchr/testify/assert"
 )
 
 // the total number of characters in the word list
@@ -44,7 +44,7 @@ func TestValidateWordlist(t *testing.T) {
 	t.Parallel()
 
 	// validate expected length
-	tests.AssertEqual(t, len(mnemonicWords), Count, "invalid wordlist length")
+	assert.Equal(t, len(mnemonicWords), Count, "invalid wordlist length")
 
 	// concat all words in a single byte array
 	totalData := make([]byte, charCount)
@@ -65,6 +65,6 @@ func TestValidateWordlist(t *testing.T) {
 	}
 
 	// perform CRC32 checksum on data
-	tests.AssertEqual(t, crc32.ChecksumIEEE(totalData), uint32(checksum),
+	assert.Equal(t, crc32.ChecksumIEEE(totalData), uint32(checksum),
 		"invalid wordlist checksum")
 }

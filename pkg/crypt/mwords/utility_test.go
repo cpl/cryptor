@@ -3,7 +3,7 @@ package mwords
 import (
 	"testing"
 
-	"cpl.li/go/cryptor/tests"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEntropyBits(t *testing.T) {
@@ -30,7 +30,7 @@ func TestEntropyBits(t *testing.T) {
 }
 
 func assertRandomWords(t *testing.T, num uint) {
-	tests.AssertEqual(t, uint(len(RandomWords(num))), num, "invalid word count")
+	assert.Equal(t, uint(len(RandomWords(num))), num, "invalid word count")
 }
 
 func TestRandomWords(t *testing.T) {

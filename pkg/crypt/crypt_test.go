@@ -6,9 +6,10 @@ import (
 	"math"
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/tests"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/hashing"
 
+	"github.com/stretchr/testify/assert"
 	chacha "golang.org/x/crypto/chacha20poly1305"
 )
 
@@ -51,12 +52,12 @@ func TestZero(t *testing.T) {
 
 	var data4 [40]byte
 	_, err := rand.Read(data4[:])
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	var data5 []byte
 	data5 = make([]byte, 50)
 	_, err = rand.Read(data5)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// zero data
 	crypt.ZeroBytes(data0, data1, data2)
@@ -75,44 +76,6 @@ func TestZero(t *testing.T) {
 	assertZero(t, data5)
 }
 
-func assertHash(t *testing.T, data, expected string) {
-	var sum crypt.Blake2sHash
-	crypt.Hash(&sum, []byte(data))
-	tests.AssertEqual(t, sum.ToHex(), expected, "non matching hashes")
-}
-
-func TestHash(t *testing.T) {
-	t.Parallel()
-
-	assertHash(t, "",
-		"69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9")
-	assertHash(t, "Hello, World!",
-		"ec9db904d636ef61f1421b2ba47112a4fa6b8964fd4a0a514834455c21df7812")
-}
-
-func TestHashNil(t *testing.T) {
-	t.Parallel()
-
-	data := []byte("Hello, World!")
-
-	// request hash to be returned not passed in first argument
-	hash0 := crypt.Hash(nil, data)
-	tests.AssertEqual(t, hash0.ToHex(),
-		"ec9db904d636ef61f1421b2ba47112a4fa6b8964fd4a0a514834455c21df7812",
-		"failed to match returned hash")
-
-	// request hash to be passed in as argument
-	var sum crypt.Blake2sHash
-	hash1 := crypt.Hash(&sum, data)
-	if hash1 != nil {
-		t.Fatalf("hash function returned non-nil byte array %v\n", hash1[:])
-	}
-
-	if sum != *hash0 {
-		t.Fatalf("failed to match hashes\n")
-	}
-}
-
 func TestAEADEncryption(t *testing.T) {
 	t.Parallel()
 
@@ -121,22 +84,22 @@ func TestAEADEncryption(t *testing.T) {
 
 	// create cypher with random key
 	cipher, err := chacha.New(key)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// generate nonce and hash
 	nonce := crypt.RandomBytes(chacha.NonceSize)
-	hash := crypt.Hash(nil, msg)[:]
+	hash := hashing.Hash(nil, msg)[:]
 
 	// encrypt message with nonce and hash for message auth
 	ciphertext := cipher.Seal(nil, nonce, msg, hash)
 
 	// generate new cipher with the same key
 	newCipher, err := chacha.New(key)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// decrypt message
 	decrypted, err := newCipher.Open(nil, nonce, ciphertext, hash)
-	tests.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// compare messages
 	if !bytes.Equal(decrypted, msg) {

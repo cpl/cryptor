@@ -5,9 +5,9 @@ import (
 	"net"
 	"sync/atomic"
 
-	"cpl.li/go/cryptor/p2p"
-	"cpl.li/go/cryptor/p2p/noise"
-	"cpl.li/go/cryptor/p2p/packet"
+	"cpl.li/go/cryptor/pkg/p2p"
+	"cpl.li/go/cryptor/pkg/p2p/noise"
+	"cpl.li/go/cryptor/pkg/p2p/packet"
 )
 
 func (n *Node) run() {

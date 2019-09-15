@@ -3,8 +3,8 @@ package mwords_test
 import (
 	"testing"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/mwords"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/mwords"
 )
 
 func BenchmarkEntropyToMnemonic(b *testing.B) {

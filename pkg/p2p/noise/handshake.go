@@ -7,9 +7,10 @@ import (
 	"golang.org/x/crypto/blake2s"
 	chacha "golang.org/x/crypto/chacha20poly1305"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/hkdf"
-	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/hashing"
+	"cpl.li/go/cryptor/pkg/crypt/hkdf"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
 )
 
 // utility byte array containing NonceSize zeroes
@@ -51,8 +52,8 @@ type Handshake struct {
 	// for locking the handshake while performing any operation
 	sync.RWMutex
 
-	hash    crypt.Blake2sHash  // chaining hash
-	c, t, k [blake2s.Size]byte // chaining keys
+	hash    hashing.Blake2sHash // chaining hash
+	c, t, k [blake2s.Size]byte  // chaining keys
 
 	presharedKey [ppk.KeySize]byte // optional pre-shared key
 
@@ -95,7 +96,7 @@ func Initialize(iSPub, rSPub ppk.PublicKey) (
 	hs.keygen()
 
 	// hash responder public key
-	crypt.Hash(&hs.hash, rSPub[:])
+	hashing.Hash(&hs.hash, rSPub[:])
 
 	// derive chaining key
 	hkdf.HKDF(hs.hash[:], hs.tempKeys.public[:], &hs.c)
@@ -137,7 +138,7 @@ func Respond(msg *MessageInitializer, rSec ppk.PrivateKey) (
 
 	// hash responder public key
 	rSPub := rSec.PublicKey()
-	crypt.Hash(&hs.hash, rSPub[:])
+	hashing.Hash(&hs.hash, rSPub[:])
 
 	// derive chaining key
 	hkdf.HKDF(hs.hash[:], msg.PlaintextUniquePublic[:], &hs.c)
@@ -167,7 +168,7 @@ func Respond(msg *MessageInitializer, rSec ppk.PrivateKey) (
 	hkdf.HKDF(hs.c[:], hs.tempKeys.public[:], &hs.c)
 
 	// update hash
-	crypt.Hash(&hs.hash, hs.hash[:], hs.tempKeys.public[:])
+	hashing.Hash(&hs.hash, hs.hash[:], hs.tempKeys.public[:])
 
 	// update chaining key from shared secrets
 	ss = hs.tempKeys.secret.SharedSecret(msg.PlaintextUniquePublic)
@@ -180,14 +181,14 @@ func Respond(msg *MessageInitializer, rSec ppk.PrivateKey) (
 	hkdf.HKDF(hs.c[:], hs.presharedKey[:], &hs.c, &hs.t, &hs.k)
 
 	// update hash
-	crypt.Hash(&hs.hash, hs.hash[:], hs.t[:])
+	hashing.Hash(&hs.hash, hs.hash[:], hs.t[:])
 
 	// encrypt nothing
 	cipher, _ = chacha.New(hs.k[:])
 	cipher.Seal(rmsg.EncryptedNothing[:0], zeroNonce[:], nil, hs.hash[:])
 
 	// update hash
-	crypt.Hash(&hs.hash, rmsg.EncryptedNothing[:])
+	hashing.Hash(&hs.hash, rmsg.EncryptedNothing[:])
 
 	// mark as responded
 	hs.state = StateResponded
@@ -222,7 +223,7 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 	hkdf.HKDF(hs.c[:], msg.PlaintextUniquePublic[:], &hs.c)
 
 	// update hash
-	crypt.Hash(&hs.hash, hs.hash[:], msg.PlaintextUniquePublic[:])
+	hashing.Hash(&hs.hash, hs.hash[:], msg.PlaintextUniquePublic[:])
 
 	// update chaining key from shared secrets
 	var ss [ppk.KeySize]byte
@@ -236,7 +237,7 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 	hkdf.HKDF(hs.c[:], hs.presharedKey[:], &hs.c, &hs.t, &hs.k)
 
 	// update hash
-	crypt.Hash(&hs.hash, hs.hash[:], hs.t[:])
+	hashing.Hash(&hs.hash, hs.hash[:], hs.t[:])
 
 	// decrypt nothing for validation
 	cipher, _ := chacha.New(hs.k[:])
@@ -253,7 +254,7 @@ func (hs *Handshake) Receive(msg *MessageResponder, iSec ppk.PrivateKey) error {
 	}
 
 	// update hash
-	crypt.Hash(&hs.hash, msg.EncryptedNothing[:])
+	hashing.Hash(&hs.hash, msg.EncryptedNothing[:])
 
 	// mark as received
 	hs.state = StateReceived

@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"golang.org/x/crypto/blake2s"
+	"github.com/stretchr/testify/assert"
 
-	"cpl.li/go/cryptor/crypt"
-	"cpl.li/go/cryptor/crypt/hkdf"
-	"cpl.li/go/cryptor/tests"
+	"cpl.li/go/cryptor/pkg/crypt"
+	"cpl.li/go/cryptor/pkg/crypt/hkdf"
 )
 
 func TestHMAC(t *testing.T) {
@@ -128,24 +128,24 @@ func runKDFTest(t *testing.T, count int) {
 		// test HKDF with 1, 2, 3 keys generated
 		switch count {
 		case 3:
-			tests.AssertEqual(t, test.t2,
+			assert.Equal(t, test.t2,
 				hex.EncodeToString(key2[:]),
 				"unexpected HKDF derivation")
-			tests.AssertEqual(t, test.t1,
+			assert.Equal(t, test.t1,
 				hex.EncodeToString(key1[:]),
 				"unexpected HKDF derivation")
-			tests.AssertEqual(t, test.t0,
+			assert.Equal(t, test.t0,
 				hex.EncodeToString(key0[:]),
 				"unexpected HKDF derivation")
 		case 2:
-			tests.AssertEqual(t, test.t1,
+			assert.Equal(t, test.t1,
 				hex.EncodeToString(key1[:]),
 				"unexpected HKDF derivation")
-			tests.AssertEqual(t, test.t0,
+			assert.Equal(t, test.t0,
 				hex.EncodeToString(key0[:]),
 				"unexpected HKDF derivation")
 		case 1:
-			tests.AssertEqual(t, test.t0,
+			assert.Equal(t, test.t0,
 				hex.EncodeToString(key0[:]),
 				"unexpected HKDF derivation")
 		}

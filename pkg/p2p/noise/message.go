@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"cpl.li/go/cryptor/crypt/ppk"
+	"cpl.li/go/cryptor/pkg/crypt/ppk"
 )
 
 const (

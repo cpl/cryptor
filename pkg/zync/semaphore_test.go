@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"cpl.li/go/cryptor/tests"
-	"cpl.li/go/cryptor/zync"
+	"github.com/stretchr/testify/assert"
+	"cpl.li/go/cryptor/pkg/zync"
 )
 
 const maxSleep = 1 * time.Millisecond
@@ -70,7 +70,7 @@ func TestReleaseLarge(t *testing.T) {
 	sem.Acquire(2)
 	sem.Release(3)
 
-	tests.AssertEqual(t, sem.Len(), uint(2), "unexpected semaphore len")
+	assert.Equal(t, sem.Len(), uint(2), "unexpected semaphore len")
 }
 
 func TestAcquirePanic(t *testing.T) {
@@ -83,7 +83,7 @@ func TestAcquirePanic(t *testing.T) {
 		t.Fatalf("semaphore succesful TryAcquire with delta too large")
 	}
 
-	tests.AssertEqual(t, sem.Len(), uint(5), "unexpected semaphore len")
+	assert.Equal(t, sem.Len(), uint(5), "unexpected semaphore len")
 }
 
 func TestWeightedTryAcquire(t *testing.T) {
@@ -148,11 +148,11 @@ func TestSemaphoreCap(t *testing.T) {
 	t.Parallel()
 
 	sem := zync.NewSemaphore(4)
-	tests.AssertEqual(t, sem.Cap(), uint(4), "unexpected semaphore cap")
+	assert.Equal(t, sem.Cap(), uint(4), "unexpected semaphore cap")
 
 	sem = zync.NewSemaphore(1)
-	tests.AssertEqual(t, sem.Cap(), uint(1), "unexpected semaphore cap")
+	assert.Equal(t, sem.Cap(), uint(1), "unexpected semaphore cap")
 
 	sem = zync.NewSemaphore(1000)
-	tests.AssertEqual(t, sem.Cap(), uint(1000), "unexpected semaphore cap")
+	assert.Equal(t, sem.Cap(), uint(1000), "unexpected semaphore cap")
 }
