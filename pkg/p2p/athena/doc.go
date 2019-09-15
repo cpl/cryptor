@@ -4,4 +4,4 @@ and building on top of the network.
 
 Dedicated to Athena.
 */
-package athena // import "cpl.li/go/cryptor/p2p/athena"
+package athena // import "cpl.li/go/cryptor/pkg/p2p/athena"

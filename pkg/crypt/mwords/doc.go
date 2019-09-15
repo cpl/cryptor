@@ -4,4 +4,4 @@ translating binary/raw/... cryptographic information to a human readable format.
 The word list used is as defined in BIP-39.
 https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 */
-package mwords // import "cpl.li/go/cryptor/crypt/mwords"
+package mwords // import "cpl.li/go/cryptor/pkg/crypt/mwords"

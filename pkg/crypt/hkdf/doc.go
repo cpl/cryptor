@@ -11,4 +11,4 @@ The hmac.New is used as opposed to blake2s.New256(key) for the simple reason
 that hmac.New seems to implement HMAC as defined in U.S. Federal Information
 Processing Standards Publication 198.
 */
-package hkdf // import "cpl.li/go/cryptor/crypt/hkdf"
+package hkdf // import "cpl.li/go/cryptor/pkg/crypt/hkdf"

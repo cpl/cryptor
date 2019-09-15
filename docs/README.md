@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/cpl/cryptor/master/docs/cryptor-logo.png" width="500px" alt="Cryptor Logo"/>
+  <img src="https://raw.githubusercontent.com/cpl/cryptor/master/docs/img/logo.png" width="500px" alt="Cryptor Logo"/>
 </p>
 
 

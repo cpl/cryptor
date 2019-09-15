@@ -7,4 +7,4 @@ These keys will be used for AEK and node identification and key routing.
 Keys are 32 byte long and can be represented as 64 char hex strings or bip39
 mnemonic sentences.
 */
-package ppk // import "cpl.li/go/cryptor/crypt/ppk"
+package ppk // import "cpl.li/go/cryptor/pkg/crypt/ppk"
