@@ -45,5 +45,5 @@ func TestKillNetwork(t *testing.T) {
 
 	assert.Nil(t, n.Stop())
 
-	assert.Equal(t, n.ErrCount(), uint32(4), "unexpected error count")
+	assert.Equal(t, uint32(4), n.ErrCount(), "unexpected error count")
 }
