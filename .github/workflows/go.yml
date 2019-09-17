@@ -1,31 +1,19 @@
-name: Go
-on: [push]
+name: Test
 jobs:
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      matrix:
+        go-version: [1.12.x, 1.13.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
-
-    - name: Set up Go 1.12
-      uses: actions/setup-go@v1
-      with:
-        version: 1.12
-      id: go
-
-    - name: Check out code into the Go module directory
-      use: actions/checkout@master
-      path: ${{ go.module-path }}
-
-    - name: Get dependencies
-      working-directory: ${{ go.module-path }}
-      run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-
-    - name: Build
-      working-directory: ${{ go.module-path }}
-      run: go build -v .
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Test
+        run: make test
+      - name: Test
+        run: make fmt
