@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	"cpl.li/go/cryptor/pkg/zync"
 )
 

@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"golang.org/x/crypto/blake2s"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/blake2s"
 
 	"cpl.li/go/cryptor/pkg/crypt"
 	"cpl.li/go/cryptor/pkg/crypt/hkdf"
