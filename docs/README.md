@@ -7,8 +7,8 @@
   <a href="https://cpl.li/cryptor">
     <img src="https://img.shields.io/badge/docs-cpl.li-informational.svg" alt="Official Docs" />
   </a>
-  <a href="https://travis-ci.org/cpl/cryptor">
-    <img src="https://img.shields.io/travis/cpl/cryptor/master.svg" alt="Travis CI" />
+  <a href="https://actions-badge.atrox.dev/cpl/cryptor/goto?ref=master">
+    <img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fcpl%2Fcryptor%2Fbadge%3Fref%3Dmaster&style=flat" />
   </a>
   <a href="https://goreportcard.com/report/cpl.li/go/cryptor">
     <img src="https://goreportcard.com/badge/cpl.li/go/cryptor" alt="Go Report Card" />
