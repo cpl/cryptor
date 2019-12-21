@@ -19,6 +19,7 @@ func TestRandomBytes(t *testing.T) {
 	// go from 1 byte to 16k
 	for pow := 0.0; pow <= 14; pow++ {
 		gen := int(math.Pow(2, pow))
+
 		if got := len(crypt.RandomBytes(uint(gen))); got != gen {
 			t.Errorf("failed to generate %d random bytes, got %d\n", gen, got)
 		}
