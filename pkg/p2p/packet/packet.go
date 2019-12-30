@@ -6,13 +6,13 @@ import (
 
 const (
 	// TypeTransport ...
-	TypeTransport byte = 0
+	TypeTransport byte = iota
 
 	// TypeHandshakeInitializer ...
-	TypeHandshakeInitializer byte = 1
+	TypeHandshakeInitializer
 
 	// TypeHandshakeResponder ...
-	TypeHandshakeResponder byte = 2
+	TypeHandshakeResponder
 )
 
 // Packet contains the necessary info for sending and receiving messages over

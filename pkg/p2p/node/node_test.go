@@ -13,7 +13,7 @@ var zeroKey ppk.PrivateKey
 
 func assertErrCount(t *testing.T, n *node.Node, expected uint32) {
 	// check error count
-	assert.Equal(t, n.ErrCount(), expected, "unexpected error count")
+	assert.Equal(t, expected, n.ErrCount(), "unexpected error count")
 }
 
 func assertNodeAddr(t *testing.T, n *node.Node, expected string) {

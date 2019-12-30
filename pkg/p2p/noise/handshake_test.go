@@ -117,10 +117,10 @@ func TestInvalidHandshake(t *testing.T) {
 	hs := new(noise.Handshake)
 
 	// attempt invalid operations on empty handshake
-	if _, _, err := hs.Finalize(); err.Error() != errStringInvalidHandshakeState {
+	if _, _, err := hs.Finalize();err!=nil && err.Error() != errStringInvalidHandshakeState {
 		t.Fatal("performed handshake Finalize on empty handshake, err:", err)
 	}
-	if err := hs.Receive(new(noise.MessageResponder), zeroPrivateKey); err.Error() != errStringInvalidHandshakeState {
+	if err := hs.Receive(new(noise.MessageResponder), zeroPrivateKey); err!=nil &&err.Error() != errStringInvalidHandshakeState {
 		t.Fatal("performed handshake Receive on empty handshake, err:", err)
 	}
 
@@ -130,17 +130,17 @@ func TestInvalidHandshake(t *testing.T) {
 		zeroPrivateKey.PublicKey(), newPrivateKey.PublicKey())
 
 	// attempt invalid operation
-	if _, _, err := hs.Finalize(); err.Error() != "invalid handshake state" {
+	if _, _, err := hs.Finalize(); err!=nil &&err.Error() != "invalid handshake state" {
 		t.Fatal("performed handshake Finalize on invalid handshake, err:", err)
 	}
 
 	// attempt with invalid private key
-	if _, _, _, err := noise.Respond(msg, zeroPrivateKey); err.Error() != errStringFailedAuth {
+	if _, _, _, err := noise.Respond(msg, zeroPrivateKey);err!=nil && err.Error() != errStringFailedAuth {
 		t.Fatal(err)
 	}
 
 	// attempt with nil message
-	if _, _, _, err := noise.Respond(nil, newPrivateKey); err.Error() != errStringNilMessage {
+	if _, _, _, err := noise.Respond(nil, newPrivateKey); err!=nil &&err.Error() != errStringNilMessage {
 		t.Fatal(err)
 	}
 
@@ -149,7 +149,7 @@ func TestInvalidHandshake(t *testing.T) {
 
 	// attempt with invalid message pub key
 	crypt.ZeroBytes(msgCopy.PlaintextUniquePublic[:])
-	if _, _, _, err := noise.Respond(&msgCopy, newPrivateKey); err.Error() != errStringFailedAuth {
+	if _, _, _, err := noise.Respond(&msgCopy, newPrivateKey); err!=nil &&err.Error() != errStringFailedAuth {
 		t.Fatal(err)
 	}
 
@@ -158,7 +158,7 @@ func TestInvalidHandshake(t *testing.T) {
 
 	// attempt with invalid message encrypted content
 	crypt.ZeroBytes(msgCopy.EncryptedInitializerStaticPublicKey[:])
-	if _, _, _, err := noise.Respond(&msgCopy, newPrivateKey); err.Error() != errStringFailedAuth {
+	if _, _, _, err := noise.Respond(&msgCopy, newPrivateKey); err!=nil &&err.Error() != errStringFailedAuth {
 		t.Fatal(err)
 	}
 
@@ -166,7 +166,7 @@ func TestInvalidHandshake(t *testing.T) {
 	wrongPrivateKey, _ := ppk.NewPrivateKey()
 	_, wrongMsg := noise.Initialize(
 		zeroPrivateKey.PublicKey(), wrongPrivateKey.PublicKey())
-	if _, _, _, err := noise.Respond(wrongMsg, newPrivateKey); err.Error() != errStringFailedAuth {
+	if _, _, _, err := noise.Respond(wrongMsg, newPrivateKey); err!=nil &&err.Error() != errStringFailedAuth {
 		t.Fatal(err)
 	}
 
@@ -177,12 +177,12 @@ func TestInvalidHandshake(t *testing.T) {
 	}
 
 	// attempt invalid operation
-	if err := rhs.Receive(rmsg, newPrivateKey); err.Error() != errStringInvalidHandshakeState {
+	if err := rhs.Receive(rmsg, newPrivateKey); err!=nil &&err.Error() != errStringInvalidHandshakeState {
 		t.Fatal("performed handshake Receive on invalid handshake, err:", err)
 	}
 
 	// attempt Receive with nil message
-	if err := rhs.Receive(nil, newPrivateKey); err.Error() != errStringNilMessage {
+	if err := rhs.Receive(nil, newPrivateKey);err!=nil && err.Error() != errStringNilMessage {
 		t.Fatal(err)
 	}
 
@@ -192,22 +192,22 @@ func TestInvalidHandshake(t *testing.T) {
 	}
 
 	// attempt invalid operation
-	if err := rhs.Receive(rmsg, newPrivateKey); err.Error() != errStringInvalidHandshakeState {
+	if err := rhs.Receive(rmsg, newPrivateKey);err!=nil && err.Error() != errStringInvalidHandshakeState {
 		t.Fatal("performed handshake Receive on invalid handshake, err:", err)
 	}
 
 	// attempt invalid operation
-	if _, _, err := rhs.Finalize(); err.Error() != errStringInvalidHandshakeState {
+	if _, _, err := rhs.Finalize(); err!=nil &&err.Error() != errStringInvalidHandshakeState {
 		t.Fatal("performed handshake Finalize on invalid handshake, err:", err)
 	}
 
 	// invalid private key
-	if err := hs.Receive(rmsg, newPrivateKey); err.Error() != errStringFailedAuth {
+	if err := hs.Receive(rmsg, newPrivateKey); err!=nil &&err.Error() != errStringFailedAuth {
 		t.Fatal("performed handshake Receive on invalid handshake, err:", err)
 	}
 
 	// nil message valid key
-	if err := hs.Receive(nil, zeroPrivateKey); err.Error() != errStringNilMessage {
+	if err := hs.Receive(nil, zeroPrivateKey); err!=nil &&err.Error() != errStringNilMessage {
 		t.Fatal("performed handshake Receive on invalid handshake, err:", err)
 	}
 
@@ -216,7 +216,7 @@ func TestInvalidHandshake(t *testing.T) {
 
 	// attempt with invalid message pub key
 	crypt.ZeroBytes(rmsgCopy.PlaintextUniquePublic[:])
-	if err := hs.Receive(&rmsgCopy, newPrivateKey); err.Error() != errStringFailedAuth {
+	if err := hs.Receive(&rmsgCopy, newPrivateKey); err!=nil && err.Error() != errStringFailedAuth {
 		t.Fatal(err)
 	}
 
@@ -225,7 +225,7 @@ func TestInvalidHandshake(t *testing.T) {
 
 	// attempt with invalid message encrypted content
 	crypt.ZeroBytes(rmsgCopy.EncryptedNothing[:])
-	if err := hs.Receive(&rmsgCopy, newPrivateKey); err.Error() != errStringFailedAuth {
+	if err := hs.Receive(&rmsgCopy, newPrivateKey); err!=nil &&err.Error() != errStringFailedAuth {
 		t.Fatal(err)
 	}
 

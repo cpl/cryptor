@@ -8,16 +8,16 @@ const (
 	// StateStopped is the default starting state of a Node, or the state
 	// reached after calling node.Stop(). During this state node operations
 	// are limited. A node also can't be connected during this state.
-	StateStopped StateNode = 0
+	StateStopped StateNode = iota
 
 	// StateRunning is the state after successfully calling node.Start() or
 	// node.Disconnect(). During this state the node allows for some
 	// configurations or actions to be taken.
-	StateRunning StateNode = 1
+	StateRunning
 
 	// StateConnected is entered after calling node.Connect() on a running node.
 	// Node must be running in order to also be connected to the network.
-	StateConnected StateNode = 2
+	StateConnected
 )
 
 // a simple lookup for state "ID" to state string, allows for nice displaying

@@ -12,14 +12,14 @@ func (n *Node) handleTransport(p *peer.Peer, pack *packet.Packet) {
 
 func (n *Node) handleInitialize(peerID uint64, pack *packet.Packet) {
 	// check payload size to match handshake initializer size
-	if len(pack.Payload) != noise.SizeMessageInitializer {
+	if len(pack.Payload) < noise.SizeMessageInitializer {
 		// drop packet if not
 		return
 	}
 
 	// extract message from payload
 	message := new(noise.MessageInitializer)
-	if err := message.UnmarshalBinary(pack.Payload); err != nil {
+	if err := message.UnmarshalBinary(pack.Payload[:noise.SizeMessageInitializer]); err != nil {
 		n.comm.err <- err
 		return
 	}
@@ -65,14 +65,14 @@ func (n *Node) handleInitialize(peerID uint64, pack *packet.Packet) {
 
 func (n *Node) handleResponse(p *peer.Peer, pack *packet.Packet) {
 	// check payload size to match handshake responder size
-	if len(pack.Payload) != noise.SizeMessageResponder {
+	if len(pack.Payload) < noise.SizeMessageResponder {
 		// drop packet if not
 		return
 	}
 
 	// extract message from payload
 	message := new(noise.MessageResponder)
-	if err := message.UnmarshalBinary(pack.Payload); err != nil {
+	if err := message.UnmarshalBinary(pack.Payload[:noise.SizeMessageResponder]); err != nil {
 		n.comm.err <- err
 		return
 	}

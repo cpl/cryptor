@@ -129,9 +129,7 @@ func (n *Node) recv() {
 
 			// peer exists and has complete handshake
 			// -> transport message
-			if ok && p.Handshake != nil &&
-				p.Handshake.State() == noise.StateSuccessful {
-
+			if ok && p.Handshake != nil && p.Handshake.State() == noise.StateSuccessful {
 				n.handleTransport(p, pack)
 				p.Unlock()
 				continue
@@ -139,9 +137,7 @@ func (n *Node) recv() {
 
 			// peer exists and has incomplete handshake (waiting for response)
 			// -> responder message
-			if ok && p.Handshake != nil &&
-				p.Handshake.State() == noise.StateInitialized {
-
+			if ok && p.Handshake != nil && p.Handshake.State() == noise.StateInitialized {
 				n.handleResponse(p, pack)
 				p.Unlock()
 				continue

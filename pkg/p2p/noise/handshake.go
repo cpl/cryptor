@@ -23,24 +23,24 @@ type StateHandshake byte
 const (
 	// StateEmpty can be on both initializer and responder sides. It's the
 	// default starting state for newly created handshakes.
-	StateEmpty StateHandshake = 0
+	StateEmpty StateHandshake = iota
 
 	// StateInitialized is for a handshake marked by the initializer after it's
 	// created using `noise.Initialize`.
-	StateInitialized StateHandshake = 1
+	StateInitialized
 
 	// StateResponded is for a handshake marked by the responder after it
 	// received an initialization message. The handshake must be generated
 	// by using `noise.Respond`.
-	StateResponded StateHandshake = 2
+	StateResponded
 
 	// StateReceived is after the handshakes makes a round-trip from the
 	// initializer to the responder and back, where it's validated.
-	StateReceived StateHandshake = 3
+	StateReceived
 
 	// StateSuccessful is marked after `Finalize` is called on StateResponded
 	// for the responder or StateReceived for the initializer.
-	StateSuccessful StateHandshake = 4
+	StateSuccessful
 )
 
 // Handshake contains all the information necessary for establishing a custom
@@ -80,6 +80,8 @@ func (hs *Handshake) State() StateHandshake {
 
 // PublicKey returns the temporary handshake public key generated at creation.
 func (hs *Handshake) PublicKey() ppk.PublicKey {
+	hs.RLock()
+	defer hs.RUnlock()
 	return hs.tempKeys.public
 }
 
@@ -87,8 +89,7 @@ func (hs *Handshake) PublicKey() ppk.PublicKey {
 // foreign node (with a known public key, rSPub). This method will return the
 // initializers static public key (iSPub) encrypted. The receiving node should
 // be able to compute the same encryption key and validate the encISPub.
-func Initialize(iSPub, rSPub ppk.PublicKey) (
-	hs *Handshake, msg *MessageInitializer) {
+func Initialize(iSPub, rSPub ppk.PublicKey) (hs *Handshake, msg *MessageInitializer) {
 	// create handshake
 	hs = new(Handshake)
 

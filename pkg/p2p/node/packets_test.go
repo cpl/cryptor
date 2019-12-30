@@ -232,12 +232,12 @@ func TestPacketInvalidResponder(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	// check error count
-	assertErrCount(t, n, 1)
+	assertErrCount(t, n, 2)
 
 	// wrap things up
 	assert.Nil(t, nConn.Close())
 	assert.Nil(t, n.Stop())
 
 	// check error count
-	assertErrCount(t, n, 1)
+	assertErrCount(t, n, 2)
 }
