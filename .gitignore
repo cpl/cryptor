@@ -23,5 +23,6 @@ launch.json
 **/.DS_Store
 build/
 dist/
+out/
 *.swp
 .idea/
