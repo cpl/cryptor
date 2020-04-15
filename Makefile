@@ -1,30 +1,95 @@
-.PHONY: test clean test-color cover fmt
+TARGETS = proto
 
-export GO111MODULE := on
 
-TEST_FLAGS := -coverprofile=build/cover.out -covermode=atomic -v -timeout 30s -count=1 -parallel 8
+CMD_DIR := ./cmd
+PKG_DIR := ./pkg
+OUT_DIR := ./out
+
+DIST_TAR := dist.tar.gz
+COV_FILE := cover.out
+
+
+DIST_OS   += linux darwin
+DIST_ARCH += amd64
+
+GO_CMD ?= go
+CGO_ENABLED ?= 0
+
+EXTERNAL_TOOLS=\
+	github.com/client9/misspell/cmd/misspell \
+	github.com/golangci/golangci-lint/cmd/golangci-lint
+
+GO111MODULE := on
+
+
+GO_TEST_FLAGS := -v -count=1 -race -coverprofile=$(OUT_DIR)/$(COV_FILE) -covermode=atomic -parallel=16
+
+.PHONY: deps
+.PHONY: $(OUT_DIR) clean mod purge
+.PHONY: test cover test-deps bench
+.PHONY: lint-fmt lint-vet lint-misspell lint-ci lint
+.PHONY: build dist
+
+
+all: clean mod lint-fmt lint-vet test build
+
+deps:
+	@for tool in  $(EXTERNAL_TOOLS) ; do \
+		echo "Installing/Updating $$tool" ; \
+		GO111MODULE=off $(GO_CMD) get -u $$tool; \
+	done
+
+$(OUT_DIR):
+	@mkdir -p $(OUT_DIR)
 
 clean:
-	rm -rf build/;
-	rm -f $(shell find . -name cover.out -type f);
+	@rm -rf $(OUT_DIR)
 
-test:
-	@mkdir -p build/
-	@go test $(TEST_FLAGS) ./...
+purge: clean
+	$(GO_CMD) mod tidy
+	$(GO_CMD) clean -cache
+	$(GO_CMD) clean -testcache
+	$(GO_CMD) clean -modcache
 
-test-color:
-	@mkdir -p build/
-	@go test $(TEST_FLAGS) ./... | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/'';
+dist: clean $(OUT_DIR)
+	@$(foreach arch, $(DIST_ARCH),			\
+		$(foreach os,$(DIST_OS),			\
+			$(foreach target, $(TARGETS),	\
+			GOOS=$(os) GOARCH=$(arch) CGO_ENABLED=$(CGO_ENABLED) $(GO_CMD) build -o $(OUT_DIR)/$(target)_$(os)_$(arch) $(CMD_DIR)/$(target)/*.go && \
+			shasum $(OUT_DIR)/$(target)_$(os)_$(arch) > $(OUT_DIR)/$(target)_$(os)_$(arch).shasum; \
+		)))
+	@cd $(OUT_DIR) && \
+	tar -czvf $(DIST_TAR) --exclude $(DIST_TAR) *
 
+build: $(OUT_DIR)
+	$(foreach target,$(TARGETS),go build -o $(OUT_DIR)/$(target) $(CMD_DIR)/$(target)/*.go;)
 
-build/cover.out: test
+test: $(OUT_DIR)
+	$(GO_CMD) test $(GO_TEST_FLAGS) ./...
 
-cover: build/cover.out
-	@go tool cover -html=build/cover.out
+mod:
+	$(GO_CMD) mod tidy
+	$(GO_CMD) mod verify
 
-fmt:
-	$(eval GOFMT_OUT := $(shell gofmt -l . 2>&1))
-	@if [ "$(GOFMT_OUT)" ]; then \
-		echo "gofmt err in:\n$(GOFMT_OUT)"; \
-		exit 1; \
-	fi
+cover: $(OUT_DIR)
+	$(GO_CMD) tool cover -html=$(OUT_DIR)/$(COV_FILE)
+
+test-deps:
+	$(GO_CMD) test all
+
+lint: lint-fmt lint-vet lint-misspell lint-ci
+
+lint-fmt:
+	$(GO_CMD) fmt ./...
+
+lint-vet:
+	$(GO_CMD) vet ./...
+
+lint-ci:
+	golangci-lint run -v ./...
+
+lint-misspell:
+	misspell -error ./...
+
+bench:
+	$(GO_CMD) test -bench=. -benchmem -benchtime=10s ./...
